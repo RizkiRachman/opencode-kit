@@ -1,6 +1,6 @@
 {
   "state": "INIT",
-  "contract_version": "0.6.6",
+  "contract_version": "0.6.8",
   "session": {
     "task_id": "",
     "branch": "",
@@ -29,10 +29,33 @@
     "mode": "",
     "applicable_skills": [],
     "rules_references": [
-      { "source": "AGENTS.md", "sections": ["§3 - Non-Negotiable Rules", "§5 - Writing Order", "§8 - Null Handling"] },
-      { "source": "PROJECT.md", "sections": ["scope", "constraints"] },
-      { "source": ".opencode/orchestration/contract.json", "sections": ["all"] },
-      { "source": ".opencode/rules/rules.json", "sections": ["all"] }
+      {
+        "source": "AGENTS.md",
+        "sections": [
+          "§3 - Non-Negotiable Rules",
+          "§5 - Writing Order",
+          "§8 - Null Handling"
+        ]
+      },
+      {
+        "source": "PROJECT.md",
+        "sections": [
+          "scope",
+          "constraints"
+        ]
+      },
+      {
+        "source": ".opencode/orchestration/contract.json",
+        "sections": [
+          "all"
+        ]
+      },
+      {
+        "source": ".opencode/rules/rules.json",
+        "sections": [
+          "all"
+        ]
+      }
     ],
     "current_guidance": "",
     "extension_skills": [],
@@ -65,8 +88,17 @@
     "score_summary": null
   },
   "score": {
-    "rules": { "pass": 0, "fail": 0, "deduction": 0, "subtotal": 0 },
-    "judge": { "score": 0, "rationale": "", "missing_items": [] },
+    "rules": {
+      "pass": 0,
+      "fail": 0,
+      "deduction": 0,
+      "subtotal": 0
+    },
+    "judge": {
+      "score": 0,
+      "rationale": "",
+      "missing_items": []
+    },
     "combined": 0,
     "verdict": "INIT"
   },
