@@ -64,14 +64,15 @@
 
 Traditional agent frameworks use conventions (".md files say to load state first") but agents routinely bypass them because there's no enforcement. `opencode-kit` makes the workflow **machine-enforced**, not convention-based.
 
-### How it works
+### How it works (v0.4 — Plugin Mode)
 
-1. **`contract.json`** — shared state machine every agent MUST read/write
-2. **`rules.json`** — machine-readable rules with CRITICAL/HIGH/LOW severity
-3. **`preflight.sh`** — enforcement gate that BLOCKs agents that skip the contract
-4. **`postflight.sh`** — auto-persists state + runs scoring pipeline
+With `opencode-kit` installed as an OpenCode plugin, enforcement is **global**. No per-project scaffolding needed.
 
-The result: zero-touch agent workflow. Set a goal, and the system self-executes through Plan → Build → Review → Learn, pausing only when BLOCKED.
+1. **Plugin injects enforcement** — every session auto-loads the orchestration contract before any work
+2. **`contract.json`** — shared state machine every agent MUST read/write (local or global)
+3. **`rules.json`** — machine-readable rules with CRITICAL/HIGH severity
+4. **3 auto-registered skills** — `orchestration-template`, `scoring-pipeline`, `adr-generator`
+5. **Config resolution** — `.opencode/` → `~/.config/opencode-kit/` → plugin defaults
 
 ### Built for macOS M-Series
 
@@ -122,15 +123,38 @@ git --version     # any recent version
 
 ### Installation
 
-#### Option 1: Quick start (recommended)
+#### Option 1: Install as plugin (recommended v0.4+)
+
+Add to your project's `opencode.json`:
+
+```json
+{
+  "plugin": [
+    "opencode-kit",      ← MUST be first
+    "other-plugins..."
+  ]
+}
+```
+
+Then install:
+
+```sh
+npm install opencode-kit
+```
+
+The plugin auto-loads on next session. Skills `orchestration-template`, `scoring-pipeline`, `adr-generator` become available. The orchestration contract is injected into every session automatically.
+
+> **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
+
+#### Option 2: Quick scaffold (pre-v0.4 style)
 
 ```sh
 npx opencode-kit init
 ```
 
-This scaffolds the full framework into your current project directory.
+This scaffolds the full framework into your current project directory. Compatible with plugin mode — use both for maximum control.
 
-#### Option 2: From source
+#### Option 3: From source
 
 ```sh
 git clone https://github.com/RizkiRachman/opencode-kit.git
@@ -327,11 +351,19 @@ After every subagent delegation, scoring runs automatically:
 - [x] Scoring Tier 2 — `templates/judge-prompt.md` + SCORE_002 rule
 - [x] Telemetry — `src/telemetry.sh` (phases.jsonl, elapsed time, summary)
 
-### v0.4 — Plugin Architecture (next)
-- [ ] OpenCode plugin to make opencode-kit global (not per-project)
-- [ ] Register enforcer as global agent behavior
-- [ ] Web UI for contract overview
-- [ ] Multi-repo orchestration (monorepo support)
+### v0.4 — Plugin Architecture ✅
+- [x] Plugin entry point (`.opencode/plugins/opencode-kit.js`)
+- [x] 3 auto-registered skills (orchestration-template, scoring-pipeline, adr-generator)
+- [x] Global config resolution (local → ~/.config/opencode-kit/ → plugin defaults)
+- [x] Plugin schema (templates/opencode-kit.schema.json)
+- [x] Plugin-aware init.sh (detects plugin, skips redundant scaffolding)
+- [x] Plugin metadata (.claude-plugin/plugin.json)
+
+### v0.5 — Hardening & Polish
+- [ ] Test plugin end-to-end on clean project
+- [ ] Auto-init contract.json via plugin if missing
+- [ ] Contract uniqueness per project (lean-ctx key = project hash)
+- [ ] Publish to npm
 
 See the [open issues](https://github.com/RizkiRachman/opencode-kit/issues) for full list.
 
