@@ -1,7 +1,7 @@
 {
   "name": "opencode-kit",
   "description": "Standardized orchestration framework — contract-based, rules-enforced, zero-touch agent workflow",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "author": {
     "name": "Rizki Rachman",
     "url": "https://github.com/RizkiRachman"
