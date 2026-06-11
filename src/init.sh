@@ -83,8 +83,8 @@ if [ -d ".opencode" ]; then
     echo "  ✅ Backed up to $BACKUP"
   else
     echo ""
-    echo -e "${YELLOW}⚠️  .opencode/ already exists. Use --force to overwrite (backup + clean scaffold).${NC}"
-    echo "  Missing files will be added. Existing files will NOT be overwritten."
+    echo -e "${YELLOW}⚠️  .opencode/ already exists. Use --force to re-scaffold (backup + clean).${NC}"
+    echo "  Skipping — existing .opencode/ preserved."
   fi
 fi
 

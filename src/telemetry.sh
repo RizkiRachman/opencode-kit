@@ -32,33 +32,49 @@ case "$MODE" in
   --phases)
     if [ -f "$TELEMETRY_DIR/phases.jsonl" ]; then
       echo "Phase transitions:"
-      cat "$TELEMETRY_DIR/phases.jsonl" | while IFS= read -r line; do
-        [ -z "$line" ] && continue
-        FROM=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('from','?'))" 2>/dev/null)
-        TO=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('to','?'))" 2>/dev/null)
-        MS=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('elapsed_ms',0))" 2>/dev/null)
-        printf "  %-20s → %-20s  %5.1fs\n" "$FROM" "$TO" "$($PYTHON_CMD -c "print($MS/1000)" 2>/dev/null || echo "0.0")"
-      done
+      $PYTHON_CMD -c "
+import sys, json
+for line in sys.stdin:
+    line = line.strip()
+    if not line:
+        continue
+    d = json.loads(line)
+    from_ = d.get('from', '?')
+    to_ = d.get('to', '?')
+    ms = d.get('elapsed_ms', 0)
+    print(f'  {from_:20s} → {to_:20s}  {ms/1000:5.1f}s')
+" < "$TELEMETRY_DIR/phases.jsonl" 2>/dev/null || echo -e "${YELLOW}Could not parse phase data${NC}"
     else
       echo -e "${YELLOW}No phase data yet.${NC}"
     fi
     ;;
   --summary|*)
     if [ -f "$TELEMETRY_DIR/summary.json" ]; then
-      TOTAL_S=$($PYTHON_CMD -c "import json; d=json.load(open('$TELEMETRY_DIR/summary.json')); print(d.get('total_elapsed_s',0))" 2>/dev/null || echo "0")
-      PHASES=$($PYTHON_CMD -c "import json; d=json.load(open('$TELEMETRY_DIR/summary.json')); print(len(d.get('phases_completed',[])))" 2>/dev/null || echo "0")
+      read -r TOTAL_S PHASES < <(TELEMETRY_DIR="$TELEMETRY_DIR" $PYTHON_CMD -c "
+import json, os
+d = json.load(open(os.environ['TELEMETRY_DIR'] + '/summary.json'))
+print(d.get('total_elapsed_s', 0))
+print(len(d.get('phases_completed', [])))
+" 2>/dev/null || echo -e "0\n0")
       echo "  Total elapsed: ${TOTAL_S}s"
       echo "  Phases completed: $PHASES"
       echo ""
       echo "  Latest phases:"
-      tail -5 "$TELEMETRY_DIR/phases.jsonl" 2>/dev/null | while IFS= read -r line; do
-        [ -z "$line" ] && continue
-        TS=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('ts','?'))" 2>/dev/null | cut -dT -f2 | cut -d. -f1)
-        FROM=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('from','?'))" 2>/dev/null)
-        TO=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('to','?'))" 2>/dev/null)
-        MS=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('elapsed_ms',0))" 2>/dev/null)
-        echo "    $TS  $FROM → $TO  ($((MS/1000))s)"
-      done
+      tail -5 "$TELEMETRY_DIR/phases.jsonl" 2>/dev/null | $PYTHON_CMD -c "
+import sys, json
+for line in sys.stdin:
+    line = line.strip()
+    if not line:
+        continue
+    d = json.loads(line)
+    ts = d.get('ts', '?')
+    if ts != '?':
+        ts = ts.split('T')[1].split('.')[0] if 'T' in ts else ts
+    from_ = d.get('from', '?')
+    to_ = d.get('to', '?')
+    ms = d.get('elapsed_ms', 0)
+    print(f'    {ts}  {from_} → {to_}  ({ms//1000}s)')
+" 2>/dev/null || echo -e "${YELLOW}Could not parse phase data${NC}"
     else
       echo -e "${YELLOW}No telemetry data yet. Run a phase first.${NC}"
       echo "  Phases are recorded automatically by postflight.sh"

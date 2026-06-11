@@ -66,7 +66,7 @@ Create `opencode.json`:
       "steps": 30,
       "tools": { "postgres_*": false, "memory_*": false, "graphify_*": false }
     },
-    "leaner": {
+    "learner": {
       "model": "your-model",
       "skills": ["verification-before-completion", "qa-expert"]
     }

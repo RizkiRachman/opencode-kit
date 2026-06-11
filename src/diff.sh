@@ -42,13 +42,25 @@ if [ -z "$CONTRACT_A" ] && [ -z "$CONTRACT_B" ]; then
 fi
 
 # Show state diff
+# Write contract data to temp files for safe Python consumption
+CONTRACT_A_FILE=$(mktemp /tmp/opencode-diff-a-XXXXXX.json 2>/dev/null || mktemp /tmp/opencode-diff-a-XXXXXX)
+CONTRACT_B_FILE=$(mktemp /tmp/opencode-diff-b-XXXXXX.json 2>/dev/null || mktemp /tmp/opencode-diff-b-XXXXXX)
+trap 'rm -f "$CONTRACT_A_FILE" "$CONTRACT_B_FILE"' EXIT INT TERM
+
+echo "$CONTRACT_A" > "$CONTRACT_A_FILE"
+echo "$CONTRACT_B" > "$CONTRACT_B_FILE"
+
 if [ -n "$PYTHON_CMD" ]; then
   $PYTHON_CMD -c "
 import json, sys
 
-def get_state(c):
+def get_state(filepath):
     try:
-        d = json.loads(c)
+        with open(filepath) as f:
+            content = f.read().strip()
+        if not content:
+            return None
+        d = json.loads(content)
         return {
             'state': d.get('state', '?'),
             'goal': (d.get('requirements', {}) or {}).get('goal', '?'),
@@ -60,12 +72,12 @@ def get_state(c):
     except:
         return None
 
-a = get_state('''$CONTRACT_A''') if '''$CONTRACT_A''' else None
-b = get_state('''$CONTRACT_B''') if '''$CONTRACT_B''' else None
+a = get_state('$CONTRACT_A_FILE')
+b = get_state('$CONTRACT_B_FILE')
 
 if a and b:
     print(f'  Field                   $BRANCH_A          $BRANCH_B')
-    print(f'  {"-"*50}')
+    print(f'  {\"-\"*50}')
     for field in ['state', 'goal', 'score', 'version']:
         va = str(a.get(field, '?'))[:20]
         vb = str(b.get(field, '?'))[:20]
@@ -80,6 +92,8 @@ elif b and not a:
     print(f'  Contract exists in $BRANCH_B but NOT in $BRANCH_A')
     print(f'  State: {b.get(\"state\",\"?\")}')
 " 2>/dev/null || echo -e "${YELLOW}Could not parse contract JSON${NC}"
+
+rm -f "$CONTRACT_A_FILE" "$CONTRACT_B_FILE"
 fi
 
 # Raw git diff
