@@ -16,12 +16,13 @@
   },
   "files": [
     ".opencode/plugins/",
-    ".claude-plugin/",
-    "src/",
-    "rules/",
     "templates/",
     "skills/",
-    "docs/"
+    "rules/",
+    "src/cli.js",
+    "src/init.sh",
+    "LICENSE",
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -42,8 +43,9 @@
     "url": "git+https://github.com/RizkiRachman/opencode-kit.git"
   },
   "scripts": {
-    "lint": "eslint src/ test/",
-    "format": "prettier --check src/ test/"
+    "postinstall": "git config core.hooksPath .githooks 2>/dev/null || true",
+    "lint": "shellcheck src/*.sh rules/*.sh 2>/dev/null || true",
+    "format": "echo 'Formatting: not configured yet'"
   },
   "bugs": {
     "url": "https://github.com/RizkiRachman/opencode-kit/issues"

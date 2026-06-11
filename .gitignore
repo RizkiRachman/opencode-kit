@@ -7,3 +7,7 @@ node_modules/
 .claude/
 /AGENTS.md
 /CLAUDE.md
+
+# Audit documents (development artifacts — keep local)
+docs/audit/
+__pycache__/
