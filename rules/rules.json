@@ -17,7 +17,7 @@
       "check_cli": "npx --yes gitnexus --version"
     },
     "graphify": {
-      "description": "Knowledge graph — codebase exploration",
+      "description": "Knowledge graph — codebase exploration (depends on gitnexus index)",
       "severity": "optional",
       "check_cli": "npx --yes gitnexus analyze --help"
     }
