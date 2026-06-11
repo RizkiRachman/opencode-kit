@@ -3,6 +3,26 @@
   "strict": true,
   "description": "Machine-enforceable rules for OpenCode agents. CRITICAL = BLOCK agent. HIGH = FLAG orchestrator. LOW = advisory.",
 
+  "required_mcps": {
+    "description": "MCPs required for the framework to function. Preflight.sh checks these dynamically.",
+    "lean-ctx": {
+      "description": "Context persistence — contract storage and retrieval",
+      "severity": "required",
+      "check_cli": "command -v lean-ctx",
+      "check_tool": "lean-ctx ctx_knowledge recall"
+    },
+    "gitnexus": {
+      "description": "Code intelligence — impact analysis before edits",
+      "severity": "required",
+      "check_cli": "npx --yes gitnexus --version"
+    },
+    "graphify": {
+      "description": "Knowledge graph — codebase exploration",
+      "severity": "optional",
+      "check_cli": "npx --yes gitnexus analyze --help"
+    }
+  },
+
   "state_machine": {
     "transitions": [
       { "from": "INIT", "to": "PLAN", "require_score": null },

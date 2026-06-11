@@ -23,7 +23,7 @@
           "properties": {
             "skills": {
               "type": "array",
-              "description": "Recommended skills: orchestration-template, scoring-pipeline, adr-generator, verification-before-completion",
+              "description": "Skills to load for this agent (e.g., orchestration, scoring, quality gates)",
               "items": { "type": "string" },
               "default": ["orchestration-template", "scoring-pipeline", "verification-before-completion"]
             },
@@ -37,7 +37,7 @@
           "properties": {
             "skills": {
               "type": "array",
-              "description": "Recommended skills: brainstorming, writing-plans, system-analyst",
+              "description": "Skills for analysis, requirements gathering, plan writing",
               "items": { "type": "string" },
               "default": ["brainstorming", "writing-plans", "system-analyst"]
             },
@@ -51,6 +51,7 @@
           "properties": {
             "skills": {
               "type": "array",
+              "description": "Skills for implementation, execution, testing",
               "items": { "type": "string" },
               "default": ["subagent-driven-development", "executing-plans", "test-driven-development"]
             },
@@ -64,6 +65,7 @@
           "properties": {
             "skills": {
               "type": "array",
+              "description": "Skills for code quality, security, performance review",
               "items": { "type": "string" },
               "default": ["qa-expert", "security-expert", "devops-expert"]
             },
@@ -77,6 +79,7 @@
           "properties": {
             "skills": {
               "type": "array",
+              "description": "Skills for verification, quality checks, post-analysis",
               "items": { "type": "string" },
               "default": ["verification-before-completion", "qa-expert"]
             },
@@ -117,6 +120,7 @@
           "properties": {
             "skills": {
               "type": "array",
+              "description": "Skills for architecture analysis, simplification, debugging",
               "items": { "type": "string" },
               "default": ["simplify", "systematic-debugging", "system-analyst"]
             },
