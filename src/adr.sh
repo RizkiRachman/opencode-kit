@@ -59,24 +59,31 @@ if [ -z "$TITLE" ]; then
 fi
 
 # --- Compute next ADR ID ---
-NEXT_ID=$($PYTHON_CMD -c "
-import json
-with open('$CONTRACT_FILE') as f: d = json.load(f)
+NEXT_ID=$(CONTRACT_FILE="$CONTRACT_FILE" $PYTHON_CMD -c "
+import json, os
+with open(os.environ['CONTRACT_FILE']) as f: d = json.load(f)
 log = d.get('decisions', {}).get('adr_log', [])
 if not log:
   print('ADR-001')
 else:
-  last = max(int(entry.get('id','ADR-000').replace('ADR-','')) for entry in log)
+  last = 0
+  for entry in log:
+    try:
+      num = int(entry.get('id','ADR-000').replace('ADR-',''))
+      if num > last: last = num
+    except ValueError:
+      continue
   print(f'ADR-{last+1:03d}')
 ")
 
 # --- Check for duplicate title ---
-DUP=$($PYTHON_CMD -c "
-import json
-with open('$CONTRACT_FILE') as f: d = json.load(f)
+DUP=$(CONTRACT_FILE="$CONTRACT_FILE" TITLE="$TITLE" $PYTHON_CMD -c "
+import json, os
+with open(os.environ['CONTRACT_FILE']) as f: d = json.load(f)
 log = d.get('decisions', {}).get('adr_log', [])
+search_title = os.environ.get('TITLE', '').lower().strip()
 for entry in log:
-  if entry.get('title','').lower().strip() == '$TITLE'.lower().strip():
+  if entry.get('title','').lower().strip() == search_title:
     print(entry.get('id',''))
     break
 " 2>/dev/null)
@@ -86,50 +93,37 @@ if [ -n "$DUP" ]; then
   exit 0
 fi
 
-# --- Build ADR entry via temp JSON file (avoids shell injection) ---
-# Write ADR fields to temp file to avoid shell interpolation into Python
-ADR_DATA=$(mktemp /tmp/opencode-adr-data-XXXXX.json)
-cat > "$ADR_DATA" << ADRDATA
-{
-  "title": "$TITLE",
-  "context": "$CONTEXT",
-  "decision": "$DECISION",
-  "alternatives": "$ALTERNATIVES",
-  "consequences": "$CONSEQUENCES"
-}
-ADRDATA
+# --- Build ADR entry via Python (avoids shell injection) ---
+ENTRY_FILE=$(mktemp /tmp/opencode-adr-entry-XXXXX.json)
+trap 'rm -f "$ENTRY_FILE"' EXIT INT TERM
 
-$PYTHON_CMD -c "
-import json
-
-with open('$ADR_DATA') as f:
-    data = json.load(f)
+TITLE="$TITLE" CONTEXT="$CONTEXT" DECISION="$DECISION" ALTERNATIVES="$ALTERNATIVES" CONSEQUENCES="$CONSEQUENCES" NEXT_ID="$NEXT_ID" ENTRY_FILE="$ENTRY_FILE" $PYTHON_CMD -c "
+import json, os
+from datetime import date
 
 entry = {
-  'id': '$NEXT_ID',
-  'date': '$(date +%Y-%m-%d)',
-  'title': data['title'],
-  'context': data['context'],
-  'decision': data['decision'],
-  'alternatives': data['alternatives'],
-  'consequences': data['consequences']
+    'id': os.environ['NEXT_ID'],
+    'date': date.today().isoformat(),
+    'title': os.environ.get('TITLE', ''),
+    'context': os.environ.get('CONTEXT', ''),
+    'decision': os.environ.get('DECISION', ''),
+    'alternatives': os.environ.get('ALTERNATIVES', ''),
+    'consequences': os.environ.get('CONSEQUENCES', '')
 }
 
-with open('/tmp/opencode-adr-entry.json', 'w') as f:
+with open(os.environ['ENTRY_FILE'], 'w') as f:
     json.dump(entry, f, indent=2)
 print('Entry written')
 "
 
-rm -f "$ADR_DATA"
-
 # --- Inject into contract.json ---
-$PYTHON_CMD -c "
-import json
+CONTRACT_FILE="$CONTRACT_FILE" ENTRY_FILE="$ENTRY_FILE" $PYTHON_CMD -c "
+import json, os
 
-with open('$CONTRACT_FILE') as f:
+with open(os.environ['CONTRACT_FILE']) as f:
   contract = json.load(f)
 
-with open('/tmp/opencode-adr-entry.json') as f:
+with open(os.environ['ENTRY_FILE']) as f:
   entry = json.load(f)
 
 if 'decisions' not in contract:
@@ -139,11 +133,13 @@ if 'adr_log' not in contract['decisions']:
 
 contract['decisions']['adr_log'].append(entry)
 
-with open('$CONTRACT_FILE', 'w') as f:
+with open(os.environ['CONTRACT_FILE'], 'w') as f:
   json.dump(contract, f, indent=2)
 
 print(json.dumps(entry, indent=2))
 "
+
+rm -f "$ENTRY_FILE"
 
 echo ""
 echo -e "${GREEN}[opencode-kit] ✅ ADR recorded: $NEXT_ID${NC}"
