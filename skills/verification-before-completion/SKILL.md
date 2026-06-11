@@ -12,36 +12,39 @@ For any code change, run in order:
 
 ### 1. Formatting
 ```bash
-mvn spotless:apply  # or equivalent formatter
+# Format code (e.g., spotless, prettier, black, gofmt)
 ```
+Expected: zero files changed after formatting (idempotent).
 
 ### 2. Compilation
 ```bash
-mvn compile
-# Expected: BUILD SUCCESS
+# Build/tests — check for compilation errors
+# e.g., mvn compile, npm run build, cargo check, go build ./...
 ```
+Expected: BUILD SUCCESS.
 
-### 3. Architecture (if ArchUnit present)
+### 3. Architecture Rules (if applicable)
 ```bash
-mvn test -Dtest="*Architecture*"
-# Expected: all 7 ArchUnit rules pass
+# Architecture tests — e.g., ArchUnit, layered boundary checks
 ```
+Expected: all architecture rules pass.
 
 ### 4. Unit Tests
 ```bash
-mvn test
-# Expected: 0 failures, 0 errors
+# Run unit tests — e.g., mvn test, npm test, pytest, cargo test
 ```
+Expected: 0 failures, 0 errors.
 
 ### 5. Full Verification
 ```bash
-mvn verify
-# Expected: BUILD SUCCESS
+# Full suite — e.g., mvn verify, npm test -- --all
 ```
+Expected: BUILD SUCCESS.
 
 ### 6. Static Analysis (if configured)
 ```bash
-# SpotBugs, PMD CPD, OWASP dependency check
+# Linting, security scan, duplicate detection
+# e.g., SpotBugs, ESLint, Clippy, bandit
 ```
 
 ## Evidence Rules
@@ -53,7 +56,7 @@ mvn verify
 
 ## Checklist
 
-- [ ] Formatting passes (spotless)
+- [ ] Formatting passes (idempotent)
 - [ ] Compiles without errors
 - [ ] All tests pass (0 failures, 0 errors)
 - [ ] No new warnings (or documented)

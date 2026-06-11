@@ -1,0 +1,86 @@
+{
+  "state": "INIT",
+  "contract_version": "0.1.0",
+  "session": {
+    "task_id": "",
+    "branch": "",
+    "created_at": ""
+  },
+  "scope": {
+    "included": [],
+    "excluded": [],
+    "boundary": "project-root",
+    "parallel_eligible": false,
+    "max_parallel_agents": 1
+  },
+  "requirements": {
+    "goal": "",
+    "acceptance_criteria": [],
+    "constraints": []
+  },
+  "decisions": {
+    "approved_architecture": null,
+    "coding_standard": [],
+    "rejected_approaches": [],
+    "adr_log": []
+  },
+  "governance": {
+    "active_agent": "",
+    "mode": "",
+    "applicable_skills": [],
+    "rules_references": [
+      { "source": "AGENTS.md", "sections": ["§3 - Non-Negotiable Rules", "§5 - Writing Order", "§8 - Null Handling"] },
+      { "source": "PROJECT.md", "sections": ["scope", "constraints"] },
+      { "source": ".opencode/orchestration/contract.json", "sections": ["all"] },
+      { "source": ".opencode/rules/rules.json", "sections": ["all"] }
+    ],
+    "current_guidance": "",
+    "permissions": {
+      "do": [],
+      "dont": [
+        "push to main branch",
+        "modify CI/CD or .opencode/ config",
+        "use fully qualified names inline",
+        "start work without loading contract"
+      ]
+    },
+    "previous_blockers": [],
+    "decisions_log": []
+  },
+  "validation": {
+    "block_on": {
+      "max_test_failures": 3,
+      "max_score_drop": 30,
+      "max_compile_errors": 1
+    }
+  },
+  "outputs": {
+    "plan": null,
+    "architecture": null,
+    "code_changes": [],
+    "test_results": null,
+    "agent_reports": [],
+    "score_summary": null
+  },
+  "score": {
+    "rules": { "pass": 0, "fail": 0, "deduction": 0, "subtotal": 0 },
+    "judge": { "score": 0, "rationale": "", "missing_items": [] },
+    "combined": 0,
+    "verdict": "PENDING"
+  },
+  "retry": {
+    "current_phase": null,
+    "attempt": 0,
+    "max_attempts": 3,
+    "score_threshold": 70,
+    "escalation_threshold": 50,
+    "issues": []
+  },
+  "metrics": {
+    "cost_tokens": 0,
+    "elapsed_ms": 0,
+    "agents_used": [],
+    "phases_completed": []
+  },
+  "lessons_learned": []
+}
