@@ -132,6 +132,7 @@ test('All 8 skills have valid SKILL.md files', () => {
     'qa-expert', 'system-analyst', 'token-optimize',
     'verification-before-completion', 'learner'
   ];
+  assert.equal(expectedSkills.length, 8, 'Should have 8 core skills');
   const skillsDir = path.join(ROOT, 'skills');
   for (const skill of expectedSkills) {
     const skillPath = path.join(skillsDir, skill, 'SKILL.md');
