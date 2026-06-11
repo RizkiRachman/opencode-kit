@@ -180,29 +180,29 @@ if [ "$SAMPLE" = true ]; then
   else
     cat > opencode.json << 'SAMPLEEOF'
 {
-  "model": "sumopod/deepseek-v4-flash",
+  "model": "your-model",
   "plugin": [
     "@ikieaneh/opencode-kit",
     "superpowers"
   ],
   "agent": {
     "orchestrator": {
-      "model": "sumopod/deepseek-v4-flash",
+      "model": "your-model",
       "skills": ["orchestration-template", "scoring-pipeline", "verification-before-completion"],
       "steps": 50
     },
     "planner": {
-      "model": "sumopod/deepseek-v4-flash",
+      "model": "your-model",
       "skills": ["brainstorming", "writing-plans", "system-analyst"],
       "steps": 80
     },
     "task-manager": {
-      "model": "sumopod/deepseek-v4-flash",
+      "model": "your-model",
       "skills": ["subagent-driven-development", "executing-plans", "test-driven-development"],
       "steps": 100
     },
     "code-reviewer": {
-      "model": "sumopod/deepseek-v4-flash",
+      "model": "your-model",
       "skills": ["qa-expert", "security-expert"],
       "steps": 80
     }
