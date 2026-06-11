@@ -66,14 +66,13 @@
 - [x] **`opencode-kit doctor`**: `src/doctor.sh` — diagnostic command checking MCPs, contract, rules, git branch, persistence, plugin config
 - [x] **Plugin init order conflict detection**: Plugin.js warns if opencode-kit isn't first in the plugin array
 
-### P3 — Nice to Have
-- [ ] **Web UI**: Browser dashboard for contract overview (state, phases, ADRs, telemetry)
-- [ ] **Plugin marketplace entry**: Register opencode-kit in OpenCode's plugin discovery
-- [ ] **Unscoped npm package**: Publish as `opencode-kit` (requires paid npm account)
-- [ ] **Multi-repo orchestration**: Coordinate contract across multiple git repos
-- [ ] **Template generator**: `opencode-kit new skill` — scaffold a new skill SKILL.md
-- [ ] **Dashboard CLI**: `opencode-kit status` — pretty terminal dashboard of contract state
-- [ ] **AI assistant for contract**: Auto-suggest next state transitions based on project history
+### P3 — Implemented
+- [x] **Dashboard CLI**: `opencode-kit status` — pretty terminal dashboard (contract state, telemetry, rules, quick actions)
+- [x] **Template generator**: `opencode-kit new skill` — scaffolds a new skill with `mkdir -p .opencode/skills/<name>/SKILL.md`
+- [x] **Analytics**: `opencode-kit analytics` — aggregate telemetry with phase breakdown, time estimates, token cost estimate
+- [ ] **Web UI**: Browser dashboard for contract overview (deferred — low priority)
+- [ ] **Plugin marketplace entry**: Already on npm with proper keywords
+- [ ] **AI assistant for contract**: Auto-suggest next state transitions (deferred — needs ML)
 
 ---
 
