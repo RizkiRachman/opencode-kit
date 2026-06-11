@@ -5,7 +5,13 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Iteration 3
+## [Unreleased] — Iteration 4
+
+### Fixed
+
+- **release.yml**: `templates/contract.json` `contract_version` was not synced during auto-release, causing it to fall out of sync on every release. Added step to update it alongside `package.json` and `plugin.json`. (#20)
+
+## [0.6.7] - 2026-06-11
 
 ### Fixed
 
