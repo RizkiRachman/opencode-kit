@@ -103,11 +103,26 @@ git init
 
 ## Release Process
 
-1. Update version in `package.json`
-2. Update `CHANGELOG.md`
-3. Tag release: `git tag v0.X.0`
-4. Push: `git push --tags`
-5. Publish: `npm publish` (if applicable)
+**Releases are fully automated.** When a PR is merged to `main`, the `release` GitHub Actions workflow automatically:
+1. Detects the new version from `package.json`
+2. Runs tests (integration + E2E)
+3. Creates a git tag `v<version>`
+4. Publishes to npm (`@ikieaneh/opencode-kit`)
+
+### What you need to do
+
+1. **Bump version** in `package.json`
+2. **Update** `CHANGELOG.md`
+3. **Merge PR** to `main` — automation handles the rest
+
+### One-time setup for maintainers
+
+The automation requires the `NPM_TOKEN` secret in GitHub repository settings:
+- Generate an **Automation** token at https://www.npmjs.com/settings/<username>/tokens
+- Add it as a repository secret: **Settings → Secrets and variables → Actions → New repository secret**
+- Name: `NPM_TOKEN`, Value: your npm token
+
+See [RELEASE.md](RELEASE.md) for full details.
 
 ## Questions?
 

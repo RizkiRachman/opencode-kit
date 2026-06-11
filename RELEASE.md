@@ -3,8 +3,10 @@
 ## Release Flow
 
 ```
-BRANCH → COMMIT → TEST → PR → MERGE → TAG → PUBLISH
+BRANCH → COMMIT → TEST → PR → MERGE → 🤖 AUTO-TAG + PUBLISH
 ```
+
+**Tagging and publishing are fully automated via GitHub Actions.** When a PR is merged to `main`, the `release` workflow automatically creates a git tag and publishes to npm — no manual steps required.
 
 ## Phase 1: Branch & Develop
 
@@ -20,6 +22,17 @@ git checkout -b feature/YYYYMMDD-description
 4. **Docs** (README.md, CHANGELOG.md, docs/examples/)
 5. **Tests** (test/*.test.js)
 
+### Version Bump
+Update the version in `package.json` before merging:
+
+| Bump | When |
+|------|------|
+| `patch` | Bug fixes, small tweaks |
+| `minor` | New features, breaking script changes |
+| `major` | Breaking plugin API changes |
+
+**The release workflow reads `package.json` version and creates tag `v<version>`.**
+
 ## Phase 2: Test
 
 Run all tests before committing:
@@ -31,6 +44,8 @@ node test/e2e.test.js           # 9 tests — plugin lifecycle, auto-init
 
 All 16 must pass (0 failed).
 
+The release workflow also runs these tests before publishing.
+
 ## Phase 3: Commit & PR
 
 ```sh
@@ -40,7 +55,6 @@ git push -u origin feature/YYYYMMDD-description
 gh pr create \
   --title "type: description" \
   --body "## Summary\n<bullet points>"
-gh pr merge --merge
 ```
 
 ### Commit Types
@@ -52,28 +66,53 @@ gh pr merge --merge
 | `docs` | Documentation |
 | `refactor` | Code restructure |
 
-## Phase 4: Tag & Publish
+### Review & Merge
+1. CI validates the PR (ShellCheck, scaffold test, syntax, integration, E2E)
+2. Merge to `main` using the **merge commit** strategy
+3. ✅ **Release is automatic** — the `release` workflow handles tag + publish
+
+---
+
+## 🔧 Required Setup — One Time Only
+
+For the automated release workflow to work, you must configure **one GitHub secret**:
+
+### 1. Generate an npm automation token
 
 ```sh
-git checkout main
-git pull origin main
-npm version patch -m "chore: bump to v%s"
-npm config set //registry.npmjs.org/:_authToken <token>
-npm publish
-git push --tags
+# Visit https://www.npmjs.com/settings/<username>/tokens
+# Create an "Automation" token (read + publish)
 ```
 
-### Version Rules
-| Bump | When |
-|------|------|
-| `patch` | Bug fixes, small tweaks |
-| `minor` | New features, breaking script changes |
-| `major` | Breaking plugin API changes |
+### 2. Add as a GitHub Actions secret
 
-## Phase 5: Post-Release
+| Setting | Value |
+|---------|-------|
+| Repository | `RizkiRachman/opencode-kit` |
+| Settings → Secrets and variables → Actions |
+| **New repository secret** |
+| Name: `NPM_TOKEN` |
+| Value: `<your npm automation token>` |
+
+That's it. No manual tagging, no `npm publish` from your machine.
+
+---
+
+## How the Automation Works
+
+The workflow at `.github/workflows/release.yml`:
+
+1. **Triggers** on every push to `main` (which happens when a PR is merged)
+2. **Reads** the version from `package.json`
+3. **Checks** if a git tag `v<version>` already exists
+   - **Tag exists** → skips (already published)
+   - **No tag** → runs tests, creates tag, publishes to npm
+4. **Publishes** `npm publish --access public`
+
+### Post-Release Verification
 
 ```sh
-# Verify publish
+# Confirm latest version on npm
 python3 -c "import urllib.request, json; print(json.loads(urllib.request.urlopen('https://registry.npmjs.org/@ikieaneh/opencode-kit').read())['dist-tags']['latest'])"
 ```
 
@@ -82,10 +121,10 @@ python3 -c "import urllib.request, json; print(json.loads(urllib.request.urlopen
 ## Quick Reference
 
 ```
-DEV  → git checkout -b feature/YYYYMMDD-desc
-TEST → node test/integration.test.js && node test/e2e.test.js
+DEV    → git checkout -b feature/YYYYMMDD-desc
+TEST   → node test/integration.test.js && node test/e2e.test.js
+BUMP   → Update version in package.json + CHANGELOG.md
 COMMIT → git add -A && git commit -m "type: msg" && git push
-PR   → gh pr create --title "type: msg" --body "## Summary"
-TAG  → npm version patch && git push --tags
-PUB  → npm publish
+PR     → gh pr create --title "type: msg" --body "## Summary"
+MERGE  → gh pr merge <num> --merge  ← triggers auto-release 🚀
 ```

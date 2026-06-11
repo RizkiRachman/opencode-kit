@@ -4,3 +4,6 @@ node_modules/
 .idea/
 *.iml
 .opencode/state/
+.claude/
+/AGENTS.md
+/CLAUDE.md
