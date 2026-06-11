@@ -5,6 +5,21 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-11
+
+### Added
+
+- **MCP auto-detection**: `preflight.sh` now checks availability of lean-ctx, gitnexus, graphify, and context7. Reports status with color-coded warnings. Non-blocking for missing MCPs but warns about capability gaps.
+- **Contract state validation**: `preflight.sh` parses contract.json at startup, validates state field against known states. Detects malformed JSON.
+- **Rules validation**: `rules/validation.sh` — validates agent actions against 5 rule categories: branch (PREFLIGHT_002), state (STATE_001), schema (SCHEMA_001), impact analysis (IMPACT_001), persistence (PERSIST_001). Supports `--strict` mode treating HIGH as BLOCK.
+- **Re-init with backup**: `init.sh --force` now backs up existing `.opencode/` to `.opencode.bak.<timestamp>` before clean scaffold. Non-force mode adds missing files without overwriting.
+- **ADR auto-generate**: `src/adr.sh` — interactive or CLI mode (`--title`, `--context`, `--decision`, `--alternatives`, `--consequences`). Auto-assigns IDs (ADR-001, ADR-002...). Detects duplicate titles. Injects into contract.json `decisions.adr_log[]`.
+
+### Changed
+
+- `preflight.sh` — added Check 5 (contract state validation), expanded Check 3 to full MCP suite
+- `init.sh` — version bump to v0.2.0, proper force-overwrite with backup
+
 ## [0.1.0] - 2026-06-11
 
 ### Added
