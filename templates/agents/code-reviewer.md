@@ -15,7 +15,6 @@ permission:
     "git log*": allow
     "npm test": allow
     "npm run build": allow
-    "npm test": allow
   task:
     "*": deny
 ---
