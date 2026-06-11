@@ -41,7 +41,7 @@ mkdir -p .opencode/telemetry 2>/dev/null
 echo "  ✅ telemetry directory ready"
 
 # --- Check 4: scripts executable ---
-for script in ".opencode/src/preflight.sh" ".opencode/src/postflight.sh" ".opencode/src/telemetry.sh" ".opencode/src/doctor.sh" ".opencode/src/status.sh"; do
+for script in ".opencode/src/preflight.sh" ".opencode/src/postflight.sh" ".opencode/src/postflight.py" ".opencode/src/telemetry.sh" ".opencode/src/doctor.sh" ".opencode/src/status.sh"; do
   if [ -x "$script" ]; then
     echo "  ✅ $script (executable)"
   elif [ -f "$script" ]; then

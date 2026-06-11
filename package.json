@@ -46,7 +46,8 @@
     "postinstall": "git config core.hooksPath .githooks 2>/dev/null || true",
     "lint": "shellcheck -S error src/*.sh rules/*.sh test/shell/*.sh",
     "lint-all": "shellcheck src/*.sh rules/*.sh test/shell/*.sh",
-    "format": "echo 'Formatting: not configured yet'"
+    "format": "echo 'Formatting: not configured yet'",
+    "test": "node test/integration.test.js && node test/e2e.test.js"
   },
   "bugs": {
     "url": "https://github.com/RizkiRachman/opencode-kit/issues"
