@@ -11,10 +11,10 @@ permission:
   webfetch: allow
   bash:
     "*": ask
-    "mvn test*": allow
-    "mvn compile*": allow
-    "mvn verify": allow
-    "mvn spotless:apply": allow
+    "npm test": allow
+    "npm run build": allow
+    "npm test": allow
+    "npm run format": allow
     "git diff*": allow
     "git log*": allow
   task:
@@ -94,7 +94,7 @@ Delegate to @code-reviewer. After return → Scoring Pipeline → update contrac
 3. **Tier 3 (Verdict)**: ≥70 PASS, 50-69 RETRY, <50 BLOCKED
 
 ### 5. Verify (loop)
-Run quality gates (mvn test, mvn verify, etc.)
+Run quality gates (verification-before-completion skill)
 If CRITICAL findings → BLOCK, fix, re-review. Max 3 iterations.
 
 ### 6. Ship

@@ -1,7 +1,7 @@
 {
   "name": "@ikieaneh/opencode-kit",
-  "version": "0.5.0",
-  "description": "Standardized OpenCode orchestration framework \u2014 contract-based, rules-enforced, zero-touch agent workflow. Install as plugin.",
+  "version": "0.5.1",
+  "description": "Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow. Install as plugin.",
   "license": "MIT",
   "author": "RizkiRachman",
   "type": "module",
@@ -20,7 +20,8 @@
     "src/",
     "rules/",
     "templates/",
-    "skills/"
+    "skills/",
+    "docs/"
   ],
   "publishConfig": {
     "access": "public"
