@@ -2,8 +2,10 @@
 # opencode-kit ADR — auto-generate Architecture Decision Record
 # Usage: bash src/adr.sh <title>
 # Then enter context, decision, alternatives, consequences interactively.
-# Or: bash src/adr.sh --title "<title>" --context "<context>" --decision "<decision>"
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/platform.sh"
 
 CONTRACT_FILE=".opencode/orchestration/contract.json"
 
@@ -56,7 +58,7 @@ if [ -z "$TITLE" ]; then
 fi
 
 # --- Compute next ADR ID ---
-NEXT_ID=$(python3 -c "
+NEXT_ID=$($PYTHON_CMD -c "
 import json
 with open('$CONTRACT_FILE') as f: d = json.load(f)
 log = d.get('decisions', {}).get('adr_log', [])
@@ -68,7 +70,7 @@ else:
 ")
 
 # --- Check for duplicate title ---
-DUP=$(python3 -c "
+DUP=$($PYTHON_CMD -c "
 import json
 with open('$CONTRACT_FILE') as f: d = json.load(f)
 log = d.get('decisions', {}).get('adr_log', [])
@@ -84,25 +86,31 @@ if [ -n "$DUP" ]; then
 fi
 
 # --- Build ADR entry ---
-ADR=$(python3 -c "
-import json
+# --- Build ADR entry via heredoc to avoid nested quote issues ---
+$PYTHON_CMD -c "
+import json, sys, os
+
+title = '$TITLE'
+date_val = '$(date +%Y-%m-%d)'
+next_id = '$NEXT_ID'
+
 entry = {
-  'id': '$NEXT_ID',
-  'date': '$(date +%Y-%m-%d)',
-  'title': '$TITLE',
-  'context': '$(echo "$CONTEXT" | python3 -c "import sys; print(sys.stdin.read().strip())" 2>/dev/null || echo "$CONTEXT")',
-  'decision': '$(echo "$DECISION" | python3 -c "import sys; print(sys.stdin.read().strip())" 2>/dev/null || echo "$DECISION")',
-  'alternatives': '$(echo "$ALTERNATIVES" | python3 -c "import sys; print(sys.stdin.read().strip())" 2>/dev/null || echo "$ALTERNATIVES")',
-  'consequences': '$(echo "$CONSEQUENCES" | python3 -c "import sys; print(sys.stdin.read().strip())" 2>/dev/null || echo "$CONSEQUENCES")'
+  'id': next_id,
+  'date': date_val,
+  'title': title,
+  'context': '''$(echo "$CONTEXT" | sed "s/'/\\\\'/g")''',
+  'decision': '''$(echo "$DECISION" | sed "s/'/\\\\'/g")''',
+  'alternatives': '''$(echo "$ALTERNATIVES" | sed "s/'/\\\\'/g")''',
+  'consequences': '''$(echo "$CONSEQUENCES" | sed "s/'/\\\\'/g")'''
 }
-# Write temp file for the entry
+
 with open('/tmp/opencode-adr-entry.json', 'w') as f:
   json.dump(entry, f, indent=2)
 print('Entry written')
-")
+"
 
 # --- Inject into contract.json ---
-python3 -c "
+$PYTHON_CMD -c "
 import json
 
 with open('$CONTRACT_FILE') as f:

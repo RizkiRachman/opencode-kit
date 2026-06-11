@@ -2,6 +2,8 @@
 # opencode-kit verify — check installation health
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo "[opencode-kit] 🔍 Verify: checking installation..."
 FAIL=0
 
@@ -34,8 +36,12 @@ for agent in orchestrator planner task-manager code-reviewer learner fixer; do
   fi
 done
 
-# --- Check 3: scripts executable ---
-for script in ".opencode/src/preflight.sh" ".opencode/src/postflight.sh"; do
+# --- Check 3: telemetry directory ---
+mkdir -p .opencode/telemetry 2>/dev/null
+echo "  ✅ telemetry directory ready"
+
+# --- Check 4: scripts executable ---
+for script in ".opencode/src/preflight.sh" ".opencode/src/postflight.sh" ".opencode/src/telemetry.sh"; do
   if [ -x "$script" ]; then
     echo "  ✅ $script (executable)"
   elif [ -f "$script" ]; then
@@ -46,7 +52,7 @@ for script in ".opencode/src/preflight.sh" ".opencode/src/postflight.sh"; do
   fi
 done
 
-# --- Check 4: not on main ---
+# --- Check 5: not on main ---
 BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
   echo "  ⚠️  On '$BRANCH' branch — create a feature branch"
