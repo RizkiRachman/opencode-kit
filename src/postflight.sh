@@ -38,29 +38,35 @@ if [ -n "$PYTHON_CMD" ]; then
   echo "$PYTHON_OUTPUT" > "$POSTFLIGHT_DATA"
   trap 'rm -f "$POSTFLIGHT_DATA"' EXIT INT TERM
 
-  STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
-  PHASE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phase','none'))" 2>/dev/null || echo "none")
-  SCORE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('score','?'))" 2>/dev/null || echo "?")
-  PREV_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('prev_state','INIT'))" 2>/dev/null || echo "INIT")
-  CURRENT_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('current_state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
-  ELAPSED_S=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phase_elapsed_s','0'))" 2>/dev/null || echo "0")
-  MIGRATED=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('migrated','false'))" 2>/dev/null || echo "false")
-  CONTRACT_VER=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('contract_version','?'))" 2>/dev/null || echo "?")
-  PHASES_COUNT=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phases_count','0'))" 2>/dev/null || echo "0")
-  TOTAL_ELAPSED_S=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('total_elapsed_s','0'))" 2>/dev/null || echo "0")
-  LAST_TO_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('last_to_state','INIT'))" 2>/dev/null || echo "INIT")
+  # Extract all fields in one Python call and eval the result
+  eval "$($PYTHON_CMD -c "
+import json, sys
+d = json.load(open('$POSTFLIGHT_DATA'))
+fields = {
+    'state': 'UNKNOWN', 'phase': 'none', 'score': '?',
+    'prev_state': 'INIT', 'current_state': 'UNKNOWN',
+    'phase_elapsed_s': '0', 'migrated': 'false',
+    'contract_version': '?', 'phases_count': '0',
+    'total_elapsed_s': '0', 'last_to_state': 'INIT'
+}
+for key, default in fields.items():
+    val = str(d.get(key, default))
+    # Escape single quotes for bash safety
+    val = val.replace(\"'\", \"'\\\\''\")
+    print(f'{key}=\"{val}\"')
+" 2>/dev/null || echo "state=UNKNOWN phase=none score=? prev_state=INIT current_state=UNKNOWN phase_elapsed_s=0 migrated=false contract_version=? phases_count=0 total_elapsed_s=0 last_to_state=INIT")"
 
   # --- Echo status messages ---
-  echo "  📊 Telemetry: $PREV_STATE → $CURRENT_STATE (${ELAPSED_S}s)"
+  echo "  📊 Telemetry: $prev_state → $current_state (${phase_elapsed_s}s)"
 
-  if [ "$MIGRATED" = "true" ]; then
-    echo "  🔄 Contract migrated to v${CONTRACT_VER}"
+  if [ "$migrated" = "true" ]; then
+    echo "  🔄 Contract migrated to v${contract_version}"
   fi
 
-  echo "  📝 Contract state: $STATE (phase: $PHASE, score: $SCORE)"
+  echo "  📝 Contract state: $state (phase: $phase, score: $score)"
   echo "  ✅ STATE.md synced"
 
-  echo "  📈 Telemetry summary: ${PHASES_COUNT} phases, ${TOTAL_ELAPSED_S}s total"
+  echo "  📈 Telemetry summary: ${phases_count} phases, ${total_elapsed_s}s total"
 else
   echo "  ⚠️  Python not available, skipping postflight processing"
 fi
