@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 
 CONTRACT_FILE=".opencode/orchestration/contract.json"
@@ -87,6 +88,7 @@ fi
 
 # --- Build ADR entry ---
 # --- Build ADR entry via heredoc to avoid nested quote issues ---
+# shellcheck disable=SC2001
 $PYTHON_CMD -c "
 import json, sys, os
 

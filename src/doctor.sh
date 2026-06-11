@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 . "$SCRIPT_DIR/global-config.sh"
 
