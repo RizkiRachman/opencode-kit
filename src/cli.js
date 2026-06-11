@@ -76,7 +76,7 @@ const commands = {
 const command = args[0];
 
 if (commands[command]) {
-  const projectRoot = findProjectRoot(path.resolve(__dirname, '..'));
+  const projectRoot = findProjectRoot(process.cwd());
 
   if (!projectRoot) {
     console.error('Not in an opencode-kit project');
@@ -86,4 +86,9 @@ if (commands[command]) {
   const scriptPath = path.resolve(projectRoot, commands[command]);
   const result = spawnSync('bash', [scriptPath], { stdio: 'inherit', cwd: projectRoot });
   process.exit(result.status);
+}
+
+if (command === 'init' || command === 'update') {
+  console.log(`To run '${command}', use the script directly:\n  bash src/${command}.sh [--force]\n`);
+  process.exit(0);
 }
