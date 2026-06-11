@@ -49,7 +49,6 @@
     <li><a href="#usage">Usage</a></li>
     <li><a href="#structure">Structure</a></li>
     <li><a href="#the-6-pillars">The 6 Pillars</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -335,10 +334,9 @@ opencode-kit/
  ├── .opencode/plugins/          ← Plugin entry point
  ├── .claude-plugin/             ← Plugin metadata
  ├── package.json                ← npm publish
- ├── CHANGELOG.md
- ├── CONTRIBUTING.md
- ├── RELEASE.md
- └── ROADMAP.md
+  ├── CHANGELOG.md
+  ├── CONTRIBUTING.md
+  └── RELEASE.md
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -413,67 +411,6 @@ After every subagent delegation, scoring runs automatically:
 3. **Tier 3** — Combined verdict (PASS/RETRY/BLOCKED)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ROADMAP -->
-## Roadmap
-
-### v0.1 (current POC)
-- [x] GitHub repo structure
-- [x] `contract.json` — shared state machine
-- [x] `rules.json` — 8 enforcement rules
-- [x] `preflight.sh` — load contract, validate branch, check state
-- [x] `postflight.sh` — persist contract, run scoring
-- [x] `init.sh` — scaffold into target project
-- [x] `verify.sh` — installation health check
-- [x] 6 agent .md templates with embedded pre-flight gates
-- [x] npm package.json for `npx opencode-kit init`
-
-### v0.2 — Hardening ✅
-- [x] Auto-detect MCP availability (lean-ctx, gitnexus, graphify)
-- [x] `rules/validation.sh` — validate agent actions against rules
-- [ ] Test on clean macOS M-series machine (manual — see notes)
-- [x] Edge cases: re-init over existing `.opencode/` with --force + backup
-- [x] ADR auto-generate on decision (`src/adr.sh`)
-
-### v0.3 — Production ✅
-- [x] Cross-platform (Linux via `src/platform.sh` + `$PYTHON_CMD`)
-- [x] GitHub Actions CI (ShellCheck + scaffold test + syntax check)
-- [x] `opencode-kit update` — `src/update.sh` (pull latest from GitHub, preserve state)
-- [x] Scoring Tier 2 — `templates/judge-prompt.md` + SCORE_002 rule
-- [x] Telemetry — `src/telemetry.sh` (phases.jsonl, elapsed time, summary)
-
-### v0.4 — Plugin Architecture ✅
-- [x] Plugin entry point (`.opencode/plugins/opencode-kit.js`)
-- [x] 3 auto-registered skills (orchestration-template, scoring-pipeline, adr-generator)
-- [x] Global config resolution (local → ~/.config/opencode-kit/ → plugin defaults)
-- [x] Plugin schema (templates/opencode-kit.schema.json)
-- [x] Plugin-aware init.sh (detects plugin, skips redundant scaffolding)
-- [x] Plugin metadata (.claude-plugin/plugin.json)
-
-### v0.5 — Gap Analysis ✅
-- [x] 5 new skills (qa-expert, system-analyst, token-optimize, verification-before-completion, learner)
-- [x] Auto-init contract on first run
-- [x] Contract uniqueness per project (hashed lean-ctx key)
-- [x] Proper plugin logging
-- [x] CLI version/help command
-- [x] Logo placeholder
-- [x] STATE.md auto-sync
-- [x] Integration tests (7/7 passing)
-- [x] CI integration test job
-
-### v0.6 — Polish ✅
-- [x] README updated for @ikieaneh/opencode-kit plugin mode
-- [x] Updated agent config schema (fallback_models, explorer, librarian, architect)
-- [x] End-to-end tests (9 tests, plugin lifecycle + auto-init)
-- [x] Quickstart example (`docs/examples/QUICKSTART.md`)
-- [x] npm published as `@ikieaneh/opencode-kit`
-- [x] CI: integration + e2e test jobs
-
-### Future
-- [ ] Web UI for contract overview (deferred — no current need)
-- [ ] Plugin hardening: `experimental.chat.messages.transform` API is marked experimental — monitor OpenCode updates
-
-See the [open issues](https://github.com/RizkiRachman/opencode-kit/issues) for full list.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

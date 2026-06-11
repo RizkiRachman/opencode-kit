@@ -213,4 +213,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scoring pipeline**: Tier 1 (rule checks) + Tier 2 (LLM judge) + Tier 3 (combined verdict). Thresholds: ≥70 PASS, 50-69 RETRY, <50 BLOCKED.
 - **macOS M-series support**: All scripts use portable POSIX shell, compatible with Apple Silicon.
 
+[0.6.10]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.10
+[0.6.9]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.9
+[0.6.8]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.8
+[0.6.7]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.7
+[0.6.6]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.6
+[0.6.5]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.5
+[0.6.4]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.4
+[0.6.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.6.0
+[0.5.9]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.5.9
+[0.5.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.5.0
+[0.4.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.4.0
+[0.3.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.3.0
+[0.2.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RizkiRachman/opencode-kit/releases/tag/v0.1.0
