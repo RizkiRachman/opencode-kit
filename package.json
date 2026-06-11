@@ -12,7 +12,7 @@
     }
   },
   "bin": {
-    "opencode-kit": "./src/cli.js"
+    "opencode-kit": "src/cli.js"
   },
   "files": [
     ".opencode/plugins/",
@@ -39,7 +39,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/RizkiRachman/opencode-kit"
+    "url": "git+https://github.com/RizkiRachman/opencode-kit.git"
   },
   "bugs": {
     "url": "https://github.com/RizkiRachman/opencode-kit/issues"
