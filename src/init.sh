@@ -151,7 +151,7 @@ echo "[opencode-kit] Running verification..."
 if "$KIT_DIR/src/verify.sh"; then
   echo ""
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}  ✅ opencode-kit v0.4.0 initialized${NC}"
+  echo -e "${GREEN}  ✅ opencode-kit v0.5.0 initialized${NC}"
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo "  Next steps:"

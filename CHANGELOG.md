@@ -5,6 +5,26 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-11
+
+### Added
+
+- **5 new skills**: `qa-expert` (test standards, edge cases, coverage), `system-analyst` (impact analysis, architecture checklist), `token-optimize` (reading strategy, batching, delegation anti-patterns), `verification-before-completion` (evidence rules, verification order), `learner` (post-execution learning, memory update matrix)
+- **Auto-init contract**: Plugin auto-creates contract.json on first run via `ensureContract()`. Checks `~/.config/opencode-kit/` global config first, falls back to plugin template.
+- **Contract uniqueness per project**: `getProjectHash()` generates unique lean-ctx key (`orchestration-contract:<sha256-hash>`) from git remote URL, with absolute path fallback.
+- **Proper plugin logging**: Custom `log()` function writes to stderr instead of `console.log`. Wires up `client.log` API when available.
+- **CLI version/help**: `src/cli.js` — `npx opencode-kit --version` / `--help`. Lists commands, plugin mode docs, config resolution chain.
+- **Logo placeholder**: `docs/images/logo.svg` — simple SVG icon for README.
+- **STATE.md auto-sync**: `postflight.sh` creates/updates STATE.md with current focus, known blockers, active ADRs, and recent changes from contract state.
+- **Integration tests**: `test/integration.test.js` — 7 tests covering plugin loads, hooks, hash uniqueness, skills completeness, metadata validity, JSON validity. Added to CI workflow.
+- **CI integration test job**: `.github/workflows/validate.yml` runs integration tests on Node.js 20.
+
+### Changed
+
+- `package.json` — version 0.5.0, `bin` points to `src/cli.js`
+- `rules/rules.json` — simplified judge_prompt to avoid JSON escape issues
+- `plugin.js` — major refactor: auto-init, project hash, proper logger, config resolution
+
 ## [0.4.0] - 2026-06-11
 
 ### Added
