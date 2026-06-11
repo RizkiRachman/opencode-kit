@@ -59,25 +59,67 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-`opencode-kit` is a portable orchestration framework for OpenCode-based AI agents. It solves one core problem:
+`opencode-kit` is a **workflow enforcement framework** for AI coding agents. It ensures agents follow a structured process — plan, build, review, learn — instead of jumping straight to implementation.
 
-**Agents skip the workflow and jump straight to implementation.**
+### The Problem
 
-Traditional agent frameworks use conventions (".md files say to load state first") but agents routinely bypass them because there's no enforcement. `opencode-kit` makes the workflow **machine-enforced**, not convention-based.
+AI agents (Claude, Copilot, etc.) are powerful but **unpredictable**. When given a task, they often:
 
-### How it works (v0.4 — Plugin Mode)
+- Skip project conventions and jump directly to writing code
+- Ignore shared state — each session starts from scratch
+- Bypass quality gates — no review, no scoring, no learning
+- Use different approaches on every run — inconsistent results
 
-With `opencode-kit` installed as an OpenCode plugin, enforcement is **global**. No per-project scaffolding needed.
+Traditional frameworks try to fix this with **prose in .md files** ("load the contract before any tool call"). But agents routinely ignore prose because there's no enforcement — it's a suggestion, not a requirement.
 
-1. **Plugin injects enforcement** — every session auto-loads the orchestration contract before any work
-2. **`contract.json`** — shared state machine every agent MUST read/write (local or global)
-3. **`rules.json`** — machine-readable rules with CRITICAL/HIGH severity
-4. **3 auto-registered skills** — `orchestration-template`, `scoring-pipeline`, `adr-generator`
-5. **Config resolution** — `.opencode/` → `~/.config/opencode-kit/` → plugin defaults
+### The Solution
 
-### Built for macOS M-Series
+`opencode-kit` replaces prose conventions with **machine-readable enforcement**:
 
-Developed and tested on Apple Silicon (M1/M2/M3/M4). All scripts use portable POSIX shell with zero Linux-specific dependencies.
+| Instead of ... | opencode-kit uses ... |
+|:---------------|:----------------------|
+| "read the state file" | `contract.json` — a JSON state machine agents MUST read/write |
+| "follow the rules" | `rules.json` — CRITICAL rules BLOCK agents, HIGH rules FLAG them |
+| "check before editing" | `preflight.sh` — an enforcement gate that fails if rules aren't met |
+| "review your work" | **Scoring pipeline** — every output is scored (≥70 PASS, <50 BLOCK) |
+| "remember what you learned" | `postflight.sh` — auto-persists state + telemetry + lessons learned |
+
+The result: **zero-touch agent workflow**. Set a goal, and the system self-executes through Plan → Build → Review → Learn, pausing only when BLOCKED.
+
+### How It Works
+
+As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session globally:
+
+1. **Plugin bootstrap** — every session auto-loads the orchestration contract before any work
+2. **Pre-flight gate** — validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations
+3. **Contract protocol** — shared state machine (`contract.json`) tracks phase, decisions, scores, telemetry
+4. **Scoring pipeline** — every subagent output scored. ≥70 PASS, 50-69 RETRY, <50 BLOCKED
+5. **ADR logging** — every architectural decision recorded in `decisions.adr_log[]`
+6. **Extension model** — project-specific skills in `.opencode/skills/` override plugin defaults
+
+### The 9 Built-in Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `orchestration-template` | Contract protocol, state machine, persistence rules |
+| `scoring-pipeline` | Tier 1 rule checks + Tier 2 LLM judge + verdict |
+| `adr-generator` | Architecture Decision Record format and auto-ID |
+| `qa-expert` | Test standards, edge cases, coverage goals |
+| `system-analyst` | Impact analysis, execution tracing, architecture checks |
+| `token-optimize` | Efficient reading, batching, and delegation |
+| `verification-before-completion` | Quality gates — formatting, compile, test, verify |
+| `learner` | Post-execution learning, memory persistence |
+| *(extensible)* | Create your own skills in `.opencode/skills/` |
+
+### Built for Cost-Efficient Models
+
+`opencode-kit` was designed for teams using **cost-optimized models** (DeepSeek V4 Flash, Gemini Flash, GPT-4o Mini, etc.) who want to compete with premium models through **process rigor**, not raw intelligence. The scoring pipeline and pre-flight enforcement create a quality floor that cheap models can meet through architecture, not model power.
+
+### Platform Support
+
+- **macOS M-Series** (Apple Silicon) — primary development target
+- **Linux** (Ubuntu) — CI-verified via GitHub Actions
+- **Any OpenCode-compatible environment** with `lean-ctx`, `gitnexus`, `graphify`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
