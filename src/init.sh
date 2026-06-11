@@ -142,6 +142,18 @@ if [ "$PLUGIN_MODE" = false ]; then
   chmod +x .opencode/src/doctor.sh
   echo "  ✅ doctor.sh (executable)"
 
+  cp "$KIT_DIR/src/status.sh" .opencode/src/status.sh
+  chmod +x .opencode/src/status.sh
+  echo "  ✅ status.sh (executable)"
+
+  cp "$KIT_DIR/src/new-skill.sh" .opencode/src/new-skill.sh
+  chmod +x .opencode/src/new-skill.sh
+  echo "  ✅ new-skill.sh (executable)"
+
+  cp "$KIT_DIR/src/analytics.sh" .opencode/src/analytics.sh
+  chmod +x .opencode/src/analytics.sh
+  echo "  ✅ analytics.sh (executable)"
+
   # --- Copy agent templates (pre-flight gates) ---
   for agent in orchestrator planner task-manager code-reviewer learner fixer; do
     if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
