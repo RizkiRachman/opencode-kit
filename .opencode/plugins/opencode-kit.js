@@ -73,33 +73,38 @@ const resolveConfigPath = (projectDir, relPath) => {
 
 // --- Auto-init contract.json if missing ---
 const ensureContract = (projectDir) => {
-  const homeDir = os.homedir();
-  const globalDir = path.join(homeDir, '.config/opencode-kit');
-  const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
+  try {
+    const homeDir = os.homedir();
+    const globalDir = path.join(homeDir, '.config/opencode-kit');
+    const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
 
-  // Already exists — nothing to do
-  if (fs.existsSync(contractPath)) return contractPath;
+    // Already exists — nothing to do
+    if (fs.existsSync(contractPath)) return contractPath;
 
-  // Check global config first
-  const globalContract = path.join(globalDir, 'orchestration', 'contract.json');
-  if (fs.existsSync(globalContract)) {
-    fs.mkdirSync(path.dirname(contractPath), { recursive: true });
-    fs.copyFileSync(globalContract, contractPath);
-    log('info', `Auto-initialized contract from global config: ${contractPath}`);
-    return contractPath;
+    // Check global config first
+    const globalContract = path.join(globalDir, 'orchestration', 'contract.json');
+    if (fs.existsSync(globalContract)) {
+      fs.mkdirSync(path.dirname(contractPath), { recursive: true });
+      fs.copyFileSync(globalContract, contractPath);
+      log('info', `Auto-initialized contract from global config: ${contractPath}`);
+      return contractPath;
+    }
+
+    // Scaffold from plugin template
+    const templatePath = path.join(TEMPLATES_DIR, 'contract.json');
+    if (fs.existsSync(templatePath)) {
+      fs.mkdirSync(path.dirname(contractPath), { recursive: true });
+      fs.copyFileSync(templatePath, contractPath);
+      log('info', `Auto-initialized contract from plugin template: ${contractPath}`);
+      return contractPath;
+    }
+
+    log('warn', 'Could not auto-initialize contract — no template found');
+    return null;
+  } catch (err) {
+    log('error', `Failed to auto-init contract: ${err.message}`);
+    return null;
   }
-
-  // Scaffold from plugin template
-  const templatePath = path.join(TEMPLATES_DIR, 'contract.json');
-  if (fs.existsSync(templatePath)) {
-    fs.mkdirSync(path.dirname(contractPath), { recursive: true });
-    fs.copyFileSync(templatePath, contractPath);
-    log('info', `Auto-initialized contract from plugin template: ${contractPath}`);
-    return contractPath;
-  }
-
-  log('warn', 'Could not auto-initialize contract — no template found');
-  return null;
 };
 
 // --- Load bootstrap content (cached) ---
@@ -160,86 +165,98 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   ensureContract(projectDir);
 
   // Ensure global config directory exists
-  fs.mkdirSync(path.join(globalConfigDir, 'orchestration'), { recursive: true });
-  fs.mkdirSync(path.join(globalConfigDir, 'rules'), { recursive: true });
+  try {
+    fs.mkdirSync(path.join(globalConfigDir, 'orchestration'), { recursive: true });
+    fs.mkdirSync(path.join(globalConfigDir, 'rules'), { recursive: true });
+  } catch (err) {
+    log('warn', `Failed to create global config dirs: ${err.message}`);
+  }
 
   return {
     // Skill resolution order (first match wins):
     //   1. .opencode/skills/<name>/  (user project — highest priority)
     //   2. plugin skills/<name>/     (opencode-kit defaults — fallback)
     config: async (config) => {
-      config.skills = config.skills || {};
-      config.skills.paths = config.skills.paths || [];
+      try {
+        config.skills = config.skills || {};
+        config.skills.paths = config.skills.paths || [];
 
-      // Detect if other plugins might conflict with opencode-kit's system prompt
-      if (config.plugins && Array.isArray(config.plugins)) {
-        const kitIndex = config.plugins.findIndex(p =>
-          typeof p === 'string' && p.includes('opencode-kit')
-        );
-        if (kitIndex > 0) {
-          const firstPlugin = config.plugins[0];
-          log('warn', `Plugin ordering conflict: opencode-kit should be FIRST, but found '${firstPlugin}' at position 0 and opencode-kit at position ${kitIndex}`);
+        // Detect if other plugins might conflict with opencode-kit's system prompt
+        if (config.plugins && Array.isArray(config.plugins)) {
+          const kitIndex = config.plugins.findIndex(p =>
+            typeof p === 'string' && p.includes('opencode-kit')
+          );
+          if (kitIndex > 0) {
+            const firstPlugin = config.plugins[0];
+            log('warn', `Plugin ordering conflict: opencode-kit should be FIRST, but found '${firstPlugin}' at position 0 and opencode-kit at position ${kitIndex}`);
+          }
         }
-      }
 
-      // Register user project skills FIRST (higher priority)
-      const userSkillsDir = path.join(projectDir, '.opencode/skills');
-      if (fs.existsSync(userSkillsDir) && !config.skills.paths.includes(userSkillsDir)) {
-        config.skills.paths.push(userSkillsDir);
-        log('info', `Registered user skills: ${userSkillsDir}`);
-      }
-
-      // Register plugin skills SECOND (fallback)
-      if (!config.skills.paths.includes(SKILLS_DIR)) {
-        config.skills.paths.push(SKILLS_DIR);
-        log('info', `Registered plugin skills: ${SKILLS_DIR}`);
-      }
-
-      // Register global config skills path
-      if (!config.skills.paths.includes(globalConfigDir)) {
-        if (fs.existsSync(globalConfigDir)) {
-          config.skills.paths.push(globalConfigDir);
+        // Register user project skills FIRST (higher priority)
+        const userSkillsDir = path.join(projectDir, '.opencode/skills');
+        if (fs.existsSync(userSkillsDir) && !config.skills.paths.includes(userSkillsDir)) {
+          config.skills.paths.push(userSkillsDir);
+          log('info', `Registered user skills: ${userSkillsDir}`);
         }
-      }
 
-      // Provide default contract key hint for agents
-      config.contractKey = contractKey;
+        // Register plugin skills SECOND (fallback)
+        if (!config.skills.paths.includes(SKILLS_DIR)) {
+          config.skills.paths.push(SKILLS_DIR);
+          log('info', `Registered plugin skills: ${SKILLS_DIR}`);
+        }
+
+        // Register global config skills path
+        if (!config.skills.paths.includes(globalConfigDir)) {
+          if (fs.existsSync(globalConfigDir)) {
+            config.skills.paths.push(globalConfigDir);
+          }
+        }
+
+        // Provide default contract key hint for agents
+        config.contractKey = contractKey;
+      } catch (err) {
+        log('error', `config hook failed: ${err.message}`);
+      }
     },
 
     'experimental.chat.messages.transform': async (_input, output) => {
-      const bootstrap = getBootstrapContent();
-      if (!bootstrap || !output.messages.length) return;
+      try {
+        const bootstrap = getBootstrapContent();
+        if (!bootstrap || !output.messages.length) return;
 
-      // Check contract for rule_overrides and inject them into bootstrap
-      const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
-      let finalBootstrap = bootstrap;
-      if (fs.existsSync(contractPath)) {
-        try {
-          const contractRaw = fs.readFileSync(contractPath, 'utf8');
-          const contract = JSON.parse(contractRaw);
-          if (contract.validation && contract.validation.rule_overrides) {
-            const overrides = contract.validation.rule_overrides;
-            const overrideKeys = Object.keys(overrides);
-            if (overrideKeys.length > 0) {
-              const overrideText = overrideKeys
-                .map(id => `  - ${id}: action → ${overrides[id]}`)
-                .join('\n');
-              finalBootstrap = bootstrap + `\n## Rule Overrides (from contract)\n\nThe following rule severities have been overridden:\n${overrideText}\n`;
+        // Check contract for rule_overrides and inject them into bootstrap
+        const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
+        let finalBootstrap = bootstrap;
+        if (fs.existsSync(contractPath)) {
+          try {
+            const contractRaw = fs.readFileSync(contractPath, 'utf8');
+            const contract = JSON.parse(contractRaw);
+            if (contract.validation && contract.validation.rule_overrides) {
+              const overrides = contract.validation.rule_overrides;
+              const overrideKeys = Object.keys(overrides);
+              if (overrideKeys.length > 0) {
+                const overrideText = overrideKeys
+                  .map(id => `  - ${id}: action → ${overrides[id]}`)
+                  .join('\n');
+                finalBootstrap = bootstrap + `\n## Rule Overrides (from contract)\n\nThe following rule severities have been overridden:\n${overrideText}\n`;
+              }
             }
+          } catch (err) {
+            log('warn', `Failed to parse contract for rule_overrides: ${err.message}`);
           }
-        } catch (err) {
-          log('warn', `Failed to parse contract for rule_overrides: ${err.message}`);
         }
+
+        const firstUser = output.messages.find(m => m.info.role === 'user');
+        if (!firstUser || !firstUser.parts.length) return;
+
+        // Guard: skip if already injected
+        if (firstUser.parts.some(p => p.type === 'text' && p.text.includes('opencode-kit'))) return;
+
+        const ref = firstUser.parts[0];
+        firstUser.parts.unshift({ ...ref, type: 'text', text: finalBootstrap });
+      } catch (err) {
+        log('error', `messages.transform hook failed: ${err.message}`);
       }
-
-      const firstUser = output.messages.find(m => m.info.role === 'user');
-      if (!firstUser || !firstUser.parts.length) return;
-
-      // Guard: skip if already injected
-      if (firstUser.parts.some(p => p.type === 'text' && p.text.includes('opencode-kit'))) return;
-
-      const ref = firstUser.parts[0];
-      firstUser.parts.unshift({ ...ref, type: 'text', text: finalBootstrap });
     }
   };
 };

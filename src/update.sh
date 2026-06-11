@@ -28,6 +28,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# --- Verify Python availability ---
+if [ -z "${PYTHON_CMD:-}" ]; then
+  echo -e "${RED}❌ PYTHON_CMD is not set. Python is required for update operations.${NC}"
+  exit 1
+fi
+
 echo -e "${CYAN}[opencode-kit] 🔄 Update check${NC}"
 echo "  Current dir: $PWD"
 echo "  Source:      $REPO_URL (branch: $VERSION)"
@@ -42,6 +48,7 @@ fi
 
 # --- Clone latest to temp ---
 TEMP_DIR=$(mktemp -d /tmp/opencode-kit-XXXXX)
+trap 'rm -rf "$TEMP_DIR"' EXIT INT TERM
 echo "  Cloning latest version to $TEMP_DIR..."
 
 if ! git clone --depth 1 --branch "$VERSION" "$REPO_URL" "$TEMP_DIR" 2>/dev/null; then
@@ -62,9 +69,9 @@ print(d.get('contract_version', 'unknown'))
 " 2>/dev/null || echo "unknown")
 fi
 
-LATEST_VERSION=$($PYTHON_CMD -c "
-import json
-with open('$TEMP_DIR/templates/contract.json') as f:
+LATEST_VERSION=$(TEMP_DIR="$TEMP_DIR" $PYTHON_CMD -c "
+import os, json
+with open(os.environ['TEMP_DIR'] + '/templates/contract.json') as f:
   d=json.load(f)
 print(d.get('contract_version', 'unknown'))
 " 2>/dev/null || echo "unknown")
@@ -82,8 +89,8 @@ fi
 # --- Backup contract state ---
 echo "  Backing up contract state..."
 STATE_BACKUP=$(mktemp /tmp/opencode-contract-state-XXXXX.json)
-$PYTHON_CMD -c "
-import json
+STATE_BACKUP="$STATE_BACKUP" $PYTHON_CMD -c "
+import os, json
 with open('.opencode/orchestration/contract.json') as f:
   d = json.load(f)
 # Extract only the state fields to preserve
@@ -98,7 +105,7 @@ state = {
   'score': d.get('score', {}),
   'outputs': d.get('outputs', {})
 }
-with open('$STATE_BACKUP', 'w') as f:
+with open(os.environ['STATE_BACKUP'], 'w') as f:
   json.dump(state, f, indent=2)
 " 2>/dev/null || echo "  ⚠️  Could not backup contract state"
 echo "  ✅ State backed up"
@@ -151,18 +158,18 @@ update_file "$TEMP_DIR/templates/superpowers-contract.json" ".opencode/templates
 
 # --- Restore contract state ---
 if [ "$DRY_RUN" = false ] && [ -f "$STATE_BACKUP" ]; then
-  $PYTHON_CMD -c "
-import json
+  STATE_BACKUP="$STATE_BACKUP" LATEST_VERSION="$LATEST_VERSION" $PYTHON_CMD -c "
+import os, json
 with open('.opencode/orchestration/contract.json') as f:
   contract = json.load(f)
-with open('$STATE_BACKUP') as f:
+with open(os.environ['STATE_BACKUP']) as f:
   state = json.load(f)
 # Merge preserved state back into new contract
 for key, val in state.items():
   if val:  # only overwrite if backup has data
     contract[key] = val
 # Update contract_version to latest
-contract['contract_version'] = '$LATEST_VERSION'
+contract['contract_version'] = os.environ['LATEST_VERSION']
 with open('.opencode/orchestration/contract.json', 'w') as f:
   json.dump(contract, f, indent=2)
 " 2>/dev/null && echo "  ✅ Contract state restored" || echo "  ⚠️  Contract state restore failed"
