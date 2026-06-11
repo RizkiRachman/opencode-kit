@@ -184,7 +184,6 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
 
       // Register user project skills FIRST (higher priority)
       const userSkillsDir = path.join(projectDir, '.opencode/skills');
-      const userSkillsDir = path.join(projectDir, '.opencode/skills');
       if (fs.existsSync(userSkillsDir) && !config.skills.paths.includes(userSkillsDir)) {
         config.skills.paths.push(userSkillsDir);
         log('info', `Registered user skills: ${userSkillsDir}`);

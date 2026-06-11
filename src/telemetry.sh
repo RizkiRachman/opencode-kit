@@ -37,7 +37,7 @@ case "$MODE" in
         FROM=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('from','?'))" 2>/dev/null)
         TO=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('to','?'))" 2>/dev/null)
         MS=$(echo "$line" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('elapsed_ms',0))" 2>/dev/null)
-        printf "  %-20s → %-20s  %5.1fs\n" "$FROM" "$TO" "$(echo "scale=1; $MS/1000" | bc 2>/dev/null || echo "$((MS/1000)).$((MS%1000/100))")"
+        printf "  %-20s → %-20s  %5.1fs\n" "$FROM" "$TO" "$($PYTHON_CMD -c "print($MS/1000)" 2>/dev/null || echo "0.0")"
       done
     else
       echo -e "${YELLOW}No phase data yet.${NC}"

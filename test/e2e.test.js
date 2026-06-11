@@ -15,22 +15,17 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import assert from 'assert/strict';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 let passed = 0;
 let failed = 0;
+const tests = [];
 
 const test = (name, fn) => {
-  try {
-    fn();
-    console.log(`  ✅ ${name}`);
-    passed++;
-  } catch (e) {
-    console.log(`  ❌ ${name}: ${e.message}`);
-    failed++;
-  }
+  tests.push({ name, fn });
 };
 
 console.log('\n🔍 opencode-kit End-to-End Tests\n');
@@ -116,13 +111,11 @@ test('Plugin auto-initializes contract if missing', async () => {
 });
 
 // === 3. Plugin key is unique per project ===
-test('getProjectHash returns unique keys for different directories', () => {
-  // Replicate the hash logic from plugin.js
-  import('crypto').then(crypto => {
-    const hash1 = crypto.createHash('sha256').update('/project/a').digest('hex').slice(0, 12);
-    const hash2 = crypto.createHash('sha256').update('/project/b').digest('hex').slice(0, 12);
-    assert.notEqual(hash1, hash2, 'Different projects should have different hashes');
-  });
+test('getProjectHash returns unique keys for different directories', async () => {
+  const crypto = await import('crypto');
+  const hash1 = crypto.createHash('sha256').update('/project/a').digest('hex').slice(0, 12);
+  const hash2 = crypto.createHash('sha256').update('/project/b').digest('hex').slice(0, 12);
+  assert.notEqual(hash1, hash2, 'Different projects should have different hashes');
 });
 
 // === 4. All skills are valid ===
@@ -173,8 +166,18 @@ test('README references @ikieaneh/opencode-kit', () => {
   assert.ok(readme.includes('npm install @ikieaneh/opencode-kit'), 'README should have correct install command');
 });
 
-// === Summary ===
-import assert from 'assert/strict';
+// === Summary — run collected tests with top-level await ===
+for (const { name, fn } of tests) {
+  try {
+    await fn();
+    console.log(`  ✅ ${name}`);
+    passed++;
+  } catch (e) {
+    console.log(`  ❌ ${name}: ${e.message}`);
+    failed++;
+  }
+}
+
 console.log(`\n${'━'.repeat(40)}`);
 console.log(`E2E Results: ${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

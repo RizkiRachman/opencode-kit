@@ -86,30 +86,41 @@ if [ -n "$DUP" ]; then
   exit 0
 fi
 
-# --- Build ADR entry ---
-# --- Build ADR entry via heredoc to avoid nested quote issues ---
-# shellcheck disable=SC2001
-$PYTHON_CMD -c "
-import json, sys, os
+# --- Build ADR entry via temp JSON file (avoids shell injection) ---
+# Write ADR fields to temp file to avoid shell interpolation into Python
+ADR_DATA=$(mktemp /tmp/opencode-adr-data-XXXXX.json)
+cat > "$ADR_DATA" << ADRDATA
+{
+  "title": "$TITLE",
+  "context": "$CONTEXT",
+  "decision": "$DECISION",
+  "alternatives": "$ALTERNATIVES",
+  "consequences": "$CONSEQUENCES"
+}
+ADRDATA
 
-title = '$TITLE'
-date_val = '$(date +%Y-%m-%d)'
-next_id = '$NEXT_ID'
+$PYTHON_CMD -c "
+import json
+
+with open('$ADR_DATA') as f:
+    data = json.load(f)
 
 entry = {
-  'id': next_id,
-  'date': date_val,
-  'title': title,
-  'context': '''$(echo "$CONTEXT" | sed "s/'/\\\\'/g")''',
-  'decision': '''$(echo "$DECISION" | sed "s/'/\\\\'/g")''',
-  'alternatives': '''$(echo "$ALTERNATIVES" | sed "s/'/\\\\'/g")''',
-  'consequences': '''$(echo "$CONSEQUENCES" | sed "s/'/\\\\'/g")'''
+  'id': '$NEXT_ID',
+  'date': '$(date +%Y-%m-%d)',
+  'title': data['title'],
+  'context': data['context'],
+  'decision': data['decision'],
+  'alternatives': data['alternatives'],
+  'consequences': data['consequences']
 }
 
 with open('/tmp/opencode-adr-entry.json', 'w') as f:
-  json.dump(entry, f, indent=2)
+    json.dump(entry, f, indent=2)
 print('Entry written')
 "
+
+rm -f "$ADR_DATA"
 
 # --- Inject into contract.json ---
 $PYTHON_CMD -c "

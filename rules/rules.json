@@ -88,7 +88,7 @@
     },
     {
       "id": "WRITE_001",
-      "severity": "CRITICAL",
+      "severity": "HIGH",
       "description": "Agent MUST follow writing order: Port → Service → Mapper → Adapter → Constants → Events → Tests",
       "condition": "writing_order_violation",
       "action": "FLAG",
