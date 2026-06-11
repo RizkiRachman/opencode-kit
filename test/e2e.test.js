@@ -141,7 +141,7 @@ test('CLI --version returns version', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert.ok(pkg.version, 'Should have version');
   assert.ok(pkg.bin && pkg.bin['opencode-kit'], 'Should have bin entry');
-  assert.equal(pkg.bin['opencode-kit'], './src/cli.js', 'Bin should point to CLI');
+  assert.equal(pkg.bin['opencode-kit'], 'src/cli.js', 'Bin should point to CLI');
 });
 
 // === 6. All JSON files are valid ===
