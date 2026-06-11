@@ -1,18 +1,47 @@
 {
   "name": "opencode-kit",
-  "version": "0.1.0",
-  "description": "Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow",
+  "version": "0.4.0",
+  "description": "Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow. Install as plugin.",
   "license": "MIT",
   "author": "RizkiRachman",
+  "type": "module",
+  "main": ".opencode/plugins/opencode-kit.js",
+  "exports": {
+    ".": {
+      "import": ".opencode/plugins/opencode-kit.js"
+    }
+  },
   "bin": {
     "opencode-kit": "./src/init.sh"
   },
   "files": [
+    ".opencode/plugins/",
+    ".claude-plugin/",
     "src/",
     "rules/",
-    "templates/"
+    "templates/",
+    "skills/"
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "orchestration",
+    "workflow",
+    "agents",
+    "enforcement",
+    "contract",
+    "scoring",
+    "adr"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RizkiRachman/opencode-kit"
+  },
+  "bugs": {
+    "url": "https://github.com/RizkiRachman/opencode-kit/issues"
+  },
+  "homepage": "https://github.com/RizkiRachman/opencode-kit#readme"
 }

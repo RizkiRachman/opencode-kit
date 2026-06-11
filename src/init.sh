@@ -5,11 +5,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/platform.sh"
+. "$SCRIPT_DIR/global-config.sh"
 KIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 FORCE="${1:-}"
@@ -52,6 +54,14 @@ if ! git rev-parse --git-dir &>/dev/null; then
   echo "  ✅ git initialized"
 fi
 
+# --- Detect plugin mode ---
+PLUGIN_MODE=false
+if is_plugin_active; then
+  PLUGIN_MODE=true
+  echo ""
+  echo -e "${CYAN}[opencode-kit] Plugin detected — scaffolding project data only${NC}"
+fi
+
 # --- Handle existing .opencode/ ---
 if [ -d ".opencode" ]; then
   if [ "$FORCE" = "--force" ]; then
@@ -84,45 +94,49 @@ echo "  ✅ superpowers-contract.json"
 cp "$KIT_DIR/rules/rules.json" .opencode/rules/rules.json
 echo "  ✅ rules.json"
 
-cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
-chmod +x .opencode/rules/validation.sh
-echo "  ✅ rules/validation.sh"
-
-cp "$KIT_DIR/src/preflight.sh" .opencode/src/preflight.sh
-chmod +x .opencode/src/preflight.sh
-echo "  ✅ preflight.sh (executable)"
-
-cp "$KIT_DIR/src/postflight.sh" .opencode/src/postflight.sh
-chmod +x .opencode/src/postflight.sh
-echo "  ✅ postflight.sh (executable)"
-
 cp "$KIT_DIR/src/verify.sh" .opencode/src/verify.sh
 chmod +x .opencode/src/verify.sh
 echo "  ✅ verify.sh (executable)"
-
-cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
-chmod +x .opencode/src/update.sh
-echo "  ✅ update.sh (executable)"
-
-cp "$KIT_DIR/src/adr.sh" .opencode/src/adr.sh
-chmod +x .opencode/src/adr.sh
-echo "  ✅ adr.sh (executable)"
 
 cp "$KIT_DIR/src/platform.sh" .opencode/src/platform.sh
 chmod +x .opencode/src/platform.sh
 echo "  ✅ platform.sh (executable)"
 
-cp "$KIT_DIR/src/telemetry.sh" .opencode/src/telemetry.sh
-chmod +x .opencode/src/telemetry.sh
-echo "  ✅ telemetry.sh (executable)"
+# Plugin-specific: scripts that exist locally for CLI access
+if [ "$PLUGIN_MODE" = false ]; then
+  # Non-plugin mode: copy all shell scripts
+  cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
+  chmod +x .opencode/rules/validation.sh
+  echo "  ✅ rules/validation.sh"
 
-# --- Copy agent templates ---
-for agent in orchestrator planner task-manager code-reviewer learner fixer; do
-  if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
-    cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
-    echo "  ✅ agents/$agent.md"
-  fi
-done
+  cp "$KIT_DIR/src/preflight.sh" .opencode/src/preflight.sh
+  chmod +x .opencode/src/preflight.sh
+  echo "  ✅ preflight.sh (executable)"
+
+  cp "$KIT_DIR/src/postflight.sh" .opencode/src/postflight.sh
+  chmod +x .opencode/src/postflight.sh
+  echo "  ✅ postflight.sh (executable)"
+
+  cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
+  chmod +x .opencode/src/update.sh
+  echo "  ✅ update.sh (executable)"
+
+  cp "$KIT_DIR/src/adr.sh" .opencode/src/adr.sh
+  chmod +x .opencode/src/adr.sh
+  echo "  ✅ adr.sh (executable)"
+
+  cp "$KIT_DIR/src/telemetry.sh" .opencode/src/telemetry.sh
+  chmod +x .opencode/src/telemetry.sh
+  echo "  ✅ telemetry.sh (executable)"
+
+  # --- Copy agent templates (pre-flight gates) ---
+  for agent in orchestrator planner task-manager code-reviewer learner fixer; do
+    if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
+      cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
+      echo "  ✅ agents/$agent.md"
+    fi
+  done
+fi
 
 # --- Git ignore .opencode/src (scripts are project-specific) ---
 if [ -f ".gitignore" ]; then
@@ -137,7 +151,7 @@ echo "[opencode-kit] Running verification..."
 if "$KIT_DIR/src/verify.sh"; then
   echo ""
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}  ✅ opencode-kit v0.3.0 initialized${NC}"
+  echo -e "${GREEN}  ✅ opencode-kit v0.4.0 initialized${NC}"
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo "  Next steps:"

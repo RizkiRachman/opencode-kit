@@ -5,6 +5,25 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-11
+
+### Added
+
+- **Plugin entry point**: `.opencode/plugins/opencode-kit.js` — ESM plugin that injects contract loading + pre-flight enforcement into every session. Uses `config` hook to register skills directory and `experimental.chat.messages.transform` hook to inject bootstrap context.
+- **Plugin metadata**: `.claude-plugin/plugin.json` — name, version, description, author, keywords.
+- **Skills**: 3 auto-registered skills in `skills/`:
+  - `orchestration-template` — contract protocol, state machine, persist rules
+  - `scoring-pipeline` — Tier 1 + Tier 2 + verdict thresholds
+  - `adr-generator` — ADR format, auto-ID, when-to-record rules
+- **Global config resolution**: `src/global-config.sh` — lookup chain: `.opencode/` → `~/.config/opencode-kit/` → plugin defaults. `init_global_config()` copies plugin defaults to user home. `is_plugin_active()` detects plugin mode.
+- **Plugin schema**: `templates/opencode-kit.schema.json` — validates opencode.json agent config for plugin users. Documents plugin ordering requirement (must be first in plugin array).
+- **Plugin-aware init**: `init.sh` detects plugin mode, skips shell script scaffolding (plugin handles via system prompt), only scaffolds per-project data (contract.json, verify.sh, platform.sh).
+
+### Changed
+
+- `package.json` — updated to v0.4.0, added `"type": "module"`, `"main": ".opencode/plugins/opencode-kit.js"`, plugin exports, new keywords + repo URLs
+- `README.md` — plugin installation docs, ordering requirement
+
 ## [0.3.0] - 2026-06-11
 
 ### Added
