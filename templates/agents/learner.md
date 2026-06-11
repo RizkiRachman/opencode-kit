@@ -31,7 +31,7 @@ permission:
    - git log --oneline -10
    - git diff main...HEAD --stat
 
-3. Read rules.json: Check LEARN_001 (must update ALL 11 memory systems)
+3. Read rules.json: Check LEARN_001 (must update ALL memory systems listed below)
 ```
 
 ## Permissions
