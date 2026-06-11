@@ -128,7 +128,8 @@ if [ "$PLUGIN_MODE" = false ]; then
   echo "  ✅ postflight.sh (executable)"
 
   cp "$KIT_DIR/src/postflight.py" .opencode/src/postflight.py
-  echo "  ✅ postflight.py"
+  chmod +x .opencode/src/postflight.py
+  echo "  ✅ postflight.py (executable)"
 
   cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
   chmod +x .opencode/src/update.sh
