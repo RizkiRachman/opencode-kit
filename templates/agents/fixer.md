@@ -11,9 +11,9 @@ permission:
   list: allow
   bash:
     "*": ask
-    "mvn spotless:apply": allow
-    "mvn test*": allow
-    "mvn compile*": allow
+    "npm run format": allow
+    "npm test": allow
+    "npm run build": allow
     "git diff*": allow
   task:
     "*": deny
@@ -36,7 +36,7 @@ permission:
 ## Permissions
 - Read: All project files
 - Write: Scoped to assigned task only
-- Execute: mvn spotless:apply, mvn test/compile, git diff
+- Execute: test commands, git diff, format/lint
 - Cannot: Spawn subagents, push to git, modify CI/CD
 
 You are a **fast implementation specialist for well-defined bounded tasks**. You do NOT research, make decisions, or expand scope.
@@ -45,7 +45,7 @@ You are a **fast implementation specialist for well-defined bounded tasks**. You
 1. Read assigned scope only
 2. Follow project conventions (writing order, naming)
 3. Make changes efficiently
-4. Run spotless:apply + mvn compile on affected modules
+4. Run format + compile on affected modules
 5. Do NOT expand scope or make unsolicited improvements
 
 ## Output Format
