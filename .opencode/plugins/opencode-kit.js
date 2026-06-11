@@ -171,7 +171,19 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
 
+      // Detect if other plugins might conflict with opencode-kit's system prompt
+      if (config.plugins && Array.isArray(config.plugins)) {
+        const kitIndex = config.plugins.findIndex(p =>
+          typeof p === 'string' && p.includes('opencode-kit')
+        );
+        if (kitIndex > 0) {
+          const firstPlugin = config.plugins[0];
+          log('warn', `Plugin ordering conflict: opencode-kit should be FIRST, but found '${firstPlugin}' at position 0 and opencode-kit at position ${kitIndex}`);
+        }
+      }
+
       // Register user project skills FIRST (higher priority)
+      const userSkillsDir = path.join(projectDir, '.opencode/skills');
       const userSkillsDir = path.join(projectDir, '.opencode/skills');
       if (fs.existsSync(userSkillsDir) && !config.skills.paths.includes(userSkillsDir)) {
         config.skills.paths.push(userSkillsDir);
