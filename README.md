@@ -320,15 +320,16 @@ After every subagent delegation, scoring runs automatically:
 - [x] Edge cases: re-init over existing `.opencode/` with --force + backup
 - [x] ADR auto-generate on decision (`src/adr.sh`)
 
-### v0.3 — Production
-- [ ] Cross-platform (Linux, Intel Mac)
-- [ ] GitHub Actions CI
-- [ ] `opencode-kit update` — pull latest templates
-- [ ] Scoring Tier 2 (LLM judge) auto-integration
-- [ ] Telemetry: track cost/elapsed per phase
+### v0.3 — Production ✅
+- [x] Cross-platform (Linux via `src/platform.sh` + `$PYTHON_CMD`)
+- [x] GitHub Actions CI (ShellCheck + scaffold test + syntax check)
+- [x] `opencode-kit update` — `src/update.sh` (pull latest from GitHub, preserve state)
+- [x] Scoring Tier 2 — `templates/judge-prompt.md` + SCORE_002 rule
+- [x] Telemetry — `src/telemetry.sh` (phases.jsonl, elapsed time, summary)
 
-### Future
-- [ ] Plugin system for custom rules
+### v0.4 — Plugin Architecture (next)
+- [ ] OpenCode plugin to make opencode-kit global (not per-project)
+- [ ] Register enforcer as global agent behavior
 - [ ] Web UI for contract overview
 - [ ] Multi-repo orchestration (monorepo support)
 

@@ -5,6 +5,26 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-11
+
+### Added
+
+- **Cross-platform support**: `src/platform.sh` — detects OS (macOS/Linux), architecture (arm64/amd64), and Python command (python3/python). All scripts source it via `. "$SCRIPT_DIR/platform.sh"` and use `$PYTHON_CMD` instead of hardcoded `python3`.
+- **CI pipeline**: `.github/workflows/validate.yml` — 3 jobs: ShellCheck linting, scaffold test (init + verify + preflight on Ubuntu), bash syntax check.
+- **Update command**: `src/update.sh` — clones latest opencode-kit from GitHub, updates scripts and templates while preserving existing contract.json state (goal, scope, decisions, metrics). Supports `--dry-run` and `--version <tag>`.
+- **Scoring Tier 2**: `templates/judge-prompt.md` — canonical LLM judge prompt for orchestrator agent. Structured 4-dimension evaluation (requirements 0-40, governance 0-30, completeness 0-20, edge cases 0-10). SCORE_002 rule enforces canonical source.
+- **Telemetry system**: `src/telemetry.sh` — records phase transitions with timestamps, elapsed time, and state changes. `postflight.sh` auto-records to `.opencode/telemetry/phases.jsonl`. `telemetry.sh --summary` for quick view, `--phases` for detailed, `--json` for raw. Phase start captured by `preflight.sh`.
+- **ADR generator copied**: `init.sh` now copies `adr.sh` and `platform.sh` to `.opencode/src/`.
+- **updated version**: contract_version field, v0.2.0 → v0.3.0 in init.sh, rules.json
+
+### Changed
+
+- All scripts: source `platform.sh`, use `$PYTHON_CMD` for cross-platform Python detection
+- `postflight.sh`: telemetry recording (phases.jsonl, summary.json, phase start/end timing)
+- `preflight.sh`: records phase start timestamp for telemetry
+- `verify.sh`: checks telemetry directory, expanded script check list
+- `rules.json`: expanded Scoring Tier 2 judge prompt, added SCORE_002 rule
+
 ## [0.2.0] - 2026-06-11
 
 ### Added

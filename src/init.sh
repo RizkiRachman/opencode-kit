@@ -3,13 +3,16 @@
 # Usage: npx opencode-kit init [--force]
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/platform.sh"
+KIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
 FORCE="${1:-}"
-KIT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TARGET_DIR="${PWD}"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 
@@ -81,6 +84,10 @@ echo "  ✅ superpowers-contract.json"
 cp "$KIT_DIR/rules/rules.json" .opencode/rules/rules.json
 echo "  ✅ rules.json"
 
+cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
+chmod +x .opencode/rules/validation.sh
+echo "  ✅ rules/validation.sh"
+
 cp "$KIT_DIR/src/preflight.sh" .opencode/src/preflight.sh
 chmod +x .opencode/src/preflight.sh
 echo "  ✅ preflight.sh (executable)"
@@ -92,6 +99,22 @@ echo "  ✅ postflight.sh (executable)"
 cp "$KIT_DIR/src/verify.sh" .opencode/src/verify.sh
 chmod +x .opencode/src/verify.sh
 echo "  ✅ verify.sh (executable)"
+
+cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
+chmod +x .opencode/src/update.sh
+echo "  ✅ update.sh (executable)"
+
+cp "$KIT_DIR/src/adr.sh" .opencode/src/adr.sh
+chmod +x .opencode/src/adr.sh
+echo "  ✅ adr.sh (executable)"
+
+cp "$KIT_DIR/src/platform.sh" .opencode/src/platform.sh
+chmod +x .opencode/src/platform.sh
+echo "  ✅ platform.sh (executable)"
+
+cp "$KIT_DIR/src/telemetry.sh" .opencode/src/telemetry.sh
+chmod +x .opencode/src/telemetry.sh
+echo "  ✅ telemetry.sh (executable)"
 
 # --- Copy agent templates ---
 for agent in orchestrator planner task-manager code-reviewer learner fixer; do
@@ -114,7 +137,7 @@ echo "[opencode-kit] Running verification..."
 if "$KIT_DIR/src/verify.sh"; then
   echo ""
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}  ✅ opencode-kit v0.2.0 initialized${NC}"
+  echo -e "${GREEN}  ✅ opencode-kit v0.3.0 initialized${NC}"
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo "  Next steps:"

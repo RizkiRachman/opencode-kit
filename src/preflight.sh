@@ -3,6 +3,9 @@
 # Must run before any tool call. Exits with error if rules violated.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/platform.sh"
+
 CONTRACT_KEY="orchestration-contract"
 RULES_FILE=".opencode/rules/rules.json"
 CONTRACT_FILE=".opencode/orchestration/contract.json"
@@ -90,9 +93,13 @@ else
   echo "  ✅ rules.json found"
 fi
 
+# --- Telemetry: record phase start ---
+mkdir -p .opencode/telemetry
+echo $(date +%s) > .opencode/telemetry/.phase_start
+
 # --- Check 5: contract state validation ---
-if command -v python3 &>/dev/null && [ -f "$CONTRACT_FILE" ]; then
-  STATE=$(python3 -c "
+if [ -n "$PYTHON_CMD" ] && [ -f "$CONTRACT_FILE" ]; then
+  STATE=$($PYTHON_CMD -c "
 import json,sys
 try:
   with open('$CONTRACT_FILE') as f: d=json.load(f)
