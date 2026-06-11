@@ -45,11 +45,54 @@ lean-ctx ctx_knowledge remember \
   echo "  ✅ Contract persisted to lean-ctx" || \
   echo "  ⚠️  lean-ctx persist failed"
 
-# --- Step 3: Update STATE.md if it exists ---
-if [ -f "$STATE_FILE" ]; then
+# --- Step 3: Sync STATE.md ---
+mkdir -p "$(dirname "$STATE_FILE")"
+if [ -f "$CONTRACT_FILE" ]; then
   STATE=$(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); print(d.get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
   PHASE=$(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); r=d.get('retry',{}); print(r.get('current_phase','none'))" 2>/dev/null || echo "none")
-  echo "  📝 Contract state: $STATE (phase: $PHASE)"
+  SCORE=$(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "import sys,json; d=json.load(sys.stdin); s=d.get('score',{}); print(s.get('combined','?'))" 2>/dev/null || echo "?")
+  echo "  📝 Contract state: $STATE (phase: $PHASE, score: $SCORE)"
+
+  # Create or update STATE.md with current focus
+  cat > "$STATE_FILE" << STATEMD
+# Project State
+
+## Current Focus
+Agent orchestration — $STATE (phase: ${PHASE:-none}). Score: $SCORE.
+
+## Known Blockers
+$(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "
+import sys,json
+d=json.load(sys.stdin)
+r=d.get('retry',{})
+issues=r.get('issues',[])
+if issues:
+  for i in issues: print(f'- {i}')
+else:
+  print('None')
+" 2>/dev/null || echo "None")
+
+## Active Decisions
+$(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "
+import sys,json
+d=json.load(sys.stdin)
+log=d.get('decisions',{}).get('adr_log',[])
+if log:
+  for entry in log[-3:]:
+    print(f'- {entry.get(\"id\",\"?\")}: {entry.get(\"title\",\"\")}')
+else:
+  print('No ADRs recorded')
+" 2>/dev/null || echo "None")
+
+## Recent Changes
+- Last state transition: $(echo "$CURRENT_CONTRACT" | $PYTHON_CMD -c "
+import sys,json
+d=json.load(sys.stdin)
+phases=d.get('metrics',{}).get('phases_completed',[])
+print(phases[-1] if phases else 'INIT')
+" 2>/dev/null || echo "INIT")
+STATEMD
+  echo "  ✅ STATE.md synced"
 fi
 
 # --- Step 4: Save ctx_session ---
