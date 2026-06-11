@@ -70,7 +70,7 @@ function findProjectRoot(startDir) {
 const commands = {
   doctor: '.opencode/src/doctor.sh',
   status: '.opencode/src/status.sh',
-  analytics: 'src/analytics.sh',
+  analytics: '.opencode/src/analytics.sh',
 };
 
 const command = args[0];
