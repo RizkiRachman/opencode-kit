@@ -3,6 +3,7 @@
   "title": "opencode-kit Plugin Config",
   "description": "Configuration schema for @ikieaneh/opencode-kit plugin. Add to your opencode.json to enable orchestration agents.",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "plugin": {
       "type": "array",

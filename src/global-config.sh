@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/platform.sh"
 
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-GLOBAL_CONFIG_DIR="$HOME/.config/opencode-kit"
+GLOBAL_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode-kit"
 
 # Resolve a config file from the lookup chain:
 #   1. .opencode/<path>      (project override)
