@@ -55,11 +55,11 @@
 
 ## 🟡 Next Up (Priority Order)
 
-### P1 — Must Have
-- [ ] **Generic skill names in templates**: Replace specific skill names (`qa-expert`, `brainstorming`, etc.) with generic descriptions. Users override via `opencode.json` skills array.
-- [ ] **MCP abstraction**: Make preflight MCP checks pluggable — define required MCPs in `rules.json` or contract, not hardcoded in `preflight.sh`
-- [ ] **Persistence fallback**: If `lean-ctx` unavailable, persist contract to file only (`.opencode/state/contract.json`)
-- [ ] **`experimental.chat.messages.transform` API**: Monitor OpenCode plugin SDK for breaking changes to this experimental hook
+### P1 — Implemented
+- [x] **Generic skill names in templates**: Replaced specific skill names (`qa-expert`, `brainstorming`, etc.) with generic role descriptions. Schema uses generic descriptions.
+- [x] **MCP abstraction**: Preflight MCP checks now read from `rules.json.required_mcps`. Add/remove MCPS by editing rules.json, not shell scripts.
+- [x] **Persistence fallback**: If `lean-ctx` unavailable, contract persists to `.opencode/state/contract.json` instead.
+- [x] **`experimental.chat.messages.transform` API**: Documented in README Known Limitations section.
 
 ### P2 — Should Have
 - [ ] **Cross-project contract sharing**: Share contract state across monorepo services

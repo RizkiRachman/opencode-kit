@@ -33,55 +33,71 @@ if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
 fi
 echo "  ✅ Branch: $BRANCH (safe)"
 
-# --- Check 3: MCP Availability ---
+# --- Check 3: MCP Availability (from rules.json) ---
 echo ""
-echo "  Checking MCP availability..."
+echo "  Checking MCP availability from rules.json..."
 
 MCP_FAIL=0
 
-# 3a. lean-ctx
-LEAN_CTX_AVAILABLE=false
-if command -v lean-ctx &>/dev/null; then
-  echo "  ✅ lean-ctx MCP: available (cli)"
-  LEAN_CTX_AVAILABLE=true
-elif lean-ctx ctx_knowledge recall --query "$CONTRACT_KEY" &>/dev/null; then
-  echo "  ✅ lean-ctx MCP: available (tool)"
-  LEAN_CTX_AVAILABLE=true
-else
-  echo -e "${YELLOW}  ⚠️  lean-ctx MCP: NOT DETECTED — contract persistence will fail${NC}"
-  echo -e "${YELLOW}     → Ensure lean-ctx is configured in opencode.json MCP servers${NC}"
-  MCP_FAIL=1
-fi
+if [ -n "$PYTHON_CMD" ] && [ -f "$RULES_FILE" ]; then
+  # Parse required_mcps from rules.json
+  $PYTHON_CMD -c "
+import json, sys, subprocess, os
 
-# 3b. gitnexus
-if npx --yes gitnexus --version &>/dev/null; then
-  echo "  ✅ gitnexus MCP: available"
-elif npx --yes gitnexus list-repos &>/dev/null; then
-  echo "  ✅ gitnexus MCP: available"
-else
-  echo -e "${YELLOW}  ⚠️  gitnexus MCP: NOT DETECTED — impact analysis will fail${NC}"
-  echo -e "${YELLOW}     → Ensure gitnexus is configured in opencode.json MCP servers${NC}"
-  MCP_FAIL=1
-fi
+with open('$RULES_FILE') as f:
+    rules = json.load(f)
 
-# 3c. graphify (check via gitnexus index since graphify consumes gitnexus data)
-GRAPHIFY_AVAILABLE=false
-if npx --yes gitnexus analyze --help &>/dev/null; then
-  # gitnexus is available — check if index exists
-  GITNEXUS_DIR=$(find . -name "gitnexus-out" -type d 2>/dev/null | head -1)
-  if [ -n "$GITNEXUS_DIR" ]; then
-    echo "  ✅ graphify: available (gitnexus index found)"
-    GRAPHIFY_AVAILABLE=true
-  else
-    echo -e "${YELLOW}  ⚠️  graphify: gitnexus index not built yet. Run: npx gitnexus analyze${NC}"
-  fi
-else
-  echo -e "${YELLOW}  ⚠️  graphify: gitnexus not available — graphify depends on gitnexus index${NC}"
-fi
+mcps = rules.get('required_mcps', {})
+if not isinstance(mcps, dict) or 'description' in mcps:
+    # Skip the meta-description field
+    mcps = {k: v for k, v in mcps.items() if k != 'description' and isinstance(v, dict)}
 
-# 3d. context7 (library docs — soft check, non-blocking)
-if command -v curl &>/dev/null; then
-  echo "  ✅ context7 MCP: curl available (http transport)"
+if not mcps:
+    print('  ℹ️  No required_mcps defined in rules.json — skipping MCP checks')
+    sys.exit(0)
+
+failures = []
+for name, cfg in mcps.items():
+    cli_check = cfg.get('check_cli', '')
+    tool_check = cfg.get('check_tool', '')
+    severity = cfg.get('severity', 'optional')
+    desc = cfg.get('description', name)
+
+    available = False
+    # Try CLI check first
+    if cli_check:
+        try:
+            result = subprocess.run(cli_check, shell=True, capture_output=True, timeout=5)
+            if result.returncode == 0:
+                available = True
+        except:
+            pass
+
+    # Try tool check as fallback
+    if not available and tool_check:
+        try:
+            result = subprocess.run(tool_check, shell=True, capture_output=True, timeout=5)
+            if result.returncode == 0:
+                available = True
+        except:
+            pass
+
+    if available:
+        print(f'  ✅ {name}: available — {desc}')
+    elif severity == 'required':
+        print(f'  ❌ {name}: NOT DETECTED — {desc}')
+        failures.append(name)
+    else:
+        print(f'  ⚠️  {name}: not detected — {desc} (optional)')
+
+if failures:
+    print('')
+    for name in failures:
+        print(f'  → Ensure {name} is configured in opencode.json MCP servers')
+    sys.exit(1)
+else:
+    sys.exit(0)
+" 2>&1 || MCP_FAIL=1
 fi
 
 echo ""
