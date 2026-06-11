@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "opencode-kit Plugin Config",
-  "description": "Configuration schema for opencode-kit plugin. Add to your opencode.json to enable orchestration agents.",
+  "description": "Configuration schema for @ikieaneh/opencode-kit plugin. Add to your opencode.json to enable orchestration agents.",
   "type": "object",
   "properties": {
     "plugin": {
@@ -9,7 +9,7 @@
       "description": "opencode-kit MUST be listed FIRST in the plugin array to ensure its system prompt transform takes priority.",
       "items": {
         "type": "string",
-        "examples": ["opencode-kit", "superpowers", "oh-my-opencode-slim"]
+        "examples": ["@ikieaneh/opencode-kit", "superpowers", "oh-my-opencode-slim"]
       },
       "minItems": 1
     },
@@ -23,11 +23,12 @@
           "properties": {
             "skills": {
               "type": "array",
-              "description": "Recommended skills: orchestration-template, scoring-pipeline, adr-generator",
+              "description": "Recommended skills: orchestration-template, scoring-pipeline, adr-generator, verification-before-completion",
               "items": { "type": "string" },
               "default": ["orchestration-template", "scoring-pipeline", "verification-before-completion"]
             },
-            "steps": { "type": "integer", "default": 50, "description": "Max agent steps" }
+            "steps": { "type": "integer", "default": 50, "description": "Max agent steps" },
+            "fallback_models": { "type": "array", "items": { "type": "string" }, "description": "Fallback models if primary fails" }
           }
         },
         "planner": {
@@ -40,7 +41,8 @@
               "items": { "type": "string" },
               "default": ["brainstorming", "writing-plans", "system-analyst"]
             },
-            "steps": { "type": "integer", "default": 80 }
+            "steps": { "type": "integer", "default": 80 },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
           }
         },
         "task-manager": {
@@ -52,7 +54,8 @@
               "items": { "type": "string" },
               "default": ["subagent-driven-development", "executing-plans", "test-driven-development"]
             },
-            "steps": { "type": "integer", "default": 100 }
+            "steps": { "type": "integer", "default": 100 },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
           }
         },
         "code-reviewer": {
@@ -64,16 +67,61 @@
               "items": { "type": "string" },
               "default": ["qa-expert", "security-expert", "devops-expert"]
             },
-            "steps": { "type": "integer", "default": 80 }
+            "steps": { "type": "integer", "default": 80 },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
           }
         },
         "learner": {
           "type": "object",
           "description": "Post-execution learning. Extracts lessons, persists knowledge.",
-          "skills": {
-            "type": "array",
-            "items": { "type": "string" },
-            "default": ["verification-before-completion", "qa-expert"]
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["verification-before-completion", "qa-expert"]
+            },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "explorer": {
+          "type": "object",
+          "description": "Fast codebase search specialist. Read-only — no edits.",
+          "properties": {
+            "skills": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "steps": { "type": "integer", "default": 30 },
+            "tools": {
+              "type": "object",
+              "description": "Disable write-heavy tools: context7, memory, postgres",
+              "default": { "postgres_*": false, "memory_*": false, "context7_*": false }
+            },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "librarian": {
+          "type": "object",
+          "description": "External docs and API references. Read-only — no edits.",
+          "properties": {
+            "skills": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "steps": { "type": "integer", "default": 30 },
+            "tools": {
+              "type": "object",
+              "description": "Disable tools not needed for docs research",
+              "default": { "postgres_*": false, "memory_*": false, "graphify_*": false }
+            },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "architect": {
+          "type": "object",
+          "description": "Strategic technical advisor. Architecture trade-offs, system-level debugging, simplification.",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["simplify", "systematic-debugging", "system-analyst"]
+            },
+            "steps": { "type": "integer", "default": 60 },
+            "fallback_models": { "type": "array", "items": { "type": "string" } }
           }
         }
       }
