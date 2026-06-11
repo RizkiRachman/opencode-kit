@@ -122,6 +122,17 @@ node --version    # ≥ 18
 git --version     # any recent version
 ```
 
+### Documentation Guides
+
+| Guide | Description |
+|-------|-------------|
+| [Contract Protocol](docs/guides/contract-protocol.md) | State machine, fields, resolution order |
+| [Scoring Pipeline](docs/guides/scoring-pipeline.md) | Tier 1 + Tier 2 + verdict |
+| [Troubleshooting](docs/guides/troubleshooting.md) | Common issues and solutions |
+| [Quickstart](docs/examples/QUICKSTART.md) | 6-step setup from scratch |
+| [Extension Skills](docs/examples/extension-skill-template.md) | Create project-specific skills |
+| [Model Configs](docs/examples/model-configs.md) | Provider configuration examples |
+
 ### Installation
 
 #### Option 1: Install as plugin (recommended)
@@ -252,24 +263,42 @@ Once installed, run these from the project root:
 opencode-kit/
  ├── rules/
  │   ├── rules.json              ← Machine-enforceable rules (CRITICAL/HIGH/state machine)
- │   └── validation.sh           ← Validates agent actions against rules (future)
+ │   └── validation.sh           ← Validates agent actions against rules
  ├── src/
  │   ├── init.sh                 ← Scaffold into target project
  │   ├── preflight.sh            ← Envelope load gate (zero deps, fails if rules violated)
- │   ├── postflight.sh           ← Auto-persist + scoring pipeline
- │   └── verify.sh               ← Installation health check
+ │   ├── postflight.sh           ← Auto-persist + scoring pipeline + contract migration
+ │   ├── doctor.sh               ← Diagnostic command
+ │   ├── status.sh               ← Dashboard view
+ │   ├── diff.sh                 ← Compare contract across branches
+ │   ├── analytics.sh            ← Telemetry aggregation
+ │   ├── adr.sh                  ← ADR auto-generator
+ │   ├── telemetry.sh            ← Phase telemetry viewer
+ │   ├── new-skill.sh            ← Skill template generator
+ │   ├── update.sh               ← Pull latest from GitHub
+ │   ├── verify.sh               ← Installation health check
+ │   ├── platform.sh             ← Cross-platform detection
+ │   ├── global-config.sh        ← Config resolution chain
+ │   └── cli.js                  ← --version / --help
+ ├── skills/                     ← 9 auto-registered skills
  ├── templates/
- │   ├── contract.json           ← Shared state contract (renamed from "envelope")
- │   ├── superpowers-contract.json
- │   └── agents/
- │       ├── orchestrator.md
- │       ├── planner.md
- │       ├── task-manager.md
- │       ├── code-reviewer.md
- │       ├── learner.md
- │       └── fixer.md
- ├── package.json                ← npm publish for `npx opencode-kit init`
- └── README.md                   ← You are here
+ │   ├── contract.json           ← Shared state contract
+ │   ├── opencode-kit.schema.json ← Agent config schema
+ │   ├── judge-prompt.md          ← LLM judge prompt template
+ │   └── agents/                  ← 6 agent .md templates
+ ├── docs/
+ │   ├── guides/                  ← Usage guides (contract, scoring, troubleshooting)
+ │   ├── examples/                ← Quickstart, model configs, extension skills
+ │   └── plans/                   ← Implementation plans
+ ├── test/                       ← Integration + E2E tests (16 total)
+ ├── .github/workflows/          ← CI (ShellCheck + scaffold + tests)
+ ├── .opencode/plugins/          ← Plugin entry point
+ ├── .claude-plugin/             ← Plugin metadata
+ ├── package.json                ← npm publish
+ ├── CHANGELOG.md
+ ├── CONTRIBUTING.md
+ ├── RELEASE.md
+ └── ROADMAP.md
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
