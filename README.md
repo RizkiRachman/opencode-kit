@@ -97,7 +97,7 @@ As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session
 5. **ADR logging** — every architectural decision recorded in `decisions.adr_log[]`
 6. **Extension model** — project-specific skills in `.opencode/skills/` override plugin defaults
 
-### The 9 Built-in Skills
+### The 8 Built-in Skills
 
 | Skill | Purpose |
 |-------|---------|
@@ -197,8 +197,6 @@ npm install @ikieaneh/opencode-kit
 ```
 
 The plugin auto-loads on next session. All 8 skills become available. The orchestration contract is injected into every session automatically.
-
-> **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
 
 > **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
 
