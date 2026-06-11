@@ -5,6 +5,22 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.9] - 2026-06-11
+
+### Fixed
+
+- **Critical: Plugin config hook crash** — Removed duplicate `const userSkillsDir` declaration in `plugin.js` that broke skills registration with `SyntaxError: Identifier 'userSkillsDir' has already been declared`. Config hook confirmed working post-fix.
+- **Critical: E2E tests passing falsely** — Test harness did not await async functions, so all 9 E2E tests appeared to pass while silently swallowing rejections. Rewrote both integration and E2E test runners with proper collection + top-level await pattern.
+- **Shell injection in ADR generator** — `src/adr.sh` interpolated user input directly into inline Python code via shell variables, allowing code injection via single quotes/backticks. Replaced with temp JSON file approach using Python's `json.load()`.
+- **Plugin metadata version** — `.claude-plugin/plugin.json` was at `0.4.0` while `package.json` was at `0.5.8`. Synced to match.
+- **Hardcoded init version** — `src/init.sh` displayed `v0.5.0` regardless of actual version. Now reads dynamically from `package.json`.
+- **Dead code in status.sh** — Duplicate `required_mcps` variable computed but never used. Removed unused vars.
+- **WRITE_001 severity mismatch** — Rule was `CRITICAL` severity with `FLAG` action (CRITICAL should map to BLOCK). Demoted to `HIGH` to match its actual action.
+- **Invalid verdict constant** — Contract template used `PENDING` as verdict, which isn't in the state machine. Changed to `INIT`.
+- **`bc` dependency removed** — `src/telemetry.sh` used `bc` for float arithmetic, unavailable on some Linux distros. Replaced with `$PYTHON_CMD`.
+- **`.gitignore` missing state backup** — `.opencode/state/` created by `postflight.sh` was not gitignored.
+- **`import assert` misplaced** — `test/e2e.test.js` had `import assert` at the bottom of the file after it was already used in tests. Moved to top with other imports.
+
 ## [0.5.0] - 2026-06-11
 
 ### Added

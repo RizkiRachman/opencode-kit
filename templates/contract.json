@@ -68,7 +68,7 @@
     "rules": { "pass": 0, "fail": 0, "deduction": 0, "subtotal": 0 },
     "judge": { "score": 0, "rationale": "", "missing_items": [] },
     "combined": 0,
-    "verdict": "PENDING"
+    "verdict": "INIT"
   },
   "retry": {
     "current_phase": null,

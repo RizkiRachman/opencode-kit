@@ -22,16 +22,10 @@ const ROOT = path.resolve(__dirname, '..');
 
 let passed = 0;
 let failed = 0;
+const tests = [];
 
 const test = (name, fn) => {
-  try {
-    fn();
-    console.log(`  ✅ ${name}`);
-    passed++;
-  } catch (e) {
-    console.log(`  ❌ ${name}: ${e.message}`);
-    failed++;
-  }
+  tests.push({ name, fn });
 };
 
 // === Helper (same logic as plugin) ===
@@ -122,7 +116,18 @@ test('rules.json is valid JSON with required fields', () => {
   assert.ok(data.scoring, 'Should have scoring');
 });
 
-// === Summary ===
+// === Run collected tests (supports both sync and async) ===
+for (const { name, fn } of tests) {
+  try {
+    await fn();
+    console.log(`  ✅ ${name}`);
+    passed++;
+  } catch (e) {
+    console.log(`  ❌ ${name}: ${e.message}`);
+    failed++;
+  }
+}
+
 console.log(`\n${'━'.repeat(40)}`);
 console.log(`Results: ${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);
