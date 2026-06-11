@@ -13,7 +13,6 @@ permission:
     "*": ask
     "npm test": allow
     "npm run build": allow
-    "npm test": allow
     "npm run format": allow
     "git diff*": allow
     "git log*": allow
