@@ -35,6 +35,7 @@
       { "source": ".opencode/rules/rules.json", "sections": ["all"] }
     ],
     "current_guidance": "",
+    "extension_skills": [],
     "permissions": {
       "do": [],
       "dont": [
