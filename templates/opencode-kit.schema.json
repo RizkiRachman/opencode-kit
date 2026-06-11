@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "opencode-kit Plugin Config",
+  "description": "Configuration schema for opencode-kit plugin. Add to your opencode.json to enable orchestration agents.",
+  "type": "object",
+  "properties": {
+    "plugin": {
+      "type": "array",
+      "description": "opencode-kit MUST be listed FIRST in the plugin array to ensure its system prompt transform takes priority.",
+      "items": {
+        "type": "string",
+        "examples": ["opencode-kit", "superpowers", "oh-my-opencode-slim"]
+      },
+      "minItems": 1
+    },
+    "agent": {
+      "type": "object",
+      "description": "Agent configurations. opencode-kit provides default skills + pre-flight enforcement.",
+      "properties": {
+        "orchestrator": {
+          "type": "object",
+          "description": "Primary orchestrator — delegates, scores, drives state machine",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "description": "Recommended skills: orchestration-template, scoring-pipeline, adr-generator",
+              "items": { "type": "string" },
+              "default": ["orchestration-template", "scoring-pipeline", "verification-before-completion"]
+            },
+            "steps": { "type": "integer", "default": 50, "description": "Max agent steps" }
+          }
+        },
+        "planner": {
+          "type": "object",
+          "description": "Analyzes requests and produces structured plans",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "description": "Recommended skills: brainstorming, writing-plans, system-analyst",
+              "items": { "type": "string" },
+              "default": ["brainstorming", "writing-plans", "system-analyst"]
+            },
+            "steps": { "type": "integer", "default": 80 }
+          }
+        },
+        "task-manager": {
+          "type": "object",
+          "description": "Breaks plans into tasks, implements, writes tests",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["subagent-driven-development", "executing-plans", "test-driven-development"]
+            },
+            "steps": { "type": "integer", "default": 100 }
+          }
+        },
+        "code-reviewer": {
+          "type": "object",
+          "description": "Read-only code review: quality, security, performance, DevOps",
+          "properties": {
+            "skills": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["qa-expert", "security-expert", "devops-expert"]
+            },
+            "steps": { "type": "integer", "default": 80 }
+          }
+        },
+        "learner": {
+          "type": "object",
+          "description": "Post-execution learning. Extracts lessons, persists knowledge.",
+          "skills": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": ["verification-before-completion", "qa-expert"]
+          }
+        }
+      }
+    }
+  },
+  "required": ["plugin"]
+}
