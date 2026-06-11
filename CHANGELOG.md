@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/init.sh` — now copies `.githooks/` and configures `core.hooksPath`
 - `.opencode/plugins/opencode-kit.js` — rule override injection in bootstrap
 
+## [0.6.4] - 2026-06-11
+
+### Fixed
+- global-config.sh: Use ${BASH_SOURCE[0]} instead of $0 for sourced context (H1)
+- preflight.sh: Exit 1 when MCP validation fails instead of just warning (H2)
+- postflight.sh: Replace pipe-delimited Python output with JSON field extraction (H3)
+
+### Changed
+- README: Fix "9 Built-in Skills" → "8 Built-in Skills", remove duplicate paragraph (H4)
+
 ## [0.6.0] - 2026-06-11
 
 ### Added

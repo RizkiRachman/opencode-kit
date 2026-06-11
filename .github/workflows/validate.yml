@@ -40,11 +40,16 @@ jobs:
         run: |
           cd /tmp/test-project
           bash .opencode/src/verify.sh
-      - name: Create feature branch (verify branch check)
+      - name: Verify preflight hard-fails without MCPs (expected in CI)
         run: |
           cd /tmp/test-project
           git checkout -b feature/test-branch
-          bash .opencode/src/preflight.sh
+          if bash .opencode/src/preflight.sh; then
+            echo "❌ preflight.sh should have failed (no MCPs in CI)"
+            exit 1
+          else
+            echo "✅ preflight.sh correctly detected missing MCPs and blocked"
+          fi
 
   syntax:
     name: Syntax check
