@@ -69,7 +69,7 @@ for p in phases:
     frm = p.get('from', '?')
     to = p.get('to', '?')
     ms = p.get('elapsed_ms', 0)
-    bar = '█' * max(1, int(ms / max(1, total_ms) * 30))
+    bar = '#' * max(1, int(ms / max(1, total_ms) * 30))
     print(f'    {frm:16s} → {to:16s}  {ms/1000:6.1f}s  {bar}')
 
 # Cost estimate (rough: ~$0.15/1M tokens, ~1000 tok/s)

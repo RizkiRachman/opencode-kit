@@ -19,9 +19,9 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo ""
-echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}${BOLD}║        opencode-kit Dashboard            ║${NC}"
-echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════╝${NC}"
+echo -e "${CYAN}${BOLD}##══════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}${BOLD}#        opencode-kit Dashboard            #${NC}"
+echo -e "${CYAN}${BOLD}##══════════════════════════════════════════╝${NC}"
 echo ""
 
 # === Contract State ===

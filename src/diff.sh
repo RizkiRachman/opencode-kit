@@ -65,7 +65,7 @@ b = get_state('''$CONTRACT_B''') if '''$CONTRACT_B''' else None
 
 if a and b:
     print(f'  Field                   $BRANCH_A          $BRANCH_B')
-    print(f'  {"─"*50}')
+    print(f'  {"-"*50}')
     for field in ['state', 'goal', 'score', 'version']:
         va = str(a.get(field, '?'))[:20]
         vb = str(b.get(field, '?'))[:20]
