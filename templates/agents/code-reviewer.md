@@ -13,9 +13,9 @@ permission:
     "*": ask
     "git diff*": allow
     "git log*": allow
-    "mvn test*": allow
-    "mvn compile*": allow
-    "mvn verify": allow
+    "npm test": allow
+    "npm run build": allow
+    "npm test": allow
   task:
     "*": deny
 ---

@@ -20,7 +20,8 @@
     "src/",
     "rules/",
     "templates/",
-    "skills/"
+    "skills/",
+    "docs/"
   ],
   "publishConfig": {
     "access": "public"

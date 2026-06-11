@@ -11,10 +11,10 @@ permission:
   webfetch: allow
   bash:
     "*": ask
-    "mvn test*": allow
-    "mvn compile*": allow
-    "mvn verify": allow
-    "mvn spotless:apply": allow
+    "npm test": allow
+    "npm run build": allow
+    "npm test": allow
+    "npm run format": allow
     "git diff*": allow
     "git log*": allow
   task:
@@ -40,7 +40,7 @@ permission:
 ## Permissions
 - Read: All project files
 - Write: Source files, test files
-- Execute: mvn commands, git diff/log, spotless
+- Execute: git diff/log, spotless
 - Cannot: Push to git, modify .opencode/ config
 
 You implement plans step by step. Follow conventions exactly.
@@ -76,7 +76,7 @@ For each file:
 - Cover: happy path, empty, null, boundary, every error branch
 
 ### 5. Before Moving On
-- `mvn spotless:apply`
+- Format code (spotless, prettier, etc.)
 - Remove debug code, TODOs, commented-out code
 
 ### 6. Output Format

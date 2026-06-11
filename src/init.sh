@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # opencode-kit init — scaffold orchestration framework into target project
-# Usage: npx opencode-kit init [--force]
+# Usage: npx opencode-kit init [--force] [--sample]
+#   --force    Overwrite existing .opencode/ (backs up to .opencode.bak.<timestamp>)
+#   --sample   Also create a sample opencode.json with @ikieaneh/opencode-kit plugin config
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,7 +16,14 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-FORCE="${1:-}"
+FORCE=false
+SAMPLE=false
+for arg in "$@"; do
+  case "$arg" in
+    --force) FORCE=true ;;
+    --sample) SAMPLE=true ;;
+  esac
+done
 TARGET_DIR="${PWD}"
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 
@@ -64,7 +73,7 @@ fi
 
 # --- Handle existing .opencode/ ---
 if [ -d ".opencode" ]; then
-  if [ "$FORCE" = "--force" ]; then
+  if [ "$FORCE" = true ]; then
     BACKUP=".opencode.bak.$TIMESTAMP"
     echo ""
     echo -e "${YELLOW}⚠️  --force: Backing up existing .opencode/ to $BACKUP${NC}"
@@ -162,4 +171,44 @@ if "$KIT_DIR/src/verify.sh"; then
 else
   echo -e "${RED}❌ Verification failed. Check errors above.${NC}"
   exit 1
+fi
+
+# --- Sample opencode.json ---
+if [ "$SAMPLE" = true ]; then
+  if [ -f "opencode.json" ]; then
+    echo -e "${YELLOW}  ⚠️  opencode.json already exists. Skipping sample.${NC}"
+  else
+    cat > opencode.json << 'SAMPLEEOF'
+{
+  "model": "sumopod/deepseek-v4-flash",
+  "plugin": [
+    "@ikieaneh/opencode-kit",
+    "superpowers"
+  ],
+  "agent": {
+    "orchestrator": {
+      "model": "sumopod/deepseek-v4-flash",
+      "skills": ["orchestration-template", "scoring-pipeline", "verification-before-completion"],
+      "steps": 50
+    },
+    "planner": {
+      "model": "sumopod/deepseek-v4-flash",
+      "skills": ["brainstorming", "writing-plans", "system-analyst"],
+      "steps": 80
+    },
+    "task-manager": {
+      "model": "sumopod/deepseek-v4-flash",
+      "skills": ["subagent-driven-development", "executing-plans", "test-driven-development"],
+      "steps": 100
+    },
+    "code-reviewer": {
+      "model": "sumopod/deepseek-v4-flash",
+      "skills": ["qa-expert", "security-expert"],
+      "steps": 80
+    }
+  }
+}
+SAMPLEEOF
+    echo "  ✅ Sample opencode.json created"
+  fi
 fi
