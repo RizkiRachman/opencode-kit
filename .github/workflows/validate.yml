@@ -1,0 +1,59 @@
+name: validate
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run ShellCheck
+        run: shellcheck src/*.sh rules/*.sh
+
+  scaffold:
+    name: Scaffold test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 git nodejs
+      - name: Create test project
+        run: |
+          mkdir -p /tmp/test-project
+          cd /tmp/test-project
+          git init
+          git config user.email "ci@opencode-kit"
+          git config user.name "CI"
+      - name: Run init.sh
+        run: |
+          cd /tmp/test-project
+          bash ${{ github.workspace }}/src/init.sh
+      - name: Run verify.sh
+        run: |
+          cd /tmp/test-project
+          bash .opencode/src/verify.sh
+      - name: Create feature branch (verify branch check)
+        run: |
+          cd /tmp/test-project
+          git checkout -b feature/test-branch
+          bash .opencode/src/preflight.sh
+
+  syntax:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check bash syntax
+        run: |
+          for f in src/*.sh rules/*.sh; do
+            echo "Checking $f..."
+            bash -n "$f"
+          done

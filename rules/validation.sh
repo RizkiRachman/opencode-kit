@@ -4,6 +4,9 @@
 #   --strict: treat HIGH rules as BLOCK (default: FLAG only)
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+. "$SCRIPT_DIR/src/platform.sh"
+
 RULES_FILE=".opencode/rules/rules.json"
 CONTRACT_FILE=".opencode/orchestration/contract.json"
 
@@ -30,13 +33,13 @@ if [ ! -f "$CONTRACT_FILE" ]; then
   exit 1
 fi
 
-# --- Parse rules.json using python3 or jq ---
-if command -v python3 &>/dev/null; then
-  PARSE_CMD="python3 -c"
+# --- Parse rules.json using python or jq ---
+if [ -n "$PYTHON_CMD" ]; then
+  PARSE_CMD="$PYTHON_CMD -c"
 elif command -v jq &>/dev/null; then
   PARSE_CMD="jq -r"
 else
-  echo -e "${RED}❌ Neither python3 nor jq found. Cannot parse rules.json.${NC}"
+  echo -e "${RED}❌ Neither Python nor jq found. Cannot parse rules.json.${NC}"
   exit 1
 fi
 
@@ -62,7 +65,7 @@ fi
 
 # --- Validate 2: Contract state ---
 echo -e "${CYAN}[STATE_001]${NC} Contract state validation..."
-STATE=$(python3 -c "
+STATE=$($PYTHON_CMD -c "
 import json
 with open('$CONTRACT_FILE') as f: d=json.load(f)
 print(d.get('state','UNKNOWN'))
@@ -79,7 +82,7 @@ fi
 
 # --- Validate 3: Contract has required fields ---
 echo -e "${CYAN}[SCHEMA_001]${NC} Contract schema validation..."
-python3 -c "
+$PYTHON_CMD -c "
 import json, sys
 with open('$CONTRACT_FILE') as f: d=json.load(f)
 errors = []

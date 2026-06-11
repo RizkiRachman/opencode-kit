@@ -89,6 +89,14 @@
       "condition": "learner_skipped_memory_system",
       "action": "FLAG",
       "message": "⚠️ LEARNER WARNING: Not all memory systems updated. See AGENTS.md §1.7 for full matrix."
+    },
+    {
+      "id": "SCORE_002",
+      "severity": "HIGH",
+      "description": "Tier 2 LLM judge MUST use the canonical judge prompt from rules.json scoring.tier2.judge_prompt or templates/judge-prompt.md",
+      "condition": "judge_prompt_not_from_canonical_source",
+      "action": "FLAG",
+      "message": "⚠️ SCORE WARNING: Judge prompt must use canonical source. See .opencode/rules/rules.json scoring.tier2.judge_prompt"
     }
   ],
 
@@ -102,8 +110,8 @@
       "subtotal_threshold": 70
     },
     "tier2": {
-      "judge_prompt": "Score 0-100 on: Fulfills requirements (0-40), Follows governance (0-30), Completeness (0-20), Edge cases covered (0-10). Return JSON: { score: N, rationale: '...', missing_items: [...] }"
-    },
+      "enabled": true,
+      "judge_prompt": "You are an impartial judge evaluating an AI agent's output. Score 0-100 based on:\n\n1. Requirements fulfillment (0-40): Does the output satisfy the stated goal and acceptance criteria?\n2. Governance compliance (0-30): Does it follow the rules in rules.json and the writing order (Port → Service → Mapper → Adapter → Constants → Events → Tests)?\n3. Completeness (0-20): Are all required files created/modified? Are edge cases documented?\n4. Edge cases & risks (0-10): Are nulls, errors, boundaries, and failure modes covered?\n\nReturn ONLY valid JSON: { \"score\": N, \"rationale\": \"...\", \"missing_items\": [...] }\n- Score 70+ = PASS\n- Score 50-69 = RETRY (issues to fix)\n- Score below 50 = BLOCKED (fundamental problems)",
     "thresholds": {
       "pass": 70,
       "retry": 50,
