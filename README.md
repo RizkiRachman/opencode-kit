@@ -359,11 +359,21 @@ After every subagent delegation, scoring runs automatically:
 - [x] Plugin-aware init.sh (detects plugin, skips redundant scaffolding)
 - [x] Plugin metadata (.claude-plugin/plugin.json)
 
-### v0.5 — Hardening & Polish
-- [ ] Test plugin end-to-end on clean project
-- [ ] Auto-init contract.json via plugin if missing
-- [ ] Contract uniqueness per project (lean-ctx key = project hash)
-- [ ] Publish to npm
+### v0.5 — Gap Analysis ✅
+- [x] 5 new skills (qa-expert, system-analyst, token-optimize, verification-before-completion, learner)
+- [x] Auto-init contract on first run
+- [x] Contract uniqueness per project (hashed lean-ctx key)
+- [x] Proper plugin logging
+- [x] CLI version/help command
+- [x] Logo placeholder
+- [x] STATE.md auto-sync
+- [x] Integration tests (7/7 passing)
+- [x] CI integration test job
+
+### v0.6 — Publish & Polish (next)
+- [ ] npm publish
+- [ ] Test plugin end-to-end on clean macOS M-series machine
+- [ ] Web UI for contract overview
 
 See the [open issues](https://github.com/RizkiRachman/opencode-kit/issues) for full list.
 

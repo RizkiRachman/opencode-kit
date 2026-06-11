@@ -57,3 +57,15 @@ jobs:
             echo "Checking $f..."
             bash -n "$f"
           done
+
+  integration:
+    name: Integration test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run integration tests
+        run: node test/integration.test.js
