@@ -3,7 +3,7 @@
 # Usage: source src/global-config.sh && resolve_config "contract.json"
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 

@@ -132,7 +132,9 @@ fi
 
 # --- Final verdict ---
 if [ "$MCP_FAIL" -eq 1 ]; then
-  echo -e "${YELLOW}[opencode-kit] ⛔ Pre-flight completed with WARNINGS. Missing MCPs may cause failures.${NC}"
+  echo -e "${RED}⛔ PREFLIGHT FAILED: Required MCPs not available.${NC}"
+  echo -e "${RED}  → Ensure lean-ctx, gitnexus are configured in opencode.json MCP servers${NC}"
+  exit 1
 else
   echo "[opencode-kit] ✅ Pre-flight passed. All MCPs available. Proceed."
 fi

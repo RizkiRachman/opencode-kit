@@ -33,17 +33,22 @@ if [ -n "$PYTHON_CMD" ]; then
     "$STATE_BACKUP_DIR" "$TEMPLATE_FILE" \
   )
 
-  # Single Python parse call: extract all values as pipe-delimited string
-  IFS='|' read -r STATE PHASE SCORE PREV_STATE CURRENT_STATE ELAPSED_S MIGRATED CONTRACT_VER PHASES_COUNT TOTAL_ELAPSED_S LAST_TO_STATE <<< \
-    "$(echo "$PYTHON_OUTPUT" | $PYTHON_CMD -c "
-import sys, json
-d = json.load(sys.stdin)
-print('|'.join([str(d.get(k, '')) for k in [
-    'state', 'phase', 'score', 'prev_state', 'current_state',
-    'phase_elapsed_s', 'migrated', 'contract_version',
-    'phases_count', 'total_elapsed_s', 'last_to_state'
-]]))
-" 2>/dev/null || echo "UNKNOWN|none|?|INIT|UNKNOWN|0|false|?|0|0|INIT")"
+  # Write Python output to temp file for robust JSON field extraction
+  POSTFLIGHT_DATA=$(mktemp /tmp/opencode-postflight-XXXXX.json)
+  echo "$PYTHON_OUTPUT" > "$POSTFLIGHT_DATA"
+  trap 'rm -f "$POSTFLIGHT_DATA"' EXIT INT TERM
+
+  STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
+  PHASE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phase','none'))" 2>/dev/null || echo "none")
+  SCORE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('score','?'))" 2>/dev/null || echo "?")
+  PREV_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('prev_state','INIT'))" 2>/dev/null || echo "INIT")
+  CURRENT_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('current_state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
+  ELAPSED_S=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phase_elapsed_s','0'))" 2>/dev/null || echo "0")
+  MIGRATED=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('migrated','false'))" 2>/dev/null || echo "false")
+  CONTRACT_VER=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('contract_version','?'))" 2>/dev/null || echo "?")
+  PHASES_COUNT=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('phases_count','0'))" 2>/dev/null || echo "0")
+  TOTAL_ELAPSED_S=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('total_elapsed_s','0'))" 2>/dev/null || echo "0")
+  LAST_TO_STATE=$($PYTHON_CMD -c "import json; d=json.load(open('$POSTFLIGHT_DATA')); print(d.get('last_to_state','INIT'))" 2>/dev/null || echo "INIT")
 
   # --- Echo status messages ---
   echo "  📊 Telemetry: $PREV_STATE → $CURRENT_STATE (${ELAPSED_S}s)"
