@@ -11,6 +11,9 @@ CONTRACT_FILE=".opencode/orchestration/contract.json"
 STATE_FILE="STATE.md"
 TELEMETRY_DIR=".opencode/telemetry"
 START_TIME_FILE=".opencode/telemetry/.phase_start"
+STATE_BACKUP_DIR=".opencode/state"
+
+mkdir -p "$TELEMETRY_DIR" "$STATE_BACKUP_DIR"
 
 echo "[opencode-kit] Post-flight: persisting state..."
 
@@ -34,16 +37,28 @@ print(d.get('state','UNKNOWN'))
   rm -f "$START_TIME_FILE"
 fi
 
-# --- Step 1: Re-read contract from lean-ctx (the source of truth) ---
-CURRENT_CONTRACT=$(lean-ctx ctx_knowledge recall --query "$CONTRACT_KEY" 2>/dev/null || cat "$CONTRACT_FILE")
+# --- Step 1: Read contract (try lean-ctx first, fall back to file) ---
+CURRENT_CONTRACT=$(lean-ctx ctx_knowledge recall --query "$CONTRACT_KEY" 2>/dev/null || cat "$CONTRACT_FILE" 2>/dev/null || echo "")
+if [ -z "$CURRENT_CONTRACT" ]; then
+  echo "  ⚠️  No contract found in lean-ctx or file. Creating new from template..."
+  if [ -f "$TEMPLATE_FILE" ]; then
+    CURRENT_CONTRACT=$(cat "$TEMPLATE_FILE")
+  fi
+fi
 
-# --- Step 2: Write back to lean-ctx ---
-lean-ctx ctx_knowledge remember \
+# --- Step 2: Persist (try lean-ctx first, fall back to file) ---
+PERSISTED=false
+if lean-ctx ctx_knowledge remember \
   category architecture \
   key "$CONTRACT_KEY" \
-  value "$CURRENT_CONTRACT" 2>/dev/null && \
-  echo "  ✅ Contract persisted to lean-ctx" || \
-  echo "  ⚠️  lean-ctx persist failed"
+  value "$CURRENT_CONTRACT" 2>/dev/null; then
+  echo "  ✅ Contract persisted to lean-ctx"
+  PERSISTED=true
+fi
+
+# File fallback: write to .opencode/state/contract.json
+echo "$CURRENT_CONTRACT" > "$STATE_BACKUP_DIR/contract.json"
+echo "  ✅ Contract persisted to file: $STATE_BACKUP_DIR/contract.json"
 
 # --- Step 3: Sync STATE.md ---
 mkdir -p "$(dirname "$STATE_FILE")"

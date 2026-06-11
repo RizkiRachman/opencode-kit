@@ -94,7 +94,7 @@ Delegate to @code-reviewer. After return → Scoring Pipeline → update contrac
 3. **Tier 3 (Verdict)**: ≥70 PASS, 50-69 RETRY, <50 BLOCKED
 
 ### 5. Verify (loop)
-Run quality gates (verification-before-completion skill)
+Run quality gates (format, compile, test, verify)
 If CRITICAL findings → BLOCK, fix, re-review. Max 3 iterations.
 
 ### 6. Ship
