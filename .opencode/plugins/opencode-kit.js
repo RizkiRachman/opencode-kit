@@ -164,13 +164,24 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   fs.mkdirSync(path.join(globalConfigDir, 'rules'), { recursive: true });
 
   return {
+    // Skill resolution order (first match wins):
+    //   1. .opencode/skills/<name>/  (user project — highest priority)
+    //   2. plugin skills/<name>/     (opencode-kit defaults — fallback)
     config: async (config) => {
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
 
+      // Register user project skills FIRST (higher priority)
+      const userSkillsDir = path.join(projectDir, '.opencode/skills');
+      if (fs.existsSync(userSkillsDir) && !config.skills.paths.includes(userSkillsDir)) {
+        config.skills.paths.push(userSkillsDir);
+        log('info', `Registered user skills: ${userSkillsDir}`);
+      }
+
+      // Register plugin skills SECOND (fallback)
       if (!config.skills.paths.includes(SKILLS_DIR)) {
         config.skills.paths.push(SKILLS_DIR);
-        log('info', `Registered skills: ${SKILLS_DIR}`);
+        log('info', `Registered plugin skills: ${SKILLS_DIR}`);
       }
 
       // Register global config skills path
