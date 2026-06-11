@@ -6,6 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 . "$SCRIPT_DIR/global-config.sh"
 KIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -88,7 +89,7 @@ if [ -d ".opencode" ]; then
 fi
 
 # --- Scaffold directories ---
-mkdir -p .opencode/orchestration .opencode/rules .opencode/agents .opencode/src
+mkdir -p .opencode/orchestration .opencode/rules .opencode/agents .opencode/src .opencode/templates
 
 # --- Copy templates ---
 echo ""
@@ -153,6 +154,10 @@ if [ "$PLUGIN_MODE" = false ]; then
   cp "$KIT_DIR/src/analytics.sh" .opencode/src/analytics.sh
   chmod +x .opencode/src/analytics.sh
   echo "  ✅ analytics.sh (executable)"
+
+  cp "$KIT_DIR/src/diff.sh" .opencode/src/diff.sh
+  chmod +x .opencode/src/diff.sh
+  echo "  ✅ diff.sh (executable)"
 
   # --- Copy agent templates (pre-flight gates) ---
   for agent in orchestrator planner task-manager code-reviewer learner fixer; do

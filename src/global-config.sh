@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

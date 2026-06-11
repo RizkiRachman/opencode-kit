@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 
 CONTRACT_KEY="orchestration-contract"
@@ -12,6 +13,7 @@ STATE_FILE="STATE.md"
 TELEMETRY_DIR=".opencode/telemetry"
 START_TIME_FILE=".opencode/telemetry/.phase_start"
 STATE_BACKUP_DIR=".opencode/state"
+TEMPLATE_FILE=".opencode/templates/contract.json"
 
 mkdir -p "$TELEMETRY_DIR" "$STATE_BACKUP_DIR"
 
@@ -43,6 +45,46 @@ if [ -z "$CURRENT_CONTRACT" ]; then
   echo "  ⚠️  No contract found in lean-ctx or file. Creating new from template..."
   if [ -f "$TEMPLATE_FILE" ]; then
     CURRENT_CONTRACT=$(cat "$TEMPLATE_FILE")
+  fi
+fi
+
+# --- Step 1b: Contract migration (auto-upgrade old schema) ---
+if [ -n "$CURRENT_CONTRACT" ] && [ -f "$TEMPLATE_FILE" ] && [ -n "$PYTHON_CMD" ]; then
+  MIGRATED=$($PYTHON_CMD -c "
+import json
+
+try:
+    contract = json.loads('''$CURRENT_CONTRACT''')
+    with open('$TEMPLATE_FILE') as f:
+        template = json.load(f)
+
+    # Check version
+    old_ver = contract.get('contract_version', '0.0.0')
+    new_ver = template.get('contract_version', '0.5.2')
+
+    if old_ver == new_ver and all(k in contract for k in ['state','requirements','governance','score']):
+        print('NO_MIGRATION')
+    else:
+        # Merge missing top-level fields from template
+        for key in template:
+            if key not in contract:
+                contract[key] = template[key]
+        # Merge governance.extension_skills if missing
+        if 'extension_skills' not in contract.get('governance', {}):
+            if 'governance' not in contract:
+                contract['governance'] = {}
+            contract['governance']['extension_skills'] = []
+        # Update version
+        contract['contract_version'] = new_ver
+        print(json.dumps(contract))
+except Exception as e:
+    print('MIGRATE_ERROR:'+str(e))
+" 2>/dev/null || echo "MIGRATE_ERROR")
+
+  if [ -n "$MIGRATED" ] && [ "$MIGRATED" != "NO_MIGRATION" ] && [ "$MIGRATED" != "MIGRATE_ERROR" ]; then
+    CURRENT_CONTRACT="$MIGRATED"
+    echo "$MIGRATED" > "$CONTRACT_FILE"
+    echo "  🔄 Contract migrated to v$(echo "$MIGRATED" | $PYTHON_CMD -c "import sys,json; print(json.load(sys.stdin).get('contract_version','?'))" 2>/dev/null)"
   fi
 fi
 

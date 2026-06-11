@@ -224,6 +224,25 @@ INIT → PLAN → PLAN_SCORED → EXECUTE → EXECUTE_SCORED → REVIEW → REVI
 
 Each phase transition requires a score ≥70 to proceed.
 
+### CLI Commands
+
+Once installed, run these from the project root:
+
+| Command | Purpose |
+|---------|---------|
+| `bash .opencode/src/status.sh` | Dashboard — contract state, telemetry, rules |
+| `bash .opencode/src/doctor.sh` | Diagnostics — MCPs, contract, git, persistence |
+| `bash .opencode/src/analytics.sh` | Telemetry aggregation — phase times, cost estimates |
+| `bash .opencode/src/diff.sh` [branch1] [branch2] | Compare contract state between branches |
+| `bash .opencode/src/adr.sh` | Record a new Architecture Decision Record |
+| `bash .opencode/src/telemetry.sh` | View telemetry details |
+| `bash .opencode/src/new-skill.sh` <name> | Scaffold a new skill SKILL.md |
+| `bash .opencode/rules/validation.sh` | Validate rules compliance |
+| `npx opencode-kit --version` | Print version |
+| `npx opencode-kit --help` | Print help |
+
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- STRUCTURE -->
