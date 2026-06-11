@@ -7,14 +7,20 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=./platform.sh
 . "$SCRIPT_DIR/platform.sh"
 
-TELEMETRY_DIR=".opencode/telemetry"
-CONTRACT_FILE=".opencode/orchestration/contract.json"
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
+
+# --- Python check ---
+if [ -z "$PYTHON_CMD" ]; then
+  echo -e "${RED}❌ Python required but not found. Install python3.${NC}"
+  exit 1
+fi
+
+TELEMETRY_DIR=".opencode/telemetry"
+CONTRACT_FILE=".opencode/orchestration/contract.json"
 
 MODE="${1:-summary}"
 

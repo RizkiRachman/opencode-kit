@@ -111,9 +111,7 @@ git init
 
 ### What you need to do
 
-1. **Bump version** in `package.json`
-2. **Update** `CHANGELOG.md`
-3. **Merge PR** to `main` — automation handles the rest
+**You never need to bump versions manually. The release workflow handles it automatically. Just merge your PR.**
 
 ### One-time setup for maintainers
 

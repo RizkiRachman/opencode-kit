@@ -83,6 +83,15 @@ def main() -> int:
     with open(phases_file, 'a') as f:
         f.write(json.dumps(phase_entry) + '\n')
 
+    # Trim phases.jsonl to last 1000 entries
+    PHASES_MAX_LINES = 1000
+    if os.path.exists(phases_file):
+        with open(phases_file) as f:
+            lines = f.readlines()
+        if len(lines) > PHASES_MAX_LINES:
+            with open(phases_file, 'w') as f:
+                f.writelines(lines[-PHASES_MAX_LINES:])
+
     # --- Contract migration (merge missing fields from template) ---
     migrated = False
     if os.path.exists(template_file):
