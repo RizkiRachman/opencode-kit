@@ -5,7 +5,25 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Iteration 2
+## [Unreleased] — Iteration 3
+
+### Fixed
+
+- **status.sh**: Python `IndentationError` on lines 97-98 — `mcps` variable had inconsistent 4-space indent in Python heredoc where surrounding code had 0-space indent. Changed to 0-space indent to resolve syntax error. (#19)
+- **cli.js**: `findProjectRoot` started from package installation directory (npm cache) instead of user's working directory, causing `npx opencode-kit doctor/status/analytics` to fail in user projects. Changed to use `process.cwd()`. (#19)
+- **cli.js**: `init` and `update` commands silently ignored when run via CLI (documented in `--help` but not in command map). Now shows a helpful message directing users to run the script directly. (#19)
+- **init.sh**: `postflight.py` was not copied during scaffolding, causing `postflight.sh` to silently fall back in non-plugin mode. Added `postflight.py` copy alongside `postflight.sh`. (#19)
+- **templates/contract.json**: `contract_version` was `0.6.4` while package was at `0.6.6`, causing the migration logic to trigger on every run. Synced to `0.6.6`. (#19)
+
+### Added
+
+- **package.json**: Added `npm test` script — runs `node test/integration.test.js && node test/e2e.test.js`. (#19)
+
+### Changed
+
+- **verify.sh**: Added `.opencode/src/postflight.py` to executable script check list. (#19)
+
+## [0.6.6] - 2026-06-11
 
 ### Changed
 
