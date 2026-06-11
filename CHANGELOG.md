@@ -5,7 +5,14 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Iteration 4
+## [Unreleased] — Iteration 5
+
+### Fixed
+
+- **orchestrator.md**: Duplicate `"npm test": allow` key in YAML frontmatter — second instance silently overrode the first. Removed duplicate. (#21)
+- **init.sh**: `postflight.py` was copied without `chmod +x`, causing `verify.sh` to emit a warning about non-executable script. Added `chmod +x`. (#21)
+
+## [0.6.8] - 2026-06-11
 
 ### Fixed
 
