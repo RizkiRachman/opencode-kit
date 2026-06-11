@@ -210,6 +210,28 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
       const bootstrap = getBootstrapContent();
       if (!bootstrap || !output.messages.length) return;
 
+      // Check contract for rule_overrides and inject them into bootstrap
+      const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
+      let finalBootstrap = bootstrap;
+      if (fs.existsSync(contractPath)) {
+        try {
+          const contractRaw = fs.readFileSync(contractPath, 'utf8');
+          const contract = JSON.parse(contractRaw);
+          if (contract.validation && contract.validation.rule_overrides) {
+            const overrides = contract.validation.rule_overrides;
+            const overrideKeys = Object.keys(overrides);
+            if (overrideKeys.length > 0) {
+              const overrideText = overrideKeys
+                .map(id => `  - ${id}: action → ${overrides[id]}`)
+                .join('\n');
+              finalBootstrap = bootstrap + `\n## Rule Overrides (from contract)\n\nThe following rule severities have been overridden:\n${overrideText}\n`;
+            }
+          }
+        } catch (err) {
+          log('warn', `Failed to parse contract for rule_overrides: ${err.message}`);
+        }
+      }
+
       const firstUser = output.messages.find(m => m.info.role === 'user');
       if (!firstUser || !firstUser.parts.length) return;
 
@@ -217,7 +239,7 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
       if (firstUser.parts.some(p => p.type === 'text' && p.text.includes('opencode-kit'))) return;
 
       const ref = firstUser.parts[0];
-      firstUser.parts.unshift({ ...ref, type: 'text', text: bootstrap });
+      firstUser.parts.unshift({ ...ref, type: 'text', text: finalBootstrap });
     }
   };
 };

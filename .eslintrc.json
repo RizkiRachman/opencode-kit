@@ -1,0 +1,19 @@
+{
+  "env": {
+    "es2022": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "no-undef": "error",
+    "semi": ["warn", "always"],
+    "quotes": ["warn", "single", { "avoidEscape": true }],
+    "comma-dangle": ["warn", "only-multiline"],
+    "no-trailing-spaces": "warn",
+    "eol-last": ["warn", "always"]
+  }
+}

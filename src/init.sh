@@ -168,11 +168,24 @@ if [ "$PLUGIN_MODE" = false ]; then
   done
 fi
 
+# --- Copy git hooks ---
+if [ -d "$KIT_DIR/.githooks" ]; then
+  cp -r "$KIT_DIR/.githooks" .githooks
+  chmod +x .githooks/pre-commit .githooks/commit-msg
+  echo "  ✅ .githooks/ (pre-commit, commit-msg)"
+fi
+
 # --- Git ignore .opencode/src (scripts are project-specific) ---
 if [ -f ".gitignore" ]; then
   if ! grep -q ".opencode/src" .gitignore 2>/dev/null; then
     echo ".opencode/src/" >> .gitignore
   fi
+fi
+
+# --- Configure git hooks ---
+if [ -d ".githooks" ]; then
+  git config core.hooksPath .githooks
+  echo "  ✅ Git hooks configured (.githooks/)"
 fi
 
 # --- Verify ---

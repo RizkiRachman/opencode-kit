@@ -5,6 +5,26 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Improvement Sprint
+
+### Added
+
+- **CLI commands**: `npx opencode-kit doctor`, `status`, `analytics` — shortcuts to shell scripts from the CLI.
+- **ESLint + Prettier config**: `.eslintrc.json` and `.prettierrc` for consistent JS formatting. Added `lint` and `format` npm scripts.
+- **Contract JSON Schema**: `templates/contract.schema.json` — validates contract structure (state machine, required fields, score thresholds).
+- **MCP connectivity check**: `doctor.sh` now tests actual MCP responsiveness (not just CLI existence).
+- **Contract schema validation**: `doctor.sh` validates contract.json against the schema.
+- **Performance**: Batched all `postflight.sh` Python invocations into a single `postflight.py` script (11 calls → 2 calls, 82% reduction).
+- **Shell script tests**: `test/shell/test_basics.sh` with functional tests for all 15 shell scripts. Test runner at `test/shell/run.sh`.
+- **Git hooks**: `.githooks/pre-commit` — prevents commits on `main`/`master`. `.githooks/commit-msg` — enforces conventional commit format. Both auto-configured via `init.sh`.
+- **Rule overrides**: Plugin now reads `contract.json.validation.rule_overrides` and injects override context into agent bootstrap messages.
+
+### Changed
+
+- `src/postflight.sh` — refactored to use single Python script instead of 11 inline calls
+- `src/init.sh` — now copies `.githooks/` and configures `core.hooksPath`
+- `.opencode/plugins/opencode-kit.js` — rule override injection in bootstrap
+
 ## [0.6.0] - 2026-06-11
 
 ### Added
