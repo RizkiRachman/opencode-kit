@@ -28,6 +28,7 @@
   </p>
 
   <p>
+    <b>npm:</b> <code>@ikieaneh/opencode-kit</code> &middot;
     <b>macOS M-Series</b> — Apple Silicon (arm64)
   </p>
 </div>
@@ -123,14 +124,14 @@ git --version     # any recent version
 
 ### Installation
 
-#### Option 1: Install as plugin (recommended v0.4+)
+#### Option 1: Install as plugin (recommended)
 
 Add to your project's `opencode.json`:
 
 ```json
 {
   "plugin": [
-    "opencode-kit",      ← MUST be first
+    "@ikieaneh/opencode-kit",      ← MUST be first
     "other-plugins..."
   ]
 }
@@ -139,10 +140,12 @@ Add to your project's `opencode.json`:
 Then install:
 
 ```sh
-npm install opencode-kit
+npm install @ikieaneh/opencode-kit
 ```
 
-The plugin auto-loads on next session. Skills `orchestration-template`, `scoring-pipeline`, `adr-generator` become available. The orchestration contract is injected into every session automatically.
+The plugin auto-loads on next session. All 8 skills become available. The orchestration contract is injected into every session automatically.
+
+> **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
 
 > **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
 
@@ -370,10 +373,17 @@ After every subagent delegation, scoring runs automatically:
 - [x] Integration tests (7/7 passing)
 - [x] CI integration test job
 
-### v0.6 — Publish & Polish (next)
-- [ ] npm publish
-- [ ] Test plugin end-to-end on clean macOS M-series machine
-- [ ] Web UI for contract overview
+### v0.6 — Polish ✅
+- [x] README updated for @ikieaneh/opencode-kit plugin mode
+- [x] Updated agent config schema (fallback_models, explorer, librarian, architect)
+- [x] End-to-end tests (9 tests, plugin lifecycle + auto-init)
+- [x] Quickstart example (`docs/examples/QUICKSTART.md`)
+- [x] npm published as `@ikieaneh/opencode-kit`
+- [x] CI: integration + e2e test jobs
+
+### Future
+- [ ] Web UI for contract overview (deferred — no current need)
+- [ ] Plugin hardening: `experimental.chat.messages.transform` API is marked experimental — monitor OpenCode updates
 
 See the [open issues](https://github.com/RizkiRachman/opencode-kit/issues) for full list.
 
@@ -397,6 +407,12 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
 ## Contact
+
+## Known Limitations
+
+- **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked as experimental in the OpenCode plugin SDK. It may change in future versions. If it breaks, the plugin falls back to per-project agent .md files (`.opencode/agents/*.md`), which remain functional.
+- **Package name**: Currently published as `@ikieaneh/opencode-kit` (scoped). Requires `npm install @ikieaneh/opencode-kit`.
+- **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
 
 Rizki Rachman — [GitHub](https://github.com/RizkiRachman)
 

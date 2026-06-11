@@ -59,7 +59,7 @@ jobs:
           done
 
   integration:
-    name: Integration test
+    name: Integration tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,3 +69,5 @@ jobs:
           node-version: 20
       - name: Run integration tests
         run: node test/integration.test.js
+      - name: Run E2E tests
+        run: node test/e2e.test.js
