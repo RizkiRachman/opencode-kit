@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=../src/platform.sh
 . "$SCRIPT_DIR/src/platform.sh"
 
 RULES_FILE=".opencode/rules/rules.json"

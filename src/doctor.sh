@@ -84,15 +84,18 @@ fi
 echo -e "${CYAN}[MCP]${NC} Checking required MCPs..."
 if [ -f "$RULES_FILE" ] && [ -n "$PYTHON_CMD" ]; then
   $PYTHON_CMD -c "
-import json, subprocess, sys
+import json, shlex, subprocess, sys
 with open('$RULES_FILE') as f:
     rules = json.load(f)
 mcps = rules.get('required_mcps', {})
 mcps.pop('description', None)
 for name, cfg in mcps.items():
     cli = cfg.get('check_cli', '')
+    if not cli:
+        print(f'  ⚠️  {name}: no check_cli configured')
+        continue
     severity = cfg.get('severity', 'optional')
-    result = subprocess.run(cli, shell=True, capture_output=True, timeout=5)
+    result = subprocess.run(shlex.split(cli), capture_output=True, timeout=5)
     ok = result.returncode == 0
     if ok:
         print(f'  ✅ {name}: available')
