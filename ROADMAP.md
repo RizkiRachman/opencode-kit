@@ -1,6 +1,6 @@
 # opencode-kit Bucket List
 
-> **Status**: v0.5.2 published on npm as `@ikieaneh/opencode-kit`
+> **Status**: v0.5.9 published on npm as `@ikieaneh/opencode-kit`
 > **Last updated**: 2026-06-11
 
 ## ✅ Done (v0.1 — v0.7)
@@ -65,6 +65,15 @@
 - [x] **Rule severity config**: `validation.rule_overrides` in contract.json — projects can override rule severity (e.g., make PERSIST_001 from FLAG to BLOCK)
 - [x] **`opencode-kit doctor`**: `src/doctor.sh` — diagnostic command checking MCPs, contract, rules, git branch, persistence, plugin config
 - [x] **Plugin init order conflict detection**: Plugin.js warns if opencode-kit isn't first in the plugin array
+
+### v0.6 — Bug Fix & Hardening ✅
+- [x] Fixed plugin config hook crash (duplicate `const userSkillsDir`)
+- [x] Fixed E2E test harness — async tests now actually run and catch failures
+- [x] Removed shell injection vulnerability in ADR generator
+- [x] Synced plugin metadata version
+- [x] Made init version dynamic from package.json
+- [x] Cleaned up dead code, severity mismatches, invalid constants
+- [x] Removed `bc` dependency for cross-platform portability
 
 ### P3 — Implemented
 - [x] **Dashboard CLI**: `opencode-kit status` — pretty terminal dashboard (contract state, telemetry, rules, quick actions)
