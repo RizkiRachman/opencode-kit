@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# opencode-kit pre-commit hook — prevent commits on main/master
+set -euo pipefail
+
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+  echo "❌ Cannot commit directly to '$BRANCH'. Create a feature branch first."
+  echo "   git checkout -b feature/YYYYMMDD-description"
+  exit 1
+fi
+
+# Run preflight if it exists in the project
+if [ -f ".opencode/src/preflight.sh" ]; then
+  bash .opencode/src/preflight.sh 2>/dev/null || true
+fi

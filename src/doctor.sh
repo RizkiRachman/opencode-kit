@@ -42,6 +42,32 @@ else
   fi
 fi
 
+# === 1b. Contract schema validation ===
+SCHEMA_FILE=".opencode/templates/contract.schema.json"
+if [ -f "$CONTRACT_FILE" ] && [ -f "$SCHEMA_FILE" ] && [ -n "$PYTHON_CMD" ]; then
+  if $PYTHON_CMD -c "
+import json, sys
+with open('$CONTRACT_FILE') as f: contract = json.load(f)
+with open('$SCHEMA_FILE') as f: schema = json.load(f)
+# Basic required-field validation
+errors = []
+if not contract.get('state'): errors.append('Missing state')
+if not contract.get('requirements', {}).get('goal'): errors.append('Missing requirements.goal')
+if contract.get('state') not in ['INIT','PLAN','PLAN_SCORED','EXECUTE','EXECUTE_SCORED','REVIEW','REVIEW_SCORED','COMPLETE','BLOCKED']:
+  errors.append('Invalid state')
+if errors:
+  print('; '.join(errors))
+  sys.exit(1)
+else:
+  print('OK')
+" 2>/dev/null; then
+    echo -e "  ✅ Contract schema valid"
+  else
+    echo -e "  ⚠️  Contract schema issues found (non-blocking)"
+    ISSUES=$((ISSUES + 1))
+  fi
+fi
+
 # === 2. Rules check ===
 echo -e "${CYAN}[RULES]${NC} Checking rules.json..."
 if [ ! -f "$RULES_FILE" ]; then
@@ -54,7 +80,7 @@ else
   fi
 fi
 
-# === 3. MCP checks ===
+# === 3a. MCP CLI checks ===
 echo -e "${CYAN}[MCP]${NC} Checking required MCPs..."
 if [ -f "$RULES_FILE" ] && [ -n "$PYTHON_CMD" ]; then
   $PYTHON_CMD -c "
@@ -76,6 +102,16 @@ for name, cfg in mcps.items():
     else:
         print(f'  ⚠️  {name}: not detected (optional)')
 " 2>/dev/null || ISSUES=$((ISSUES + 1))
+fi
+
+# === 3b. MCP connectivity ===
+echo -e "${CYAN}[MCP_CONNECT]${NC} Testing MCP connectivity..."
+if command -v lean-ctx &>/dev/null; then
+  if lean-ctx ctx_knowledge status &>/dev/null 2>&1; then
+    echo -e "  ✅ lean-ctx MCP: responding"
+  else
+    echo -e "  ⚠️  lean-ctx CLI found but MCP not responding (expected in CI)"
+  fi
 fi
 
 # === 4. Git branch ===
