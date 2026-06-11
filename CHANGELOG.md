@@ -5,6 +5,25 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-11
+
+### Added
+
+- **Automated release workflow**: `.github/workflows/release.yml` — on push to `main`, checks npm registry for version, runs tests, creates git tag, publishes to npm automatically.
+- **NPM registry check**: Release workflow checks npm (not git tags) to decide whether to publish — prevents duplicate publish errors.
+
+### Changed
+
+- `package.json` — version 0.6.0
+- `.claude-plugin/plugin.json` — version 0.6.0
+- `RELEASE.md` — rewritten for automated CI/CD flow with manual-only PR + merge steps
+- `CONTRIBUTING.md` — release section now points to CI/CD automation
+
+### Fixed
+
+- Release workflow used `npm ci` which requires `package-lock.json` — changed to `npm install`
+- Remove unnecessary `git tag` check — replaced with direct npm registry lookup
+
 ## [0.5.9] - 2026-06-11
 
 ### Fixed
