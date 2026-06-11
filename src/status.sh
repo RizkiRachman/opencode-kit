@@ -94,10 +94,8 @@ with open('$RULES_FILE') as f:
 rules = r.get('rules', [])
 critical = [x for x in rules if x.get('severity') == 'CRITICAL']
 high = [x for x in rules if x.get('severity') == 'HIGH']
-required_mcps = list(r.get('required_mcps', {}).keys())
-required_mcps = [m for m in required_mcps if m != 'description']
-mcps = list(r.get('required_mcps', {}).keys())
-mcps = [m for m in mcps if m != 'description']
+    mcps = list(r.get('required_mcps', {}).keys())
+    mcps = [m for m in mcps if m != 'description']
 print(f'  {len(critical)} CRITICAL rules, {len(high)} HIGH rules')
 if mcps:
     print(f'  Required MCPs: {\", \".join(mcps)}')
