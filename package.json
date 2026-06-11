@@ -1,0 +1,18 @@
+{
+  "name": "opencode-kit",
+  "version": "0.1.0",
+  "description": "Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow",
+  "license": "MIT",
+  "author": "RizkiRachman",
+  "bin": {
+    "opencode-kit": "./src/init.sh"
+  },
+  "files": [
+    "src/",
+    "rules/",
+    "templates/"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

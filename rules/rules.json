@@ -1,0 +1,114 @@
+{
+  "version": "0.1.0",
+  "strict": true,
+  "description": "Machine-enforceable rules for OpenCode agents. CRITICAL = BLOCK agent. HIGH = FLAG orchestrator. LOW = advisory.",
+
+  "state_machine": {
+    "transitions": [
+      { "from": "INIT", "to": "PLAN", "require_score": null },
+      { "from": "PLAN", "to": "PLAN_SCORED", "require_score": null },
+      { "from": "PLAN_SCORED", "to": "EXECUTE", "require_score": 70 },
+      { "from": "EXECUTE", "to": "EXECUTE_SCORED", "require_score": null },
+      { "from": "EXECUTE_SCORED", "to": "REVIEW", "require_score": 70 },
+      { "from": "REVIEW", "to": "REVIEW_SCORED", "require_score": null },
+      { "from": "REVIEW_SCORED", "to": "COMPLETE", "require_score": 70 },
+      { "from": "*", "to": "BLOCKED", "condition": "score < 50 OR retry_attempts >= 3" },
+      { "from": "BLOCKED", "to": "INIT", "condition": "user_intervention" }
+    ]
+  },
+
+  "rules": [
+    {
+      "id": "PREFLIGHT_001",
+      "severity": "CRITICAL",
+      "description": "Agent MUST load contract.json before any tool call",
+      "condition": "first_action_not_contract_load",
+      "action": "BLOCK",
+      "message": "⛔ PREFLIGHT FAILED: contract.json not loaded. Run: lean-ctx ctx_knowledge recall --query \"orchestration-contract\""
+    },
+    {
+      "id": "PREFLIGHT_002",
+      "severity": "CRITICAL",
+      "description": "Agent MUST NOT work on main branch",
+      "condition": "git_branch_is_main",
+      "action": "BLOCK",
+      "message": "⛔ PREFLIGHT FAILED: Current branch is main. Create a feature branch first."
+    },
+    {
+      "id": "PREFLIGHT_003",
+      "severity": "CRITICAL",
+      "description": "Agent MUST validate contract.state before proceeding",
+      "condition": "contract_state_mismatch",
+      "action": "BLOCK",
+      "message": "⛔ STATE FAILED: Contract state is ${actual}. Expected one of: ${expected}"
+    },
+    {
+      "id": "IMPACT_001",
+      "severity": "CRITICAL",
+      "description": "Agent MUST run gitnexus_impact before editing any symbol",
+      "condition": "edit_without_impact_analysis",
+      "action": "BLOCK",
+      "message": "⛔ IMPACT FAILED: Edit attempted without gitnexus_impact analysis. Run: gitnexus_impact({target, direction: \"upstream\"})"
+    },
+    {
+      "id": "PERSIST_001",
+      "severity": "HIGH",
+      "description": "Agent MUST persist contract after every delegation/phase change",
+      "condition": "delegation_without_persist",
+      "action": "FLAG",
+      "message": "⚠️ PERSIST WARNING: Contract not persisted after delegation. Run: lean-ctx ctx_knowledge remember category architecture key orchestration-contract value <updated JSON>"
+    },
+    {
+      "id": "SCORE_001",
+      "severity": "HIGH",
+      "description": "Scoring MUST be computed after each subagent returns",
+      "condition": "delegation_returned_without_scoring",
+      "action": "FLAG",
+      "message": "⚠️ SCORE WARNING: Subagent output not scored. Run scoring pipeline (Tier 1 rules + Tier 2 judge)"
+    },
+    {
+      "id": "WRITE_001",
+      "severity": "CRITICAL",
+      "description": "Agent MUST follow writing order: Port → Service → Mapper → Adapter → Constants → Events → Tests",
+      "condition": "writing_order_violation",
+      "action": "FLAG",
+      "message": "⚠️ WRITING ORDER: Files created in wrong order. Expected order: port → service → mapper → adapter → constants → events → tests"
+    },
+    {
+      "id": "BRANCH_001",
+      "severity": "HIGH",
+      "description": "Agent MUST push feature branch before significant work",
+      "condition": "significant_work_without_push",
+      "action": "FLAG",
+      "message": "⚠️ BRANCH WARNING: Feature branch exists but not pushed. Run: git push -u origin $(git branch --show-current)"
+    },
+    {
+      "id": "LEARN_001",
+      "severity": "HIGH",
+      "description": "Learner agent MUST update ALL 11 memory systems in post-flight matrix",
+      "condition": "learner_skipped_memory_system",
+      "action": "FLAG",
+      "message": "⚠️ LEARNER WARNING: Not all memory systems updated. See AGENTS.md §1.7 for full matrix."
+    }
+  ],
+
+  "scoring": {
+    "tier1": {
+      "schema_valid_deduction": 15,
+      "permissions_violated_deduction": 40,
+      "blast_radius_high_deduction": 40,
+      "writing_order_wrong_deduction": 15,
+      "required_fields_missing_deduction": 15,
+      "subtotal_threshold": 70
+    },
+    "tier2": {
+      "judge_prompt": "Score 0-100 on: Fulfills requirements (0-40), Follows governance (0-30), Completeness (0-20), Edge cases covered (0-10). Return JSON: { score: N, rationale: '...', missing_items: [...] }"
+    },
+    "thresholds": {
+      "pass": 70,
+      "retry": 50,
+      "max_attempts": 3,
+      "escalation": 50
+    }
+  }
+}
