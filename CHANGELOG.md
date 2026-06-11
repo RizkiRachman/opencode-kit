@@ -5,7 +5,22 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Improvement Sprint
+## [Unreleased] — Iteration 2
+
+### Changed
+
+- **rules.json**: Clarified graphify MCP description — explicitly states dependency on gitnexus index
+
+## [0.6.5] - 2026-06-11
+
+### Fixed
+
+- **cli.js**: analytics command path was missing `.opencode/` prefix, causing silent fail
+- **package.json**: lint script no longer suppresses shellcheck output with `2>/dev/null || true`
+- **postflight.sh**: Reduced from 11 Python subprocesses to 1 via single eval call
+- **rules/validation.sh**: Added missing `# shellcheck source=` directive
+- **doctor.sh**: Guard against empty `check_cli` fields, use `shlex.split` instead of shell=True
+- **templates/contract.json**: contract_version synced to 0.6.4 (stops false migration trigger)
 
 ### Added
 
