@@ -313,12 +313,12 @@ After every subagent delegation, scoring runs automatically:
 - [x] 6 agent .md templates with embedded pre-flight gates
 - [x] npm package.json for `npx opencode-kit init`
 
-### v0.2 — Hardening
-- [ ] Auto-detect MCP availability (lean-ctx, gitnexus, graphify)
-- [ ] `rules/validation.sh` — validate agent actions against rules
-- [ ] Test on clean macOS M-series machine
-- [ ] Edge cases: re-init over existing `.opencode/`
-- [ ] ADR auto-generate on decision
+### v0.2 — Hardening ✅
+- [x] Auto-detect MCP availability (lean-ctx, gitnexus, graphify)
+- [x] `rules/validation.sh` — validate agent actions against rules
+- [ ] Test on clean macOS M-series machine (manual — see notes)
+- [x] Edge cases: re-init over existing `.opencode/` with --force + backup
+- [x] ADR auto-generate on decision (`src/adr.sh`)
 
 ### v0.3 — Production
 - [ ] Cross-platform (Linux, Intel Mac)

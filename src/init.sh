@@ -11,6 +11,7 @@ NC='\033[0m'
 FORCE="${1:-}"
 KIT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TARGET_DIR="${PWD}"
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
 
 echo "[opencode-kit] 🚀 Initializing orchestration framework in $TARGET_DIR"
 
@@ -48,11 +49,20 @@ if ! git rev-parse --git-dir &>/dev/null; then
   echo "  ✅ git initialized"
 fi
 
-# --- Check existing .opencode/ ---
-if [ -d ".opencode" ] && [ "$FORCE" != "--force" ]; then
-  echo ""
-  echo -e "${YELLOW}⚠️  .opencode/ already exists. Use --force to overwrite.${NC}"
-  echo "  Existing files will NOT be removed. New files will be copied alongside."
+# --- Handle existing .opencode/ ---
+if [ -d ".opencode" ]; then
+  if [ "$FORCE" = "--force" ]; then
+    BACKUP=".opencode.bak.$TIMESTAMP"
+    echo ""
+    echo -e "${YELLOW}⚠️  --force: Backing up existing .opencode/ to $BACKUP${NC}"
+    cp -r ".opencode" "$BACKUP"
+    rm -rf ".opencode"
+    echo "  ✅ Backed up to $BACKUP"
+  else
+    echo ""
+    echo -e "${YELLOW}⚠️  .opencode/ already exists. Use --force to overwrite (backup + clean scaffold).${NC}"
+    echo "  Missing files will be added. Existing files will NOT be overwritten."
+  fi
 fi
 
 # --- Scaffold directories ---
@@ -104,7 +114,7 @@ echo "[opencode-kit] Running verification..."
 if "$KIT_DIR/src/verify.sh"; then
   echo ""
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}  ✅ opencode-kit v0.1.0 initialized${NC}"
+  echo -e "${GREEN}  ✅ opencode-kit v0.2.0 initialized${NC}"
   echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo ""
   echo "  Next steps:"
