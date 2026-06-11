@@ -138,6 +138,10 @@ if [ "$PLUGIN_MODE" = false ]; then
   chmod +x .opencode/src/telemetry.sh
   echo "  ✅ telemetry.sh (executable)"
 
+  cp "$KIT_DIR/src/doctor.sh" .opencode/src/doctor.sh
+  chmod +x .opencode/src/doctor.sh
+  echo "  ✅ doctor.sh (executable)"
+
   # --- Copy agent templates (pre-flight gates) ---
   for agent in orchestrator planner task-manager code-reviewer learner fixer; do
     if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then

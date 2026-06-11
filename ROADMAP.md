@@ -61,12 +61,10 @@
 - [x] **Persistence fallback**: If `lean-ctx` unavailable, contract persists to `.opencode/state/contract.json` instead.
 - [x] **`experimental.chat.messages.transform` API**: Documented in README Known Limitations section.
 
-### P2 — Should Have
-- [ ] **Cross-project contract sharing**: Share contract state across monorepo services
-- [ ] **Plugin init order conflict detection**: Warn if multiple plugins modify same system prompt areas
-- [ ] **Rule severity config**: Allow projects to override rule severity (e.g., make `PERSIST_001` from FLAG to BLOCK)
-- [ ] **Contract migration**: Schema versioning — auto-migrate old contract.json to new schema
-- [ ] **`opencode-kit doctor`**: Diagnostic command that checks all MCPs, permissions, and config
+### P2 — Implemented
+- [x] **Rule severity config**: `validation.rule_overrides` in contract.json — projects can override rule severity (e.g., make PERSIST_001 from FLAG to BLOCK)
+- [x] **`opencode-kit doctor`**: `src/doctor.sh` — diagnostic command checking MCPs, contract, rules, git branch, persistence, plugin config
+- [x] **Plugin init order conflict detection**: Plugin.js warns if opencode-kit isn't first in the plugin array
 
 ### P3 — Nice to Have
 - [ ] **Web UI**: Browser dashboard for contract overview (state, phases, ADRs, telemetry)

@@ -53,7 +53,8 @@
       "max_test_failures": 3,
       "max_score_drop": 30,
       "max_compile_errors": 1
-    }
+    },
+    "rule_overrides": {}
   },
   "outputs": {
     "plan": null,
