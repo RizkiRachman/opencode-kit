@@ -1,7 +1,7 @@
 {
   "name": "@ikieaneh/opencode-kit",
   "version": "0.6.11",
-  "description": "Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow. Install as plugin.",
+  "description": "Standardized OpenCode orchestration framework \u2014 contract-based, rules-enforced, zero-touch agent workflow. Install as plugin.",
   "license": "MIT",
   "author": "RizkiRachman",
   "type": "module",
@@ -9,6 +9,9 @@
   "exports": {
     ".": {
       "import": ".opencode/plugins/opencode-kit.js"
+    },
+    "./tui": {
+      "import": ".opencode/plugins/opencode-kit-tui.js"
     }
   },
   "bin": {
@@ -36,7 +39,10 @@
     "enforcement",
     "contract",
     "scoring",
-    "adr"
+    "adr",
+    "command-palette",
+    "tui",
+    "slash-commands"
   ],
   "repository": {
     "type": "git",
