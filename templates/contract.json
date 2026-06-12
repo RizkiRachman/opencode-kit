@@ -1,6 +1,6 @@
 {
   "state": "INIT",
-  "contract_version": "0.6.11",
+  "contract_version": "0.6.12",
   "session": {
     "task_id": "",
     "branch": "",
