@@ -139,6 +139,7 @@ If neither exists, run: npx opencode-kit init
 - [ ] Loaded contract from lean-ctx or file?
 - [ ] Not on main/master branch?
 - [ ] contract.state allows current action?
+- [ ] contract.governance.permissions.allowed_execution respected?
 - [ ] rules.json loaded?
 
 **Rules enforcement:**
@@ -224,13 +225,15 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
         const bootstrap = getBootstrapContent();
         if (!bootstrap || !output.messages.length) return;
 
-        // Check contract for rule_overrides and inject them into bootstrap
+        // Check contract for rule_overrides + allowed_execution and inject them into bootstrap
         const contractPath = path.join(projectDir, '.opencode', 'orchestration', 'contract.json');
         let finalBootstrap = bootstrap;
         if (fs.existsSync(contractPath)) {
           try {
             const contractRaw = fs.readFileSync(contractPath, 'utf8');
             const contract = JSON.parse(contractRaw);
+
+            // Inject rule_overrides if present
             if (contract.validation && contract.validation.rule_overrides) {
               const overrides = contract.validation.rule_overrides;
               const overrideKeys = Object.keys(overrides);
@@ -241,8 +244,17 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
                 finalBootstrap = bootstrap + `\n## Rule Overrides (from contract)\n\nThe following rule severities have been overridden:\n${overrideText}\n`;
               }
             }
+
+            // Inject allowed_execution whitelist if present
+            if (contract.governance && contract.governance.permissions && contract.governance.permissions.allowed_execution) {
+              const ae = contract.governance.permissions.allowed_execution;
+              const toolsList = (ae.tools || []).length > 0 ? ae.tools.join(', ') : '(none)';
+              const deniedList = (ae.denied || []).length > 0 ? ae.denied.join(', ') : '(none)';
+              const execText = `\n## Execution Permission Whitelist (from contract)\n\nThis project enforces a contract-based execution whitelist — principle of least privilege:\n  Allowed: ${toolsList}\n  Denied: ${deniedList}\n\nAgents MUST only use whitelisted tools for shell execution. Violations trigger SHELL_002 (CRITICAL/BLOCK).\n`;
+              finalBootstrap += execText;
+            }
           } catch (err) {
-            log('warn', `Failed to parse contract for rule_overrides: ${err.message}`);
+            log('warn', `Failed to parse contract for rules/permissions: ${err.message}`);
           }
         }
 

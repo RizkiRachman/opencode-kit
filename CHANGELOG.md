@@ -5,6 +5,17 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Iteration 8
+
+### Added
+
+- **Contract permission whitelist**: `contract.json` `governance.permissions.allowed_execution` — principle of least privilege for shell execution. Agents may ONLY use whitelisted tool patterns (`lean-ctx_*` by default). Violations trigger SHELL_002 (CRITICAL/BLOCK). (#25)
+- **opencode-kit.js**: Plugin reads `allowed_execution` from contract and injects whitelist into every session via `messages.transform` hook — agents see exact allowed/denied tools in their bootstrap. (#25)
+- **rules/rules.json**: SHELL_002 rule — CRITICAL/BLOCK severity for shell execution outside `allowed_execution.tools` whitelist. Enforces contract-based permissions. (#25)
+- **All 6 agent templates**: Pre-flight gate now checks `contract.governance.permissions.allowed_execution` — agents verify whitelist before any shell execution. (#25)
+- **orchestration-template/SKILL.md**: Added step 3 — check contract permissions before proceeding. (#25)
+- **.gitignore**: Added npm build artifacts (`*.tgz`, `package-lock.json`), secrets (`.env*`), IDE (`.vscode/`), scratch/temp files (`tmp/`, `.tmp/`, `scratch*`). (#25)
+
 ## [Unreleased] — Iteration 7
 - **TUI plugin**: `.opencode/plugins/opencode-kit-tui.js` — new TUI plugin that registers 5 commands in the Ctrl+P command palette and as `/`-slash commands. Commands: `/kit-init` (scaffold framework), `/kit-doctor` (diagnostics), `/kit-status` (contract state), `/kit-verify` (installation check), `/kit-adr` (record ADR). (#23)
 - **package.json**: Added `./tui` export entry pointing to `@ikieaneh/opencode-kit/tui`. Added `command-palette`, `tui`, `slash-commands` keywords. (#23)

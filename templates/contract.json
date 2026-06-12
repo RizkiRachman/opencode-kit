@@ -66,7 +66,13 @@
         "modify CI/CD or .opencode/ config",
         "use fully qualified names inline",
         "start work without loading contract"
-      ]
+      ],
+      "allowed_execution": {
+        "description": "Contract-based execution whitelist. Agents may ONLY use tools matching these patterns for shell execution. Default: lean-ctx_* tools.",
+        "explanation": "Principle of least privilege — whitelist allowed tool patterns instead of denying specific tools. The pre-flight bootstrap uses this contract field to inject execution constraints into every agent session.",
+        "tools": ["lean-ctx_*"],
+        "denied": ["bash", "snip"]
+      }
     },
     "previous_blockers": [],
     "decisions_log": []

@@ -15,7 +15,13 @@ description: MANDATORY — Load orchestration contract before any work. Validate
 2. **VALIDATE** — Check state transition is legal per rules.json state_machine
    - If illegal: set state=BLOCKED, persist, STOP
 
-3. **PERSIST** — After every delegation or phase change:
+3. **CHECK CONTRACT PERMISSIONS** — Extract `contract.governance.permissions.allowed_execution`
+   - `allowed_execution.tools` defines which tool patterns agents may use for shell execution
+   - Default: `["lean-ctx_*"]` — use `lean-ctx ctx_shell`, never `bash` or `snip`
+   - `allowed_execution.denied` lists explicitly denied tools
+   - Violating the whitelist triggers SHELL_002 (CRITICAL/BLOCK)
+
+4. **PERSIST** — After every delegation or phase change:
    ```
    lean-ctx ctx_knowledge remember \
      category architecture \

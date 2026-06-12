@@ -117,6 +117,14 @@
       "condition": "judge_prompt_not_from_canonical_source",
       "action": "FLAG",
       "message": "⚠️ SCORE WARNING: Judge prompt must use canonical source. See .opencode/rules/rules.json scoring.tier2.judge_prompt"
+    },
+    {
+      "id": "SHELL_002",
+      "severity": "CRITICAL",
+      "description": "Agent MUST respect contract.governance.permissions.allowed_execution tool whitelist. Only tools matching allowed_execution.tools patterns may be used for shell execution.",
+      "condition": "shell_execution_violates_allowed_execution",
+      "action": "BLOCK",
+      "message": "⛔ EXECUTION VIOLATION: Shell execution attempted with tool outside allowed_execution whitelist. Allowed: ${allowed}. Denied: ${denied}. Use lean-ctx ctx_shell for shell commands."
     }
   ],
 

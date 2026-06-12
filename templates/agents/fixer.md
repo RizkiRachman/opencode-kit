@@ -31,6 +31,10 @@ permission:
 
 3. Read scope: scope.included defines what you may modify
    → Do NOT touch files outside scope
+
+4. Check contract permissions: Extract governance.permissions.allowed_execution
+   → Only tools matching these patterns allowed for shell execution
+   → Default: ["lean-ctx_*"] — use lean-ctx ctx_shell, never bash
 ```
 
 ## Permissions
