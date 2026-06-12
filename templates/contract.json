@@ -1,6 +1,6 @@
 {
   "state": "INIT",
-  "contract_version": "0.6.12",
+  "contract_version": "0.6.13",
   "session": {
     "task_id": "",
     "branch": "",
@@ -70,8 +70,13 @@
       "allowed_execution": {
         "description": "Contract-based execution whitelist. Agents may ONLY use tools matching these patterns for shell execution. Default: lean-ctx_* tools.",
         "explanation": "Principle of least privilege — whitelist allowed tool patterns instead of denying specific tools. The pre-flight bootstrap uses this contract field to inject execution constraints into every agent session.",
-        "tools": ["lean-ctx_*"],
-        "denied": ["bash", "snip"]
+        "tools": [
+          "lean-ctx_*"
+        ],
+        "denied": [
+          "bash",
+          "snip"
+        ]
       }
     },
     "previous_blockers": [],
