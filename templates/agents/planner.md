@@ -29,6 +29,10 @@ permission:
 
 3. Read rules.json: .opencode/rules/rules.json
    → CRITICAL rules cannot be violated
+
+4. Check contract permissions: Extract governance.permissions.allowed_execution
+   → Only tools matching these patterns allowed for shell execution
+   → Default: ["lean-ctx_*"] — use lean-ctx ctx_shell, never bash
 ```
 
 ## Permissions

@@ -37,6 +37,10 @@ You MUST complete these steps BEFORE any tool call or work:
 
 4. Read rules: .opencode/rules/rules.json
    → Know which rules apply to you
+
+5. Check contract permissions: Extract governance.permissions.allowed_execution
+   → Only tools matching these patterns allowed for shell execution
+   → Default: ["lean-ctx_*"] — use lean-ctx ctx_shell, never bash
 ```
 
 No preamble. No "first understand the task." Contract loads first. Everything else after.

@@ -11,3 +11,20 @@ node_modules/
 # Audit documents (development artifacts — keep local)
 docs/audit/
 __pycache__/
+
+# npm build artifacts
+*.tgz
+package-lock.json
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+
+# Scratch / temp files (development exploration)
+tmp/
+.tmp/
+scratch*
