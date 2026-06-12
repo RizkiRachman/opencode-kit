@@ -215,6 +215,36 @@ cd your-project
 /path/to/opencode-kit/src/init.sh
 ```
 
+#### Option 4: TUI commands (optional)
+
+For `/`-slash commands and Ctrl+P command palette integration, add the TUI plugin:
+
+```json
+{
+  "plugin": [
+    "@ikieaneh/opencode-kit",
+    "@ikieaneh/opencode-kit/tui",   ← Adds Ctrl+P commands
+    "other-plugins..."
+  ]
+}
+```
+
+The TUI plugin registers 5 commands that appear in the command palette and as `/`-slash commands:
+
+| Slash | Alias | Action |
+|-------|-------|--------|
+| `/kit-init` | `/ki` | Scaffold orchestration framework |
+| `/kit-doctor` | `/kd` | Run diagnostics |
+| `/kit-status` | `/ks` | Show contract state |
+| `/kit-verify` | `/kv` | Verify installation |
+| `/kit-adr` | `/ka` | Record an Architecture Decision Record |
+
+Type `/kit-` in the chat input or `Ctrl+P` to see all available opencode-kit commands.
+
+> **Plugin ordering**: The TUI plugin (`@ikieaneh/opencode-kit/tui`) should come **after** the server plugin. The server plugin must still be first in the array.
+
+
+
 ### Post-install verification
 
 ```sh
@@ -291,6 +321,20 @@ Once installed, run these from the project root:
 | `npx opencode-kit --version` | Print version |
 | `npx opencode-kit --help` | Print help |
 
+### TUI Commands (Ctrl+P / `/`-slash)
+
+If you have the TUI plugin enabled, the following commands are available in the command palette (`Ctrl+P`) and as chat slash commands:
+
+| Slash | Alias | Action |
+|-------|-------|--------|
+| `/kit-init` | `/ki` | Scaffold orchestration framework |
+| `/kit-doctor` | `/kd` | Run diagnostics (MCPs, contract, git, persistence) |
+| `/kit-status` | `/ks` | Show contract state and phase info |
+| `/kit-verify` | `/kv` | Validate installation integrity |
+| `/kit-adr` | `/ka` | Record a new Architecture Decision Record |
+
+
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -331,7 +375,9 @@ opencode-kit/
  │   └── plans/                   ← Implementation plans
  ├── test/                       ← Integration + E2E tests (16 total)
  ├── .github/workflows/          ← CI (ShellCheck + scaffold + tests)
- ├── .opencode/plugins/          ← Plugin entry point
+ ├── .opencode/plugins/          ← Plugin entry points
+ │   ├── opencode-kit.js        ← Server plugin (hooks, transform)
+ │   └── opencode-kit-tui.js     ← TUI plugin (commands, palette)
  ├── .claude-plugin/             ← Plugin metadata
  ├── package.json                ← npm publish
   ├── CHANGELOG.md
@@ -437,6 +483,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 - **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked as experimental in the OpenCode plugin SDK. It may change in future versions. If it breaks, the plugin falls back to per-project agent .md files (`.opencode/agents/*.md`), which remain functional.
 - **Package name**: Currently published as `@ikieaneh/opencode-kit` (scoped). Requires `npm install @ikieaneh/opencode-kit`.
+- **TUI plugin**: `@ikieaneh/opencode-kit/tui` requires OpenCode with TUI support (version with `TuiPluginApi`). It registers commands in the Ctrl+P palette and as `/`-slash commands. Scripts are run synchronously via Node.js `execSync` — long-running scripts may block the UI temporarily.
 - **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
 
 Rizki Rachman — [GitHub](https://github.com/RizkiRachman)

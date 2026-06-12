@@ -5,7 +5,10 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Iteration 6
+## [Unreleased] — Iteration 7
+- **TUI plugin**: `.opencode/plugins/opencode-kit-tui.js` — new TUI plugin that registers 5 commands in the Ctrl+P command palette and as `/`-slash commands. Commands: `/kit-init` (scaffold framework), `/kit-doctor` (diagnostics), `/kit-status` (contract state), `/kit-verify` (installation check), `/kit-adr` (record ADR). (#23)
+- **package.json**: Added `./tui` export entry pointing to `@ikieaneh/opencode-kit/tui`. Added `command-palette`, `tui`, `slash-commands` keywords. (#23)
+- **README.md**: Added TUI plugin installation docs, commands table, and structure tree entry for the new plugin file. (#23)
 
 ### Fixed
 

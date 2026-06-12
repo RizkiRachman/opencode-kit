@@ -116,6 +116,80 @@ test('rules.json is valid JSON with required fields', () => {
   assert.ok(data.scoring, 'Should have scoring');
 });
 
+
+// === TUI Plugin Tests ===
+
+// 8. TUI plugin module loads
+test('TUI plugin module loads without errors', async () => {
+  const tuiPlugin = await import(path.join(ROOT, '.opencode/plugins/opencode-kit-tui.js'));
+  assert.ok(tuiPlugin, 'TUI plugin should export something');
+  assert.ok(tuiPlugin.tui, 'TUI plugin should export a tui function');
+  assert.equal(typeof tuiPlugin.tui, 'function', 'tui should be a function');
+});
+
+// 9. TUI plugin registers commands
+test('TUI plugin registers expected commands', async () => {
+  const { tui } = await import(path.join(ROOT, '.opencode/plugins/opencode-kit-tui.js'));
+
+  // Mock TUI API
+  let registeredCommands = [];
+  const mockApi = {
+    state: { path: { directory: ROOT } },
+    command: {
+      register: (cb) => {
+        registeredCommands = cb();
+        return () => {};
+      },
+    },
+    ui: {
+      toast: () => {},
+      DialogAlert: () => {},
+    },
+    dialog: {
+      replace: () => {},
+      clear: () => {},
+    },
+  };
+
+  await tui(mockApi, {}, {});
+
+  assert.ok(registeredCommands.length >= 5, `Should register >= 5 commands, got ${registeredCommands.length}`);
+
+  // Check all required commands exist
+  const commandValues = registeredCommands.map(c => c.value);
+  const expected = ['kit:init', 'kit:doctor', 'kit:status', 'kit:verify', 'kit:adr'];
+  for (const cmd of expected) {
+    assert.ok(commandValues.includes(cmd), `Missing command: ${cmd}`);
+  }
+
+  // Check slash definitions
+  const initCmd = registeredCommands.find(c => c.value === 'kit:init');
+  assert.ok(initCmd.slash, 'init should have slash definition');
+  assert.equal(initCmd.slash.name, 'kit-init', 'init slash name');
+  assert.ok(initCmd.slash.aliases.includes('ki'), 'init should have ki alias');
+
+  // Check categories
+  for (const cmd of registeredCommands) {
+    assert.equal(cmd.category, 'opencode-kit', `Command ${cmd.value} should have correct category`);
+  }
+});
+
+// 10. TUI plugin file exists in exports
+test('TUI plugin is exported in package.json', () => {
+  const pkgPath = path.join(ROOT, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  assert.ok(pkg.exports, 'package.json should have exports');
+  assert.ok(pkg.exports['./tui'], 'package.json should export ./tui');
+  assert.equal(
+    pkg.exports['./tui'].import,
+    '.opencode/plugins/opencode-kit-tui.js',
+    'TUI export should point to correct file'
+  );
+  // Verify the file actually exists
+  const tuiPath = path.join(ROOT, '.opencode/plugins/opencode-kit-tui.js');
+  assert.ok(fs.existsSync(tuiPath), 'TUI plugin file should exist');
+});
+
 // === Run collected tests (supports both sync and async) ===
 for (const { name, fn } of tests) {
   try {
