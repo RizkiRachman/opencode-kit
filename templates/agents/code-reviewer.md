@@ -30,6 +30,10 @@ permission:
    → If wrong state → STOP
 
 3. Read rules.json: Understand what rules to check against
+
+4. Check contract permissions: Extract governance.permissions.allowed_execution
+   → Only tools matching these patterns allowed for shell execution
+   → Default: ["lean-ctx_*"] — use lean-ctx ctx_shell, never bash
 ```
 
 ## Permissions

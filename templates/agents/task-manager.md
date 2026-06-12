@@ -34,6 +34,10 @@ permission:
    → If main/master: STOP
 
 4. Read rules.json: Check IMPACT_001 (gitnexus_impact before edits)
+
+5. Check contract permissions: Extract governance.permissions.allowed_execution
+   → Only tools matching these patterns allowed for shell execution
+   → Default: ["lean-ctx_*"] — use lean-ctx ctx_shell, never bash
 ```
 
 ## Permissions
