@@ -108,6 +108,106 @@ const ensureContract = (projectDir) => {
   }
 };
 
+// --- Auto-provision agents if missing ---
+const ensureAgents = (projectDir) => {
+  try {
+    const sourceDir = path.join(PLUGIN_ROOT, 'agents');
+    const destDir = path.join(projectDir, '.opencode', 'agents');
+
+    // Skip if dest exists and has .md files
+    if (fs.existsSync(destDir)) {
+      const existing = fs.readdirSync(destDir).filter(f => f.endsWith('.md'));
+      if (existing.length > 0) {
+        log('info', `Agents already provisioned (${existing.length} files) — skipping`);
+        return;
+      }
+    }
+
+    // Copy all .md files from source to dest
+    if (!fs.existsSync(sourceDir)) {
+      log('warn', `Source agents dir not found: ${sourceDir}`);
+      return;
+    }
+
+    fs.mkdirSync(destDir, { recursive: true });
+    const files = fs.readdirSync(sourceDir).filter(f => f.endsWith('.md'));
+    for (const file of files) {
+      fs.copyFileSync(path.join(sourceDir, file), path.join(destDir, file));
+    }
+    log('info', `Provisioned ${files.length} agents → ${destDir}`);
+  } catch (err) {
+    log('error', `Failed to auto-provision agents: ${err.message}`);
+  }
+};
+
+// --- Auto-provision skills if missing ---
+const ensureSkills = (projectDir) => {
+  try {
+    const sourceDir = path.join(PLUGIN_ROOT, 'skills');
+    const destDir = path.join(projectDir, '.opencode', 'skills');
+
+    // Skip if dest exists and has subdirectories
+    if (fs.existsSync(destDir)) {
+      const existing = fs.readdirSync(destDir).filter(f => {
+        return fs.statSync(path.join(destDir, f)).isDirectory();
+      });
+      if (existing.length > 0) {
+        log('info', `Skills already provisioned (${existing.length} dirs) — skipping`);
+        return;
+      }
+    }
+
+    // Copy all skill directories from source to dest
+    if (!fs.existsSync(sourceDir)) {
+      log('warn', `Source skills dir not found: ${sourceDir}`);
+      return;
+    }
+
+    fs.mkdirSync(destDir, { recursive: true });
+    const dirs = fs.readdirSync(sourceDir).filter(f => {
+      return fs.statSync(path.join(sourceDir, f)).isDirectory();
+    });
+    for (const dir of dirs) {
+      fs.cpSync(path.join(sourceDir, dir), path.join(destDir, dir), { recursive: true });
+    }
+    log('info', `Provisioned ${dirs.length} skills → ${destDir}`);
+  } catch (err) {
+    log('error', `Failed to auto-provision skills: ${err.message}`);
+  }
+};
+
+// --- Auto-provision rules if missing ---
+const ensureRules = (projectDir) => {
+  try {
+    const sourceDir = path.join(PLUGIN_ROOT, 'rules');
+    const destDir = path.join(projectDir, '.opencode', 'rules');
+
+    // Skip if dest exists and has .json files
+    if (fs.existsSync(destDir)) {
+      const existing = fs.readdirSync(destDir).filter(f => f.endsWith('.json'));
+      if (existing.length > 0) {
+        log('info', `Rules already provisioned (${existing.length} files) — skipping`);
+        return;
+      }
+    }
+
+    // Copy all .json files from source to dest
+    if (!fs.existsSync(sourceDir)) {
+      log('warn', `Source rules dir not found: ${sourceDir}`);
+      return;
+    }
+
+    fs.mkdirSync(destDir, { recursive: true });
+    const files = fs.readdirSync(sourceDir).filter(f => f.endsWith('.json'));
+    for (const file of files) {
+      fs.copyFileSync(path.join(sourceDir, file), path.join(destDir, file));
+    }
+    log('info', `Provisioned ${files.length} rules → ${destDir}`);
+  } catch (err) {
+    log('error', `Failed to auto-provision rules: ${err.message}`);
+  }
+};
+
 // --- Load bootstrap content (cached) ---
 const getBootstrapContent = () => {
   if (_bootstrapCache !== undefined) return _bootstrapCache;
@@ -165,6 +265,11 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
 
   // Auto-init contract on first run
   ensureContract(projectDir);
+
+  // Auto-provision agents, skills, and rules
+  ensureAgents(projectDir);
+  ensureSkills(projectDir);
+  ensureRules(projectDir);
 
   // Ensure global config directory exists
   try {
