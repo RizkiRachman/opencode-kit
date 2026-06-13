@@ -38,9 +38,9 @@
         "blocked": true,
         "reason": "Bypasses audit trail, contract locking, and context persistence. Use lean-ctx ctx_shell instead."
       },
-      "madar": {
+      "graphify": {
         "required": true,
-        "reason": "Codebase context packs — use before any code search or exploration"
+        "reason": "Codebase exploration — use before any code search or exploration"
       }
     }
   },

@@ -34,7 +34,7 @@ ALL MCP calls MUST go through lean-ctx_ctx_shell using CLI tools:
 |---------|-------------|---------|
 | GitHub API | `gh` | `lean-ctx ctx_shell(command="gh pr list --repo owner/repo")` |
 | GitNexus | `gitnexus` | `lean-ctx ctx_shell(command="gitnexus list")` |
-| Madar | `madar` | `lean-ctx ctx_shell(command="madar pack 'query' --task explain")` |
+| Graphify | `graphify` | `lean-ctx ctx_shell(command="graphify explain 'symbol' --graph graphify-out/graph.json")` |
 | PostgreSQL | `psql` | `lean-ctx ctx_shell(command="psql -c 'SELECT 1'")` |
 | Context7 | `npx @upstash/context7-mcp` | `lean-ctx ctx_shell(command="npx @upstash/context7-mcp --help")` |
 | Firecrawl | `firecrawl` | `lean-ctx ctx_shell(command="firecrawl search 'query'")` |

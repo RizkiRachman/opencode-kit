@@ -271,17 +271,6 @@
         "@modelcontextprotocol/server-github"
       ],
       "enabled": true
-    },
-    "madar": {
-      "type": "local",
-      "command": [
-        "/opt/homebrew/Cellar/node/26.0.0/bin/node",
-        "/opt/homebrew/lib/node_modules/@lubab/madar/dist/src/cli/bin.js",
-        "serve",
-        "--stdio",
-        "/Users/rizkirachman/IdeaProjects/opencode-kit/out/graph.json"
-      ],
-      "enabled": true
     }
   },
   "command": {

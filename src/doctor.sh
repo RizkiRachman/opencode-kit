@@ -202,7 +202,7 @@ REQUIRED_SKILLS = {
     "testing-specialist": ["testing-strategies"],
 }
 
-REQUIRED_MCP = ["context7", "gitnexus", "lean-ctx", "madar"]
+REQUIRED_MCP = ["context7", "gitnexus", "lean-ctx"]
 
 try:
     with open("opencode.json") as f:
