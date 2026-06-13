@@ -69,10 +69,79 @@ Look for SC1091 (source path) or SC2001 (sed style) — most are info-level.
 3. Verify SKILL.md starts with `---` (YAML frontmatter)
 4. Run `bash .opencode/src/doctor.sh` to verify
 
+### Contract lock timeout
+**Symptom**: "Could not acquire contract lock" error.
+
+**Fix:**
+```sh
+# Check if lock exists
+bash .opencode/src/contract-lock.sh check
+
+# Force release stale lock (older than 5 minutes)
+bash .opencode/src/contract-lock.sh force
+
+# Force release ALL locks
+bash .opencode/src/contract-lock.sh force --all
+```
+
+### Scoring pipeline fails
+**Symptom**: "scoring-pipeline.sh: command not found" or scoring doesn't run.
+
+**Fix:**
+```sh
+# Verify script exists and is executable
+ls -la .opencode/src/scoring-pipeline.sh
+
+# Run manually to see errors
+bash .opencode/src/scoring-pipeline.sh 2>&1
+
+# Check contract.json has required fields
+bash .opencode/src/doctor.sh
+```
+
+### Adoption check fails
+**Symptom**: "Project not initialized" or missing files error.
+
+**Fix:**
+```sh
+# Run adoption check with fix mode
+bash .opencode/src/adoption-check.sh --fix
+
+# Or reinitialize manually
+bash .opencode/src/init.sh
+```
+
+### Audit trail not recording
+**Symptom**: No events in .opencode/audit/audit.log.
+
+**Fix:**
+```sh
+# Check if audit directory exists
+ls -la .opencode/audit/
+
+# Create it manually if missing
+mkdir -p .opencode/audit/
+
+# Test logging
+bash .opencode/src/audit-trail.sh log test "initialization" '{"test": true}'
+```
+
+### State machine validation fails in preflight
+**Symptom**: "INVALID_STATE" or "NO_TRANSITION" warning in preflight.
+
+**Fix:**
+- Check contract.json state is one of: INIT, PLAN, PLAN_SCORED, EXECUTE, EXECUTE_SCORED, REVIEW, REVIEW_SCORED, COMPLETE, BLOCKED
+- Verify rules.json has valid transitions for current state
+- If stuck in BLOCKED, follow escalation protocol in templates/escalation.md
+
 ## Diagnostics
 
 ```sh
-bash .opencode/src/doctor.sh       # Full health check
-bash .opencode/src/status.sh       # Dashboard view
-bash .opencode/src/analytics.sh    # Telemetry analysis
+bash .opencode/src/doctor.sh           # Full health check
+bash .opencode/src/status.sh           # Dashboard view
+bash .opencode/src/analytics.sh        # Telemetry analysis
+bash .opencode/src/adoption-check.sh   # Verify project adoption
+bash .opencode/src/contract-lock.sh check  # Check contract lock status
+bash .opencode/src/audit-trail.sh query    # Query audit events
+bash .opencode/src/scoring-pipeline.sh     # Run scoring pipeline
 ```

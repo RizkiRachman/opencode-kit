@@ -28,7 +28,7 @@
       "properties": {
         "task_id": { "type": "string" },
         "branch": { "type": "string" },
-        "created_at": { "type": "string" }
+        "created_at": { "type": "string", "format": "date-time" }
       },
       "additionalProperties": true,
       "description": "Session metadata for traceability and resumption"
@@ -39,7 +39,7 @@
       "properties": {
         "included": { "type": "array", "items": { "type": "string" } },
         "excluded": { "type": "array", "items": { "type": "string" } },
-        "boundary": { "type": "string" },
+        "boundary": { "type": "string", "enum": ["project-root", "subdirectory", "single-file", "cross-project", "custom"] },
         "parallel_eligible": { "type": "boolean" },
         "max_parallel_agents": { "type": "integer", "minimum": 1 }
       },
@@ -135,7 +135,7 @@
       "type": "object",
       "properties": {
         "active_agent": { "type": "string" },
-        "mode": { "type": "string" },
+        "mode": { "type": "string", "enum": ["autonomous", "supervised", "interactive"] },
         "applicable_skills": { "type": "array", "items": { "type": "string" } },
         "current_guidance": {
           "type": "string",
@@ -165,7 +165,14 @@
           "type": "object",
           "properties": {
             "do": { "type": "array", "items": { "type": "string" } },
-            "dont": { "type": "array", "items": { "type": "string" } }
+            "dont": { "type": "array", "items": { "type": "string" } },
+            "allowed_execution": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["read", "write", "execute", "deploy"]
+              }
+            }
           },
           "additionalProperties": true
         },
@@ -185,6 +192,29 @@
             "additionalProperties": true
           },
           "description": "Historical log of decisions made during execution"
+        },
+        "timeout": {
+          "type": "object",
+          "description": "Timeout and resource exhaustion handling",
+          "properties": {
+            "max_session_minutes": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 60
+            },
+            "max_retries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5,
+              "default": 2
+            },
+            "escalation_on_timeout": {
+              "type": "string",
+              "enum": ["retry", "handoff", "block"],
+              "default": "handoff"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true,
@@ -294,6 +324,22 @@
       },
       "additionalProperties": true,
       "description": "Retry policy and issue tracking"
+    },
+
+    "blocked_recovery": {
+      "type": "object",
+      "description": "How to recover from BLOCKED state",
+      "properties": {
+        "max_retries": {
+          "type": "integer",
+          "default": 2
+        },
+        "escalation_path": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["retry", "escalate_to_orchestrator", "human_intervention"]
+        }
+      }
     },
 
     "outputs": {
