@@ -140,65 +140,36 @@ cp "$KIT_DIR/src/platform.sh" .opencode/src/platform.sh
 chmod +x .opencode/src/platform.sh
 echo "  ✅ platform.sh (executable)"
 
-# Plugin-specific: scripts that exist locally for CLI access
+# --- Always copy enforcement scripts (agents need these in plugin mode too) ---
+for script in \
+  preflight.sh postflight.sh postflight.py telemetry.sh \
+  doctor.sh status.sh scoring-pipeline.sh contract-lock.sh \
+  adoption-check.sh audit-trail.sh contract-lint.sh checkpoint.sh \
+  new-skill.sh global-config.sh init.sh diff.sh analytics.sh \
+  adr.sh update.sh; do
+  if [ -f "$KIT_DIR/src/$script" ]; then
+    cp "$KIT_DIR/src/$script" ".opencode/src/$script"
+    chmod +x ".opencode/src/$script"
+    echo "  ✅ src/$script (executable)"
+  fi
+done
+
+# --- Rules validation script (non-plugin only) ---
 if [ "$PLUGIN_MODE" = false ]; then
-  # Non-plugin mode: copy all shell scripts
-  cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
-  chmod +x .opencode/rules/validation.sh
-  echo "  ✅ rules/validation.sh"
-
-  cp "$KIT_DIR/src/preflight.sh" .opencode/src/preflight.sh
-  chmod +x .opencode/src/preflight.sh
-  echo "  ✅ preflight.sh (executable)"
-
-  cp "$KIT_DIR/src/postflight.sh" .opencode/src/postflight.sh
-  chmod +x .opencode/src/postflight.sh
-  echo "  ✅ postflight.sh (executable)"
-
-  cp "$KIT_DIR/src/postflight.py" .opencode/src/postflight.py
-  chmod +x .opencode/src/postflight.py
-  echo "  ✅ postflight.py (executable)"
-
-  cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
-  chmod +x .opencode/src/update.sh
-  echo "  ✅ update.sh (executable)"
-
-  cp "$KIT_DIR/src/adr.sh" .opencode/src/adr.sh
-  chmod +x .opencode/src/adr.sh
-  echo "  ✅ adr.sh (executable)"
-
-  cp "$KIT_DIR/src/telemetry.sh" .opencode/src/telemetry.sh
-  chmod +x .opencode/src/telemetry.sh
-  echo "  ✅ telemetry.sh (executable)"
-
-  cp "$KIT_DIR/src/doctor.sh" .opencode/src/doctor.sh
-  chmod +x .opencode/src/doctor.sh
-  echo "  ✅ doctor.sh (executable)"
-
-  cp "$KIT_DIR/src/status.sh" .opencode/src/status.sh
-  chmod +x .opencode/src/status.sh
-  echo "  ✅ status.sh (executable)"
-
-  cp "$KIT_DIR/src/new-skill.sh" .opencode/src/new-skill.sh
-  chmod +x .opencode/src/new-skill.sh
-  echo "  ✅ new-skill.sh (executable)"
-
-  cp "$KIT_DIR/src/analytics.sh" .opencode/src/analytics.sh
-  chmod +x .opencode/src/analytics.sh
-  echo "  ✅ analytics.sh (executable)"
-
-  cp "$KIT_DIR/src/diff.sh" .opencode/src/diff.sh
-  chmod +x .opencode/src/diff.sh
-  echo "  ✅ diff.sh (executable)"
-
-  # --- Copy agent templates (pre-flight gates) ---
-  for agent in orchestrator planner task-manager code-reviewer learner fixer explorer librarian architect observer; do
-    if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
-      cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
-      echo "  ✅ agents/$agent.md"
-    fi
-  done
+  if [ -f "$KIT_DIR/rules/validation.sh" ]; then
+    cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
+    chmod +x .opencode/rules/validation.sh
+    echo "  ✅ rules/validation.sh"
+  fi
 fi
+
+# --- Always copy agent templates (agents need pre-flight gates) ---
+for agent in orchestrator planner task-manager code-reviewer learner fixer explorer librarian architect observer; do
+  if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
+    cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
+    echo "  ✅ agents/$agent.md"
+  fi
+done
 
 # --- Copy git hooks ---
 if [ -d "$KIT_DIR/.githooks" ]; then
