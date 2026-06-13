@@ -329,17 +329,29 @@ Once installed, run these from the project root:
 | `npx opencode-kit --version` | Print version |
 | `npx opencode-kit --help` | Print help |
 
-### TUI Commands (Ctrl+P / `/`-slash)
+## Slash Commands (TUI)
 
-If you have the TUI plugin enabled, the following commands are available in the command palette (`Ctrl+P`) and as chat slash commands:
+Use these directly in the opencode TUI with the `opencode-kit:` prefix:
 
-| Slash | Alias | Action |
-|-------|-------|--------|
-| `/kit-init` | `/ki` | Scaffold orchestration framework |
-| `/kit-doctor` | `/kd` | Run diagnostics (MCPs, contract, git, persistence) |
-| `/kit-status` | `/ks` | Show contract state and phase info |
-| `/kit-verify` | `/kv` | Validate installation integrity |
-| `/kit-adr` | `/ka` | Record a new Architecture Decision Record |
+| Command | Description |
+|---------|-------------|
+| `/opencode-kit:doctor` | Run project health checks |
+| `/opencode-kit:status` | Show project status |
+| `/opencode-kit:analytics` | Show project analytics |
+| `/opencode-kit:preflight` | Run pre-flight gate checks |
+| `/opencode-kit:score` | Run scoring pipeline |
+| `/opencode-kit:contract-lint` | Validate contract structure |
+| `/opencode-kit:checkpoint` | List saved checkpoints |
+| `/opencode-kit:checkpoint-save` | Save a checkpoint |
+| `/opencode-kit:diff` | Show contract changes |
+| `/opencode-kit:audit` | Query audit trail |
+| `/opencode-kit:verify` | Verify project setup |
+| `/opencode-kit:lock` | Check contract lock status |
+| `/opencode-kit:init` | Initialize opencode-kit |
+| `/opencode-kit:update` | Update templates |
+| `/opencode-kit:adr` | Create Architecture Decision Record |
+
+All commands use `lean-ctx ctx_shell` internally (no bash permission required for agents).
 
 
 
