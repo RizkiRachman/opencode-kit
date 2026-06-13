@@ -4,7 +4,11 @@
   "session": {
     "task_id": "",
     "branch": "",
-    "created_at": ""
+    "created_at": "",
+    "model": "",
+    "previous_model": "",
+    "model_changed_at": "",
+    "model_change_count": 0
   },
   "scope": {
     "included": [],
@@ -12,6 +16,21 @@
     "boundary": "project-root",
     "parallel_eligible": false,
     "max_parallel_agents": 1
+  },
+  "required_tools": {
+    "description": "Tools agents MUST use. bash is BLOCKED — all operations use lean-ctx_* tools.",
+    "enforced": true,
+    "tools": {
+      "lean-ctx_*": {
+        "required": true,
+        "reason": "Context persistence, audit trail, contract locking"
+      },
+      "bash": {
+        "required": false,
+        "blocked": true,
+        "reason": "Bypasses audit trail, contract locking, and context persistence. Use lean-ctx ctx_shell instead."
+      }
+    }
   },
   "requirements": {
     "goal": "",

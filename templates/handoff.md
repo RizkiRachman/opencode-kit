@@ -253,6 +253,21 @@ The scoring pipeline runs during handoffs at these transition points:
 
 ---
 
+## Model Change During Handoff
+
+When a model change occurs between agent handoffs:
+
+1. **Record in handoff pack**: Add `model_changed: true`, `previous_model`, and `current_model` fields to the handoff pack JSON
+2. **Context bridge**: The outgoing agent MUST write a model-context summary to `lean-ctx ctx_session finding` that includes:
+   - What the previous model accomplished
+   - What the new model needs to know
+   - Any model-specific assumptions or patterns the previous model used
+3. **State preservation**: Ensure `contract.json.outputs` contains all artifacts before handoff — the new model will rely on these, not in-memory context
+4. **Scoring adjustment**: The scoring pipeline should note the model change in `metrics` so score comparisons across sessions account for model differences
+5. **Validation**: The incoming agent's pre-flight should verify it has loaded the model-context summary before proceeding
+
+---
+
 ## Agent-Specific Handoff Notes
 
 ### orchestrator → planner

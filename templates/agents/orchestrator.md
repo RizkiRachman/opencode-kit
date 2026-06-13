@@ -105,3 +105,17 @@ Apply learner's `knowledge_updates[]` to lean-ctx. Append `lessons_learned[]` to
 - Always delegate. Never implement code yourself.
 - Verify loop max 3 iterations. Escalate if unresolved.
 - Score < 70 → RETRY. Score < 50 → BLOCKED.
+
+## Model Change Recovery
+
+When `session.model` in contract.json differs from the current model in opencode.json:
+
+1. **Detect**: Pre-flight Check 7 identifies the mismatch
+2. **Record**: Update contract.json: set `session.previous_model` to old model, `session.model` to new model, `session.model_changed_at` to current ISO timestamp, increment `session.model_change_count`
+3. **Assess**: Check if the current state is mid-execution (EXECUTE, REVIEW) — if so, the new model lacks context from the previous model's work
+4. **Recover**:
+   - If state is INIT or PLAN: Safe to continue — minimal context loss
+   - If state is EXECUTE or REVIEW: Load outputs from `contract.json.outputs` and `lean-ctx ctx_session resume` to restore context. Consider re-running the previous phase's scoring to validate the new model's understanding
+   - If state is BLOCKED: Treat as fresh BLOCKED recovery with model context handoff
+5. **Log**: Record the model change in `contract.json.governance.decisions_log` with reason "model_change"
+6. **Notify**: Include model change in the handoff pack when delegating to the next agent

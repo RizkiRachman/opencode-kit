@@ -96,7 +96,35 @@ echo ""
 echo "[opencode-kit] Scaffolding files..."
 
 cp "$KIT_DIR/templates/contract.json" .opencode/orchestration/contract.json
-echo "  ✅ contract.json"
+
+# --- Seed session.model from opencode.json (if present) ---
+python3 -c "
+import json, os
+contract_path = '.opencode/orchestration/contract.json'
+config_path = 'opencode.json'
+try:
+    with open(contract_path) as f:
+        contract = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f'  ⚠️  Cannot read contract.json: {e}')
+    exit(0)
+
+model = ''
+try:
+    with open(config_path) as f:
+        cfg = json.load(f)
+    model = cfg.get('model', '')
+except (FileNotFoundError, json.JSONDecodeError):
+    model = ''
+
+contract['session']['model'] = model
+contract['session']['previous_model'] = ''
+contract['session']['model_changed_at'] = ''
+contract['session']['model_change_count'] = 0
+
+with open(contract_path, 'w') as f:
+    json.dump(contract, f, indent=2)
+" && echo "  ✅ contract.json (session.model seeded)" || echo "  ⚠️  contract.json copied, model seed skipped"
 
 cp "$KIT_DIR/templates/superpowers-contract.json" .opencode/templates/superpowers-contract.json
 echo "  ✅ superpowers-contract.json"
