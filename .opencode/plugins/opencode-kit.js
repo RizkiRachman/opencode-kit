@@ -271,6 +271,24 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   ensureSkills(projectDir);
   ensureRules(projectDir);
 
+  // Auto-register TUI plugin in tui.json if missing
+  try {
+    const tuiJsonPath = path.join(homeDir, '.config', 'opencode', 'tui.json');
+    if (fs.existsSync(tuiJsonPath)) {
+      const tuiCfg = JSON.parse(fs.readFileSync(tuiJsonPath, 'utf8'));
+      const tuiPlugins = tuiCfg.plugin || [];
+      const kitTui = '@ikieaneh/opencode-kit/tui';
+      if (!tuiPlugins.includes(kitTui)) {
+        tuiPlugins.unshift(kitTui);
+        tuiCfg.plugin = tuiPlugins;
+        fs.writeFileSync(tuiJsonPath, JSON.stringify(tuiCfg, null, 2));
+        log('info', `Registered TUI plugin in tui.json`);
+      }
+    }
+  } catch (err) {
+    log('warn', `Failed to register TUI plugin: ${err.message}`);
+  }
+
   // Ensure global config directory exists
   try {
     fs.mkdirSync(path.join(globalConfigDir, 'orchestration'), { recursive: true });
