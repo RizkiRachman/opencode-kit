@@ -395,6 +395,13 @@ if '$VERDICT_VALUE' in ('RETRY', 'BLOCKED'):
     if 'issues' not in contract['retry']:
         contract['retry']['issues'] = []
 
+# Record model and timestamp in metrics
+if 'metrics' not in contract:
+    contract['metrics'] = {}
+model = contract.get('session', {}).get('model', 'unknown')
+contract['metrics']['model'] = model
+contract['metrics']['scored_at'] = __import__('datetime').datetime.now().isoformat()
+
 with open('$CONTRACT_FILE', 'w') as f:
     json.dump(contract, f, indent=2)
 

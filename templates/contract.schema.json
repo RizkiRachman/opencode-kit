@@ -28,7 +28,26 @@
       "properties": {
         "task_id": { "type": "string" },
         "branch": { "type": "string" },
-        "created_at": { "type": "string", "format": "date-time" }
+        "created_at": { "type": "string", "format": "date-time" },
+        "model": {
+          "type": "string",
+          "description": "Current model ID (e.g. 'mimo-v2.5', 'deepseek-v4-flash'). Seeded from opencode.json on init."
+        },
+        "previous_model": {
+          "type": "string",
+          "description": "Previous model ID before last model change. Empty if no change has occurred."
+        },
+        "model_changed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last model change. Empty if no change has occurred."
+        },
+        "model_change_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Number of model changes during this contract's lifecycle."
+        }
       },
       "additionalProperties": true,
       "description": "Session metadata for traceability and resumption"
@@ -45,6 +64,28 @@
       },
       "additionalProperties": true,
       "description": "Work boundaries and parallelism controls"
+    },
+
+    "required_tools": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "enforced": { "type": "boolean" },
+        "tools": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "blocked": { "type": "boolean" },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": ["enforced", "tools"],
+      "description": "Tool enforcement policy — lean-ctx_* required, bash blocked"
     },
 
     "requirements": {

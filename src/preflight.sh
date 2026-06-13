@@ -188,6 +188,56 @@ except Exception as e:
   fi
 fi
 
+# --- Check 7: Model change detection ---
+if [ -n "$PYTHON_CMD" ] && [ -f "opencode.json" ]; then
+  MODEL_CHECK=$($PYTHON_CMD -c "
+import json, sys
+
+with open('opencode.json') as f:
+    config = json.load(f)
+config_model = config.get('model', '')
+
+contract_model = ''
+try:
+    with open('$CONTRACT_FILE') as f:
+        contract = json.load(f)
+    contract_model = contract.get('session', {}).get('model', '')
+except:
+    pass
+
+if not contract_model:
+    print('NOTRACK')
+    sys.exit(0)
+
+if config_model != contract_model:
+    print(f'MISMATCH|{contract_model}|{config_model}')
+    sys.exit(0)
+
+print(f'MATCH|{config_model}')
+" 2>/dev/null || echo "PARSE_ERROR")
+
+  IFS='|' read -r STATUS ARG1 ARG2 <<< "$MODEL_CHECK" || true
+
+  case "$STATUS" in
+    NOTRACK)
+      echo -e "${YELLOW}  ⚠️  No model tracked in contract — run init to seed model${NC}"
+      ISSUES=$((ISSUES + 1))
+      ;;
+    MISMATCH)
+      echo -e "${RED}  ❌ MODEL MISMATCH: contract has '${ARG1}', opencode.json has '${ARG2}'${NC}"
+      echo -e "${YELLOW}  ⚠️  Model change detected — new model may not have context from previous model's work${NC}"
+      ISSUES=$((ISSUES + 2))
+      ;;
+    MATCH)
+      echo -e "${GREEN}  ✅ Model tracked: ${ARG1}${NC}"
+      ;;
+    PARSE_ERROR)
+      echo -e "${YELLOW}  ⚠️  Could not read model from opencode.json${NC}"
+      ISSUES=$((ISSUES + 1))
+      ;;
+  esac
+fi
+
 # --- Final verdict ---
 if [ "$MCP_FAIL" -eq 1 ]; then
   echo -e "${RED}⛔ PREFLIGHT FAILED: Required MCPs not available.${NC}"

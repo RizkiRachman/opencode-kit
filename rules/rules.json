@@ -125,6 +125,22 @@
       "condition": "shell_execution_violates_allowed_execution",
       "action": "BLOCK",
       "message": "⛔ EXECUTION VIOLATION: Shell execution attempted with tool outside allowed_execution whitelist. Allowed: ${allowed}. Denied: ${denied}. Use lean-ctx ctx_shell for shell commands."
+    },
+    {
+      "id": "TOOL_001",
+      "severity": "CRITICAL",
+      "description": "Agent MUST use lean-ctx_* tools for ALL operations — bash is BLOCKED. Context persistence requires lean-ctx ctx_read, lean-ctx ctx_shell, lean-ctx ctx_knowledge, etc. Direct bash execution bypasses audit trail, contract locking, and context persistence.",
+      "condition": "agent_uses_bash_tool",
+      "action": "BLOCK",
+      "message": "⛔ TOOL VIOLATION: Agent attempted to use bash directly. ALL operations MUST use lean-ctx_* tools. Use lean-ctx ctx_shell for shell commands, lean-ctx ctx_read for file reads, lean-ctx ctx_knowledge for context persistence."
+    },
+    {
+      "id": "TOOL_002",
+      "severity": "CRITICAL",
+      "description": "opencode.json MUST configure bash:false and lean-ctx_*:true for ALL agents. This is enforced at config level — agents cannot override.",
+      "condition": "agent_config_allows_bash",
+      "action": "BLOCK",
+      "message": "⛔ CONFIG VIOLATION: Agent config allows bash execution. All agents MUST have tools.bash=false and tools.lean-ctx_*=true in opencode.json."
     }
   ],
 
