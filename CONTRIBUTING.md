@@ -110,6 +110,7 @@ git init
 bash .opencode/src/adoption-check.sh
 bash .opencode/src/scoring-pipeline.sh
 bash .opencode/src/audit-trail.sh log test "setup" '{"test": true}'
+bash .opencode/src/contract-lint.sh
 ```
 
 ## Enforcement Architecture
@@ -117,7 +118,7 @@ bash .opencode/src/audit-trail.sh log test "setup" '{"test": true}'
 The project uses a 6-layer enforcement system to maintain consistency and compliance across all agent interactions:
 
 - **Layer 1: Adoption check** — runs before anything to ensure the project is properly initialized
-- **Layer 2: Pre-flight gate** — executes on every agent invocation to verify contract and rules
+- **Layer 2: Pre-flight gate** — executes on every agent invocation to verify contract, rules, and schema validation
 - **Layer 3: Contract locking** — prevents concurrent access conflicts via `contract-lock.sh`
 - **Layer 4: Scoring pipeline** — evaluates agent behavior after each agent returns via `scoring-pipeline.sh`
 - **Layer 5: Audit trail** — logs all compliance-relevant actions via `audit-trail.sh`

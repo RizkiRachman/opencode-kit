@@ -134,6 +134,27 @@ bash .opencode/src/audit-trail.sh log test "initialization" '{"test": true}'
 - Verify rules.json has valid transitions for current state
 - If stuck in BLOCKED, follow escalation protocol in templates/escalation.md
 
+### Contract validation fails (contract-lint)
+**Symptom**: "BLOCKED: Contract validation failed" or "contract.json not found" in preflight.
+**Symptom**: Downstream project override breaks workflow.
+```bash
+# Run lint to see exact errors
+bash .opencode/src/contract-lint.sh
+
+# JSON output for debugging
+bash .opencode/src/contract-lint.sh --json
+
+# Validate a specific override file
+bash .opencode/src/contract-lint.sh --contract .opencode/orchestration/contract.json --strict
+```
+Common causes:
+- Missing required fields (state, session, scope, requirements, governance, validation, outputs, score, retry, metrics)
+- Invalid state enum (must be INIT, PLAN, PLAN_SCORED, EXECUTE, EXECUTE_SCORED, REVIEW, REVIEW_SCORED, COMPLETE, BLOCKED)
+- Wrong types (constraints as array instead of object, score.combined > 100)
+- Missing nested fields (session.task_id, requirements.goal, score.verdict)
+
+Fix: either add missing fields or re-scaffold with `bash .opencode/src/init.sh --force`
+
 ## Diagnostics
 
 ```sh
@@ -144,4 +165,5 @@ bash .opencode/src/adoption-check.sh   # Verify project adoption
 bash .opencode/src/contract-lock.sh check  # Check contract lock status
 bash .opencode/src/audit-trail.sh query    # Query audit events
 bash .opencode/src/scoring-pipeline.sh     # Run scoring pipeline
+bash .opencode/src/contract-lint.sh        # Validate contract structure
 ```
