@@ -16,6 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = path.resolve(__dirname, '../..');
 const SKILLS_DIR = path.resolve(PLUGIN_ROOT, 'skills');
 const TEMPLATES_DIR = path.resolve(PLUGIN_ROOT, 'templates');
+const ROOT_DIR = path.resolve(PLUGIN_ROOT);
 
 let _bootstrapCache = undefined;
 let _pluginLogger = undefined;
@@ -91,7 +92,7 @@ const ensureContract = (projectDir) => {
     }
 
     // Scaffold from plugin template
-    const templatePath = path.join(TEMPLATES_DIR, 'contract.json');
+    const templatePath = path.join(ROOT_DIR, 'contract.json');
     if (fs.existsSync(templatePath)) {
       fs.mkdirSync(path.dirname(contractPath), { recursive: true });
       fs.copyFileSync(templatePath, contractPath);

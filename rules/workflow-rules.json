@@ -1,0 +1,413 @@
+{
+  "_meta": {
+    "extends": null,
+    "version": "0.1.0",
+    "overrides": [],
+    "appends": [
+      "steps"
+    ],
+    "excludes": []
+  },
+  "description": "Workflow rules \u2014 defines step sequence, dependencies, and validation for agent orchestration",
+  "version": "0.1.0",
+  "workflow": {
+    "name": "standard-development",
+    "description": "Standard development workflow: Plan \u2192 Build \u2192 Review \u2192 Ship \u2192 Learn",
+    "states": [
+      "INIT",
+      "PLAN",
+      "EXECUTE",
+      "REVIEW",
+      "COMPLETE",
+      "BLOCKED"
+    ],
+    "transitions": [
+      {
+        "from": "INIT",
+        "to": "PLAN",
+        "condition": "contract loaded"
+      },
+      {
+        "from": "PLAN",
+        "to": "EXECUTE",
+        "condition": "plan_score >= 70"
+      },
+      {
+        "from": "EXECUTE",
+        "to": "REVIEW",
+        "condition": "execution complete"
+      },
+      {
+        "from": "REVIEW",
+        "to": "COMPLETE",
+        "condition": "review_score >= 70"
+      },
+      {
+        "from": "REVIEW",
+        "to": "EXECUTE",
+        "condition": "review_score < 70 && retries < 3"
+      },
+      {
+        "from": "ANY",
+        "to": "BLOCKED",
+        "condition": "critical_error || retries >= 3"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "id": "context-load",
+      "name": "Context Load",
+      "description": "Load contract, rules, and session state",
+      "agent": "orchestrator",
+      "phase": "INIT",
+      "inputs": [
+        "contract.json",
+        "rules.json"
+      ],
+      "outputs": [
+        "session_state"
+      ],
+      "dependencies": [],
+      "validation": {
+        "required": [
+          "contract_loaded",
+          "rules_loaded"
+        ],
+        "checks": [
+          "state == INIT",
+          "branch != main/master"
+        ]
+      },
+      "on_failure": "BLOCKED",
+      "timeout_seconds": 30
+    },
+    {
+      "id": "explore",
+      "name": "Codebase Exploration",
+      "description": "Discover codebase structure, patterns, and relevant files",
+      "agent": "explorer",
+      "phase": "PLAN",
+      "inputs": [
+        "task_description",
+        "session_state"
+      ],
+      "outputs": [
+        "codebase_map",
+        "relevant_files"
+      ],
+      "dependencies": [
+        "context-load"
+      ],
+      "validation": {
+        "required": [
+          "relevant_files_found"
+        ],
+        "checks": [
+          "files_count > 0",
+          "confidence > 0.5"
+        ]
+      },
+      "on_failure": "RETRY",
+      "timeout_seconds": 120
+    },
+    {
+      "id": "plan",
+      "name": "Implementation Planning",
+      "description": "Create detailed implementation plan with task breakdown",
+      "agent": "planner",
+      "phase": "PLAN",
+      "inputs": [
+        "task_description",
+        "codebase_map",
+        "relevant_files"
+      ],
+      "outputs": [
+        "implementation_plan",
+        "task_list"
+      ],
+      "dependencies": [
+        "explore"
+      ],
+      "validation": {
+        "required": [
+          "plan_exists",
+          "tasks_defined"
+        ],
+        "checks": [
+          "tasks_count > 0",
+          "dependencies_mapped"
+        ]
+      },
+      "on_failure": "RETRY",
+      "timeout_seconds": 180
+    },
+    {
+      "id": "plan-review",
+      "name": "Plan Review",
+      "description": "Review plan for completeness and risk",
+      "agent": "architect",
+      "phase": "PLAN",
+      "inputs": [
+        "implementation_plan",
+        "codebase_map"
+      ],
+      "outputs": [
+        "plan_score",
+        "plan_feedback"
+      ],
+      "dependencies": [
+        "plan"
+      ],
+      "validation": {
+        "required": [
+          "score_computed"
+        ],
+        "checks": [
+          "score >= 70",
+          "no_critical_issues"
+        ]
+      },
+      "on_failure": "BLOCKED",
+      "timeout_seconds": 120
+    },
+    {
+      "id": "execute",
+      "name": "Task Execution",
+      "description": "Implement tasks from the plan",
+      "agent": "task-manager",
+      "phase": "EXECUTE",
+      "inputs": [
+        "implementation_plan",
+        "task_list"
+      ],
+      "outputs": [
+        "code_changes",
+        "test_results"
+      ],
+      "dependencies": [
+        "plan-review"
+      ],
+      "validation": {
+        "required": [
+          "changes_made"
+        ],
+        "checks": [
+          "tests_pass",
+          "no_compile_errors"
+        ]
+      },
+      "on_failure": "RETRY",
+      "timeout_seconds": 600
+    },
+    {
+      "id": "code-review",
+      "name": "Code Review",
+      "description": "Review code changes for quality and security",
+      "agent": "code-reviewer",
+      "phase": "REVIEW",
+      "inputs": [
+        "code_changes",
+        "implementation_plan"
+      ],
+      "outputs": [
+        "review_score",
+        "review_feedback"
+      ],
+      "dependencies": [
+        "execute"
+      ],
+      "validation": {
+        "required": [
+          "review_complete"
+        ],
+        "checks": [
+          "score >= 70",
+          "no_critical_issues"
+        ]
+      },
+      "on_failure": "RETRY",
+      "timeout_seconds": 180
+    },
+    {
+      "id": "learn",
+      "name": "Post-Execution Learning",
+      "description": "Extract lessons and persist knowledge",
+      "agent": "learner",
+      "phase": "COMPLETE",
+      "inputs": [
+        "code_changes",
+        "review_feedback",
+        "task_list"
+      ],
+      "outputs": [
+        "lessons_learned",
+        "knowledge_updates"
+      ],
+      "dependencies": [
+        "code-review"
+      ],
+      "validation": {
+        "required": [
+          "lessons_documented"
+        ],
+        "checks": [
+          "knowledge_persisted"
+        ]
+      },
+      "on_failure": "WARN",
+      "timeout_seconds": 60
+    }
+  ],
+  "scoring": {
+    "thresholds": {
+      "pass": 70,
+      "retry": 50,
+      "block": 0
+    },
+    "max_retries": 3,
+    "tiers": {
+      "tier1": {
+        "description": "Rule-based checks",
+        "checks": [
+          "schema_valid",
+          "required_fields",
+          "permissions_ok"
+        ]
+      },
+      "tier2": {
+        "description": "LLM judge evaluation",
+        "enabled": true
+      },
+      "tier3": {
+        "description": "Combined verdict",
+        "formula": "weighted_average(tier1, tier2)"
+      }
+    }
+  },
+  "validation": {
+    "pre_flight": {
+      "required": [
+        "git_branch",
+        "contract_loaded",
+        "rules_loaded"
+      ],
+      "checks": [
+        "branch != main/master",
+        "state machine valid"
+      ]
+    },
+    "post_flight": {
+      "required": [
+        "tests_pass",
+        "no_compile_errors"
+      ],
+      "checks": [
+        "score >= 70"
+      ]
+    }
+  },
+  "learner_rules": {
+    "id": "learner-rules",
+    "description": "Rules governing post-execution learning and knowledge persistence",
+    "rules": [
+      {
+        "id": "LEARN_001",
+        "severity": "HIGH",
+        "desc": "Learner MUST extract lessons from every completed execution",
+        "condition": "phase == COMPLETE",
+        "action": "extract_lessons"
+      },
+      {
+        "id": "LEARN_002",
+        "severity": "HIGH",
+        "desc": "Learner MUST persist knowledge to lean-ctx after extraction",
+        "condition": "lessons_extracted == true",
+        "action": "persist_knowledge"
+      },
+      {
+        "id": "LEARN_003",
+        "severity": "CRITICAL",
+        "desc": "Learner MUST NOT modify source code \u2014 read-only analysis",
+        "condition": "agent == learner",
+        "action": "readonly_enforcement"
+      },
+      {
+        "id": "LEARN_004",
+        "severity": "MEDIUM",
+        "desc": "Learner SHOULD update contract.lessons_learned[] with findings",
+        "condition": "phase == COMPLETE && lessons_count > 0",
+        "action": "update_contract"
+      },
+      {
+        "id": "LEARN_005",
+        "severity": "MEDIUM",
+        "desc": "Learner SHOULD detect patterns across multiple executions",
+        "condition": "execution_count > 3",
+        "action": "pattern_detection"
+      }
+    ]
+  },
+  "agent_rules": {
+    "id": "agent-rules",
+    "description": "Rules governing agent behavior across all phases",
+    "rules": [
+      {
+        "id": "AGENT_001",
+        "severity": "CRITICAL",
+        "desc": "Agents MUST use lean-ctx tools for all operations",
+        "condition": "always",
+        "action": "lean_ctx_enforcement"
+      },
+      {
+        "id": "AGENT_002",
+        "severity": "CRITICAL",
+        "desc": "Agents MUST load contract before any work",
+        "condition": "phase == INIT",
+        "action": "contract_load"
+      },
+      {
+        "id": "AGENT_003",
+        "severity": "HIGH",
+        "desc": "Agents MUST NOT edit files outside their scope",
+        "condition": "agent != fixer && agent != task-manager",
+        "action": "scope_enforcement"
+      },
+      {
+        "id": "AGENT_004",
+        "severity": "HIGH",
+        "desc": "Agents MUST validate state before acting",
+        "condition": "always",
+        "action": "state_validation"
+      },
+      {
+        "id": "AGENT_005",
+        "severity": "HIGH",
+        "desc": "Agents MUST report completion with structured output",
+        "condition": "step_complete",
+        "action": "structured_output"
+      },
+      {
+        "id": "AGENT_006",
+        "severity": "MEDIUM",
+        "desc": "Agents SHOULD use madar for codebase exploration",
+        "condition": "task_requires_codebase_context",
+        "action": "madar_first"
+      },
+      {
+        "id": "AGENT_007",
+        "severity": "MEDIUM",
+        "desc": "Agents SHOULD minimize context usage",
+        "condition": "always",
+        "action": "context_optimization"
+      },
+      {
+        "id": "AGENT_008",
+        "severity": "LOW",
+        "desc": "Agents SHOULD log decisions to contract.decisions_log[]",
+        "condition": "decision_made",
+        "action": "decision_logging"
+      }
+    ]
+  }
+}

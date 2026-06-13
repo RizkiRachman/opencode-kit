@@ -1,0 +1,349 @@
+{
+  "skills": {
+    "paths": [
+      ".opencode/skills"
+    ]
+  },
+  "plugin": [],
+  "agent": {
+    "orchestrator": {
+      "skills": [
+        "orchestration-template",
+        "orchestration-workflow",
+        "dispatching-parallel-agents",
+        "verification-before-completion",
+        "using-superpowers",
+        "firecrawl-workflows"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "planner": {
+      "skills": [
+        "writing-plans",
+        "system-analyst",
+        "brainstorming",
+        "firecrawl-search",
+        "firecrawl-deep-research"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "task-manager": {
+      "skills": [
+        "executing-plans",
+        "subagent-driven-development",
+        "test-driven-development",
+        "using-git-worktrees",
+        "token-optimize"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "code-reviewer": {
+      "skills": [
+        "requesting-code-review",
+        "receiving-code-review",
+        "quality-checks",
+        "firecrawl-qa"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "explorer": {
+      "skills": [
+        "codemap",
+        "gitnexus-exploring",
+        "firecrawl-search",
+        "firecrawl-map"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "librarian": {
+      "skills": [
+        "firecrawl-search",
+        "firecrawl-scrape",
+        "firecrawl-deep-research"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "architect": {
+      "skills": [
+        "simplify",
+        "systematic-debugging",
+        "system-analyst",
+        "firecrawl-deep-research",
+        "firecrawl-knowledge-base"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "fixer": {
+      "skills": [
+        "executing-plans",
+        "using-git-worktrees",
+        "firecrawl-scrape"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "learner": {
+      "skills": [
+        "verification-before-completion",
+        "firecrawl-knowledge-ingest"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "observer": {
+      "skills": [
+        "systematic-debugging",
+        "verification-before-completion",
+        "firecrawl-scrape"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "task": true,
+        "cancel_task": true,
+        "todowrite": true,
+        "skill": true
+      }
+    },
+    "database-specialist": {
+      "skills": [
+        "database-design",
+        "sql-optimization"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "cancel_task": true
+      }
+    },
+    "devops-agent": {
+      "skills": [
+        "ci-cd",
+        "deployment",
+        "infrastructure"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "cancel_task": true
+      }
+    },
+    "documentation-agent": {
+      "skills": [
+        "firecrawl-scrape",
+        "firecrawl-knowledge-base"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "cancel_task": true
+      }
+    },
+    "security-reviewer": {
+      "skills": [
+        "security-audit"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "cancel_task": true
+      }
+    },
+    "testing-specialist": {
+      "skills": [
+        "testing-strategies",
+        "test-driven-development"
+      ],
+      "tools": {
+        "lean-ctx_*": true,
+        "cancel_task": true
+      }
+    }
+  },
+  "permission": {
+    "*": "deny",
+    "lean-ctx_ctx_shell": "allow",
+    "lean-ctx_ctx_read": "allow",
+    "lean-ctx_ctx_multi_read": "allow",
+    "lean-ctx_ctx_edit": "allow",
+    "lean-ctx_ctx_search": "allow",
+    "lean-ctx_ctx_tree": "allow",
+    "lean-ctx_ctx_knowledge": "allow",
+    "lean-ctx_ctx_session": "allow",
+    "lean-ctx_ctx_discover_tools": "allow",
+    "lean-ctx_ctx_call": "allow",
+    "task": "allow",
+    "cancel_task": "allow",
+    "todowrite": "allow",
+    "skill": "allow",
+    "question": "allow",
+    "websearch_web_search_exa": "deny",
+    "webfetch": "deny"
+  },
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "gitnexus": {
+      "type": "local",
+      "command": [
+        "npx",
+        "gitnexus",
+        "mcp"
+      ]
+    },
+    "lean-ctx": {
+      "type": "local",
+      "command": [
+        "/opt/homebrew/bin/lean-ctx"
+      ],
+      "enabled": true,
+      "environment": {
+        "LEAN_CTX_DATA_DIR": "/Users/rizkirachman/.lean-ctx"
+      }
+    },
+    "firecrawl": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "enabled": true
+    },
+    "madar": {
+      "type": "local",
+      "command": [
+        "/opt/homebrew/Cellar/node/26.0.0/bin/node",
+        "/opt/homebrew/lib/node_modules/@lubab/madar/dist/src/cli/bin.js",
+        "serve",
+        "--stdio",
+        "/Users/rizkirachman/IdeaProjects/opencode-kit/out/graph.json"
+      ],
+      "enabled": true
+    }
+  },
+  "command": {
+    "opencode-kit:doctor": {
+      "description": "Run opencode-kit project health checks",
+      "template": "Run the opencode-kit doctor check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/doctor.sh\") \u2014 then summarize the results for the user."
+    },
+    "opencode-kit:status": {
+      "description": "Show opencode-kit project status",
+      "template": "Show the opencode-kit project status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/status.sh\") \u2014 then summarize the results for the user."
+    },
+    "opencode-kit:analytics": {
+      "description": "Show opencode-kit project analytics",
+      "template": "Show opencode-kit analytics. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/analytics.sh\") \u2014 then summarize the results for the user."
+    },
+    "opencode-kit:preflight": {
+      "description": "Run opencode-kit pre-flight gate checks",
+      "template": "Run the opencode-kit pre-flight gate. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/preflight.sh\") \u2014 report pass/fail for each check and any issues found."
+    },
+    "opencode-kit:score": {
+      "description": "Run opencode-kit scoring pipeline on current contract",
+      "template": "Run the opencode-kit scoring pipeline. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/scoring-pipeline.sh\") \u2014 report the score, verdict (PASS/RETRY/BLOCKED), and any deductions."
+    },
+    "opencode-kit:contract-lint": {
+      "description": "Validate opencode-kit contract.json structure",
+      "template": "Validate the opencode-kit contract. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lint.sh\") \u2014 report any validation errors or warnings."
+    },
+    "opencode-kit:checkpoint": {
+      "description": "Manage opencode-kit checkpoints (save, list, validate, fix)",
+      "template": "List the current opencode-kit checkpoints. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh list\") \u2014 show the user all saved checkpoints with their states and validation status."
+    },
+    "opencode-kit:checkpoint-save": {
+      "description": "Save an opencode-kit checkpoint of current state",
+      "template": "Save a checkpoint of the current contract state. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh save --summary 'Manual checkpoint'\") \u2014 confirm the checkpoint was saved."
+    },
+    "opencode-kit:diff": {
+      "description": "Show changes to opencode-kit contract since last checkpoint",
+      "template": "Show the contract diff since the last checkpoint. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/diff.sh\") \u2014 summarize any changes found."
+    },
+    "opencode-kit:audit": {
+      "description": "Query the opencode-kit audit trail",
+      "template": "Query the recent opencode-kit audit trail. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/audit-trail.sh query --limit 20\") \u2014 show the user recent audit events."
+    },
+    "opencode-kit:verify": {
+      "description": "Verify opencode-kit project setup and minimum requirements",
+      "template": "Run the opencode-kit verification check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/verify.sh\") \u2014 report which checks pass and which fail."
+    },
+    "opencode-kit:init": {
+      "description": "Initialize opencode-kit in this project",
+      "template": "Initialize opencode-kit in this project. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/init.sh\") \u2014 confirm setup completed and list what was created."
+    },
+    "opencode-kit:update": {
+      "description": "Update opencode-kit templates from plugin",
+      "template": "Update opencode-kit templates. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/update.sh --dry-run\") \u2014 show what would change, then ask the user if they want to apply."
+    },
+    "opencode-kit:lock": {
+      "description": "Check or manage the opencode-kit contract lock",
+      "template": "Check the contract lock status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lock.sh check\") \u2014 report whether the contract is locked and by which agent."
+    },
+    "opencode-kit:adr": {
+      "description": "Create an Architecture Decision Record",
+      "template": "Help the user create an Architecture Decision Record. Ask them for the decision title, then execute: lean-ctx ctx_shell(command=\"bash .opencode/src/adr.sh '<title>'\") \u2014 guide them through the ADR process."
+    }
+  }
+}

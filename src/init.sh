@@ -1,325 +1,153 @@
 #!/usr/bin/env bash
-# opencode-kit init — scaffold orchestration framework into target project
-# Usage: npx opencode-kit init [--force] [--sample]
-#   --force    Overwrite existing .opencode/ (backs up to .opencode.bak.<timestamp>)
-#   --sample   Also create a sample opencode.json with @ikieaneh/opencode-kit plugin config
+# opencode-kit init — scaffold orchestration framework
+# Flow: check requirements → credentials → copy skills/agents → create opencode.json
+# Usage: npx opencode-kit init [--force]
+#   --force  Overwrite existing .opencode/ (backup + clean)
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=./platform.sh
-. "$SCRIPT_DIR/platform.sh"
-. "$SCRIPT_DIR/global-config.sh"
 KIT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
+. "$SCRIPT_DIR/platform.sh"
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 FORCE=false
-SAMPLE=false
-for arg in "$@"; do
-  case "$arg" in
-    --force) FORCE=true ;;
-    --sample) SAMPLE=true ;;
-  esac
-done
-TARGET_DIR="${PWD}"
+for arg in "$@"; do [ "$arg" = "--force" ] && FORCE=true; done
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
+echo -e "${CYAN}[opencode-kit] Initializing in ${PWD}${NC}"
 
-echo "[opencode-kit] 🚀 Initializing orchestration framework in $TARGET_DIR"
-
-# --- Dependency check ---
-echo ""
-echo "[opencode-kit] Checking dependencies..."
-
-deps_ok=0
-for cmd in git node; do
+# ═══════════════════════════════════════════════════════════
+# PHASE 1: CHECK REQUIREMENTS
+# ═══════════════════════════════════════════════════════════
+echo -e "\n${CYAN}[1/5] Checking requirements...${NC}"
+deps_ok=true
+for cmd in git node python3; do
   if command -v "$cmd" &>/dev/null; then
-    echo "  ✅ $cmd: $(command -v $cmd)"
+    echo "  ✅ $cmd: $(command -v "$cmd")"
   else
-    echo "  ❌ $cmd: NOT FOUND — install $cmd first"
-    deps_ok=1
+    echo "  ❌ $cmd: NOT FOUND"
+    deps_ok=false
   fi
 done
-
-# Check lean-ctx via MCP key (soft check — warn, don't block)
 if command -v lean-ctx &>/dev/null; then
-  echo "  ✅ lean-ctx available"
+  echo "  ✅ lean-ctx: $(command -v "lean-ctx")"
 else
-  echo "  ⚠️  lean-ctx not detected — ensure it's configured in MCP"
+  echo -e "  ${YELLOW}⚠️  lean-ctx: not found (optional, but recommended)${NC}"
+  echo "  Install: https://github.com/ikieaneh/lean-ctx"
 fi
-
-if [ "$deps_ok" -eq 1 ]; then
-  echo -e "${RED}❌ Missing dependencies. Install them and retry.${NC}"
+if [ "$deps_ok" = false ]; then
+  echo -e "\n${RED}❌ Missing requirements. Install and retry.${NC}"
   exit 1
 fi
-
-# --- Git check ---
 if ! git rev-parse --git-dir &>/dev/null; then
-  echo ""
-  echo "[opencode-kit] Not a git repository. Initializing..."
-  git init
-  echo "  ✅ git initialized"
+  git init -q && echo "  ✅ git initialized"
 fi
 
-# --- Detect plugin mode ---
-PLUGIN_MODE=false
-if is_plugin_active; then
-  PLUGIN_MODE=true
-  echo ""
-  echo -e "${CYAN}[opencode-kit] Plugin detected — scaffolding project data only${NC}"
+# ═══════════════════════════════════════════════════════════
+# PHASE 2: PREPARE CREDENTIALS
+# ═══════════════════════════════════════════════════════════
+echo -e "\n${CYAN}[2/5] Checking credentials...${NC}"
+if [ -n "${FIRECRAWL_API_KEY:-}" ] || ([ -f ".env" ] && grep -q "FIRECRAWL_API_KEY" .env 2>/dev/null); then
+  echo "  ✅ FIRECRAWL_API_KEY"
+else
+  echo -e "  ${YELLOW}⚠️  FIRECRAWL_API_KEY not set (web search limited)${NC}"
+fi
+if [ -n "${GITHUB_TOKEN:-}" ] || ([ -f ".env" ] && grep -q "GITHUB_TOKEN" .env 2>/dev/null); then
+  echo "  ✅ GITHUB_TOKEN"
+else
+  echo -e "  ${YELLOW}⚠️  GITHUB_TOKEN not set (GitHub API limited)${NC}"
 fi
 
-# --- Handle existing .opencode/ ---
+# ═══════════════════════════════════════════════════════════
+# PHASE 3: COPY SKILLS AND AGENTS
+# ═══════════════════════════════════════════════════════════
+echo -e "\n${CYAN}[3/5] Copying skills and agents...${NC}"
 if [ -d ".opencode" ]; then
   if [ "$FORCE" = true ]; then
-    BACKUP=".opencode.bak.$TIMESTAMP"
-    echo ""
-    echo -e "${YELLOW}⚠️  --force: Backing up existing .opencode/ to $BACKUP${NC}"
-    cp -r ".opencode" "$BACKUP"
+    cp -r ".opencode" ".opencode.bak.$TIMESTAMP"
     rm -rf ".opencode"
-    echo "  ✅ Backed up to $BACKUP"
+    echo "  ✅ Backup: .opencode.bak.$TIMESTAMP"
   else
-    echo ""
-    echo -e "${YELLOW}⚠️  .opencode/ already exists. Use --force to re-scaffold (backup + clean).${NC}"
-    echo "  Skipping — existing .opencode/ preserved."
+    echo -e "  ${YELLOW}⚠️  .opencode/ exists. Use --force to re-scaffold.${NC}"
   fi
 fi
-
-# --- Scaffold directories ---
-mkdir -p .opencode/orchestration .opencode/rules .opencode/agents .opencode/src .opencode/templates
-
-# --- Copy templates ---
-echo ""
-echo "[opencode-kit] Scaffolding files..."
-
-cp "$KIT_DIR/templates/contract.json" .opencode/orchestration/contract.json
-
-# --- Seed session.model from opencode.json (if present) ---
+mkdir -p .opencode/{orchestration,rules,agents,skills,src,templates}
+# Agents
+for agent in "$KIT_DIR"/agents/*.md; do
+  cp "$agent" ".opencode/agents/$(basename "$agent")"
+done
+echo "  ✅ agents/ ($(ls .opencode/agents/*.md | wc -l | tr -d ' ') agents)"
+# Skills
+for skill_dir in "$KIT_DIR"/skills/*/; do
+  skill_name=$(basename "$skill_dir")
+  if [ "$skill_name" != "__pycache__" ] && [ ! -d ".opencode/skills/$skill_name" ]; then
+    cp -r "$skill_dir" ".opencode/skills/$skill_name"
+  fi
+done
+echo "  ✅ skills/ ($(ls -d .opencode/skills/*/ 2>/dev/null | wc -l | tr -d ' ') skills)"
+# Rules
+for f in rules.json workflow-rules.json agent-rules.json learner-rules.json; do
+  cp "$KIT_DIR/rules/$f" ".opencode/rules/$f"
+done
+echo "  ✅ rules/ (4 rule files)"
+# Contract
 python3 -c "
 import json, os
-contract_path = '.opencode/orchestration/contract.json'
-config_path = 'opencode.json'
-try:
-    with open(contract_path) as f:
-        contract = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError) as e:
-    print(f'  ⚠️  Cannot read contract.json: {e}')
-    exit(0)
-
-model = ''
-try:
-    with open(config_path) as f:
-        cfg = json.load(f)
-    model = cfg.get('model', '')
-except (FileNotFoundError, json.JSONDecodeError):
-    model = ''
-
-contract['session']['model'] = model
-contract['session']['previous_model'] = ''
-contract['session']['model_changed_at'] = ''
-contract['session']['model_change_count'] = 0
-
-with open(contract_path, 'w') as f:
-    json.dump(contract, f, indent=2)
-" && echo "  ✅ contract.json (session.model seeded)" || echo "  ⚠️  contract.json copied, model seed skipped"
-
-cp "$KIT_DIR/templates/superpowers-contract.json" .opencode/templates/superpowers-contract.json
-echo "  ✅ superpowers-contract.json"
-
-cp "$KIT_DIR/rules/rules.json" .opencode/rules/rules.json
-echo "  ✅ rules.json"
-
-cp "$KIT_DIR/src/verify.sh" .opencode/src/verify.sh
-chmod +x .opencode/src/verify.sh
-echo "  ✅ verify.sh (executable)"
-
-cp "$KIT_DIR/src/platform.sh" .opencode/src/platform.sh
-chmod +x .opencode/src/platform.sh
-echo "  ✅ platform.sh (executable)"
-
-# --- Always copy enforcement scripts (agents need these in plugin mode too) ---
-for script in \
-  preflight.sh postflight.sh postflight.py telemetry.sh \
-  doctor.sh status.sh scoring-pipeline.sh contract-lock.sh \
-  adoption-check.sh audit-trail.sh contract-lint.sh checkpoint.sh \
-  new-skill.sh global-config.sh init.sh diff.sh analytics.sh \
-  adr.sh update.sh; do
-  if [ -f "$KIT_DIR/src/$script" ]; then
-    cp "$KIT_DIR/src/$script" ".opencode/src/$script"
-    chmod +x ".opencode/src/$script"
-    echo "  ✅ src/$script (executable)"
-  fi
+for f in ['contract.json', 'rules/rules.json', 'rules/workflow-rules.json', 'rules/agent-rules.json', 'rules/learner-rules.json']:
+    p = '.opencode/' + f
+    if os.path.exists(p):
+        d = json.load(open(p)); d.setdefault('_meta',{})['extends']='opencode-kit'
+        json.dump(d, open(p,'w'), indent=2)
+src='$KIT_DIR/contract.json'; dst='.opencode/orchestration/contract.json'
+if os.path.exists(src):
+    d = json.load(open(src)); d.setdefault('_meta',{})['extends']='opencode-kit'
+    json.dump(d, open(dst,'w'), indent=2)
+print('  ✅ _meta.extends set')
+" 2>/dev/null
+# Scripts
+for script in verify.sh platform.sh merge-config.sh preflight.sh postflight.sh \
+  doctor.sh status.sh scoring-pipeline.sh contract-lock.sh adoption-check.sh \
+  audit-trail.sh contract-lint.sh checkpoint.sh diff.sh analytics.sh \
+  adr.sh update.sh new-skill.sh global-config.sh telemetry.sh init.sh; do
+  [ -f "$KIT_DIR/src/$script" ] && cp "$KIT_DIR/src/$script" ".opencode/src/$script" && chmod +x ".opencode/src/$script"
 done
-
-# --- Rules validation script (non-plugin only) ---
-if [ "$PLUGIN_MODE" = false ]; then
-  if [ -f "$KIT_DIR/rules/validation.sh" ]; then
-    cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
-    chmod +x .opencode/rules/validation.sh
-    echo "  ✅ rules/validation.sh"
-  fi
-fi
-
-# --- Always copy agent templates (agents need pre-flight gates) ---
-for agent in orchestrator planner task-manager code-reviewer learner fixer explorer librarian architect observer; do
-  if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
-    cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
-    echo "  ✅ agents/$agent.md"
-  fi
+# Copy Python scripts
+for pyscript in postflight.py; do
+  [ -f "$KIT_DIR/src/$pyscript" ] && cp "$KIT_DIR/src/$pyscript" ".opencode/src/$pyscript" && chmod +x ".opencode/src/$pyscript"
 done
-
-# --- Copy git hooks ---
+echo "  ✅ src/ (scripts)"
+# Git hooks
 if [ -d "$KIT_DIR/.githooks" ]; then
-  cp -r "$KIT_DIR/.githooks" .githooks
-  chmod +x .githooks/pre-commit .githooks/commit-msg
-  echo "  ✅ .githooks/ (pre-commit, commit-msg)"
+  cp -r "$KIT_DIR/.githooks" .githooks && chmod +x .githooks/* && git config core.hooksPath .githooks
+  echo "  ✅ .githooks/"
 fi
 
-# --- Git ignore .opencode/src (scripts are project-specific) ---
-if [ -f ".gitignore" ]; then
-  if ! grep -q ".opencode/src" .gitignore 2>/dev/null; then
-    echo ".opencode/src/" >> .gitignore
-  fi
-fi
-
-# --- Configure git hooks ---
-if [ -d ".githooks" ]; then
-  git config core.hooksPath .githooks
-  echo "  ✅ Git hooks configured (.githooks/)"
-fi
-
-# --- Verify ---
-echo ""
-echo "[opencode-kit] Running verification..."
-if "$KIT_DIR/src/verify.sh"; then
-  echo ""
-  echo -e "${GREEN}========================================${NC}"
-  echo -e "${GREEN}  ✅ opencode-kit initialized (version: $(cat "$KIT_DIR/package.json" | grep '"version"' | head -1 | cut -d'"' -f4))${NC}"
-  echo -e "${GREEN}========================================${NC}"
-  echo ""
-  echo "  Next steps:"
-  echo "  1. Set GOAL & SCOPE in .opencode/orchestration/contract.json"
-  echo "  2. Set your project rules in .opencode/rules/rules.json"
-  echo "  3. Read AGENTS.md for writing conventions"
-  echo "  4. Start with: Load contract → Plan → Execute → Review"
+# ═══════════════════════════════════════════════════════════
+# PHASE 4: CREATE OR UPDATE OPENCODE.JSON
+# ═══════════════════════════════════════════════════════════
+echo -e "\n${CYAN}[4/5] Generating opencode.json...${NC}"
+if [ -f "opencode.json" ]; then
+  cp opencode.json "opencode.json.backup.$TIMESTAMP"
+  bash "$KIT_DIR/src/generate-opencode-json.sh" "$KIT_DIR/opencode.json.template" "opencode.json"
+  echo "  ✅ opencode.json merged (backup saved)"
 else
-  echo -e "${RED}❌ Verification failed. Check errors above.${NC}"
-  exit 1
+  bash "$KIT_DIR/src/generate-opencode-json.sh" "$KIT_DIR/opencode.json.template" "opencode.json"
+  echo "  ✅ opencode.json created"
 fi
 
-# --- Sample opencode.json ---
-if [ "$SAMPLE" = true ]; then
-  if [ -f "opencode.json" ]; then
-    echo -e "${YELLOW}  ⚠️  opencode.json already exists. Skipping sample.${NC}"
-  else
-    cat > opencode.json << 'SAMPLEEOF'
-{
-  "model": "your-model",
-  "plugin": [
-    "@ikieaneh/opencode-kit",
-    "superpowers"
-  ],
-  "agent": {
-    "orchestrator": {
-      "model": "your-model",
-      "skills": ["orchestration-template", "dispatching-parallel-agents", "verification-before-completion", "using-superpowers"],
-      "steps": 50,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "planner": {
-      "model": "your-model",
-      "skills": ["brainstorming", "writing-plans", "system-analyst"],
-      "steps": 80,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "task-manager": {
-      "model": "your-model",
-      "skills": ["subagent-driven-development", "executing-plans", "test-driven-development"],
-      "steps": 100,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "code-reviewer": {
-      "model": "your-model",
-      "skills": ["requesting-code-review", "receiving-code-review", "qa-expert", "security-expert"],
-      "steps": 80,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "learner": {
-      "model": "your-model",
-      "skills": ["verification-before-completion", "qa-expert"],
-      "steps": 40,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "fixer": {
-      "model": "your-model",
-      "skills": ["subagent-driven-development", "executing-plans", "using-git-worktrees"],
-      "steps": 40,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "explorer": {
-      "model": "your-model",
-      "skills": ["humanizer", "firecrawl-search", "firecrawl-map"],
-      "steps": 30,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "librarian": {
-      "model": "your-model",
-      "skills": ["humanizer", "firecrawl-search"],
-      "steps": 30,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "architect": {
-      "model": "your-model",
-      "skills": ["simplify", "systematic-debugging", "system-analyst"],
-      "steps": 60,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    },
-    "observer": {
-      "model": "your-model",
-      "skills": ["humanizer", "verification-before-completion", "systematic-debugging"],
-      "steps": 30,
-      "tools": { "bash": false, "lean-ctx_*": true }
-    }
-  },
-  "command": {
-    "opencode-kit:doctor": {
-      "description": "Run opencode-kit project health checks",
-      "template": "Run the opencode-kit doctor check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/doctor.sh\") — then summarize the results for the user."
-    },
-    "opencode-kit:status": {
-      "description": "Show opencode-kit project status",
-      "template": "Show the opencode-kit project status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/status.sh\") — then summarize the results for the user."
-    },
-    "opencode-kit:preflight": {
-      "description": "Run opencode-kit pre-flight gate checks",
-      "template": "Run the opencode-kit pre-flight gate. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/preflight.sh\") — report pass/fail for each check and any issues found."
-    },
-    "opencode-kit:score": {
-      "description": "Run opencode-kit scoring pipeline on current contract",
-      "template": "Run the opencode-kit scoring pipeline. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/scoring-pipeline.sh\") — report the score, verdict (PASS/RETRY/BLOCKED), and any deductions."
-    },
-    "opencode-kit:contract-lint": {
-      "description": "Validate opencode-kit contract.json structure",
-      "template": "Validate the opencode-kit contract. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lint.sh\") — report any validation errors or warnings."
-    },
-    "opencode-kit:checkpoint": {
-      "description": "List opencode-kit checkpoints",
-      "template": "List the current opencode-kit checkpoints. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh list\") — show the user all saved checkpoints."
-    },
-    "opencode-kit:audit": {
-      "description": "Query the opencode-kit audit trail",
-      "template": "Query the recent opencode-kit audit trail. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/audit-trail.sh query --limit 20\") — show the user recent audit events."
-    },
-    "opencode-kit:verify": {
-      "description": "Verify opencode-kit project setup",
-      "template": "Run the opencode-kit verification check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/verify.sh\") — report which checks pass and which fail."
-    }
-  }
-}
-SAMPLEEOF
-    echo "  ✅ Sample opencode.json created"
-  fi
-fi
+# ═══════════════════════════════════════════════════════════
+# PHASE 5: VERIFY
+# ═══════════════════════════════════════════════════════════
+echo -e "\n${CYAN}[5/5] Verifying...${NC}"
+echo "  Agents:  $(ls .opencode/agents/*.md 2>/dev/null | wc -l | tr -d ' ')"
+echo "  Skills:  $(ls -d .opencode/skills/*/ 2>/dev/null | wc -l | tr -d ' ')"
+echo "  Rules:   $(ls .opencode/rules/*.json 2>/dev/null | wc -l | tr -d ' ')"
+echo "  Scripts: $(ls .opencode/src/*.sh 2>/dev/null | wc -l | tr -d ' ')"
+echo -e "\n${GREEN}✅ opencode-kit initialized${NC}"
+echo ""
+echo "  opencode.json has:"
+echo "  • 15 agents (skills + tools, model from your global config)"
+echo "  • 15 slash commands (/opencode-kit:*)"
+echo "  • 6 MCPs (lean-ctx, gitnexus, madar, context7, firecrawl, github)"
+echo ""
+echo "  Next:"
+echo "  1. Set GOAL & SCOPE in .opencode/orchestration/contract.json"
+echo "  2. Configure credentials (FIRECRAWL_API_KEY, GITHUB_TOKEN)"
+echo "  3. Start opencode"

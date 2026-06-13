@@ -120,7 +120,7 @@ As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session
 
 - **macOS M-Series** (Apple Silicon) — primary development target
 - **Linux** (Ubuntu) — CI-verified via GitHub Actions
-- **Any OpenCode-compatible environment** with `lean-ctx`, `gitnexus`, `graphify`
+- **Any OpenCode-compatible environment** with `lean-ctx`, `gitnexus`, `madar`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -157,13 +157,93 @@ This creates a quality floor that cheap models can meet through architecture, no
 - **OpenCode** with the following MCPs configured:
   - `lean-ctx` (context persistence)
   - `gitnexus` (code intelligence)
-  - `graphify` (knowledge graph)
+  - `madar` (knowledge graph)
+  - `context7` (documentation lookup)
+  - `firecrawl` (web scraping)
+  - `github` (repository management)
 
 ```sh
 # Verify prerequisites
 node --version    # ≥ 18
 git --version     # any recent version
 ```
+
+### Quick Start (5 minutes)
+
+```sh
+# 1. Clone this repo
+git clone https://github.com/RizkiRachman/opencode-kit.git
+
+# 2. Copy the env template
+cp opencode-kit/.env.template my-project/.env
+# Edit .env with your credentials
+
+# 3. Copy the wrapper to your project
+cp opencode-kit/opencode-run my-project/
+chmod +x my-project/opencode-run
+
+# 4. Launch opencode
+cd my-project
+./opencode-run
+```
+
+That's it. Everything loads automatically.
+
+### Architecture: How It Works as a Library
+
+`opencode-kit` is designed as a **common library** — one plugin that provides everything to every project that uses it.
+
+```
+┌─────────────────────────────────────────────────────┐
+│  @ikieaneh/opencode-kit (npm package)               │
+│                                                     │
+│  Provides:                                          │
+│  ├─ opencode.json  → commands, agents, skills       │
+│  ├─ .opencode/skills/ → orchestration workflows     │
+│  ├─ .opencode/agents/ → agent definitions           │
+│  └─ opencode-run   → launcher wrapper               │
+└─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────┐
+│  Your Project                                       │
+│                                                     │
+│  Needs only:                                        │
+│  └─ .env  → credentials (gitignored)                │
+│                                                     │
+│  Gets automatically:                                │
+│  ├─ All commands (/opencode-kit:doctor, etc.)       │
+│  ├─ All agents (orchestrator, planner, etc.)        │
+│  ├─ All skills (orchestration-workflow, etc.)       │
+│  └─ MCP config (lean-ctx, gitnexus, madar, context7, firecrawl, github)       │
+└─────────────────────────────────────────────────────┘
+```
+
+**Key principle**: `opencode.json` is tracked in git with **zero credentials**. Secrets live only in `.env`. The wrapper injects them at runtime.
+
+#### File ownership
+
+| File | Tracked in git? | Contains secrets? | Purpose |
+|------|:-:|:-:|---------|
+| `opencode.json` | Yes | No | Commands, agents, skills, MCP config |
+| `.env` | No | Yes | All credentials |
+| `opencode-run` | Yes | No | Preflight validation + inject `.env` into config |
+| `.opencode/skills/` | Yes | No | Workflow skills |
+| `.opencode/agents/` | Yes | No | Agent definitions |
+
+#### How the wrapper works
+
+```
+./opencode-run
+  │
+  ├─ 1. Source .env → load credentials into shell
+  ├─ 2. Validate env vars + binaries
+  ├─ 3. Inject secrets into opencode.json (runtime patch)
+  ├─ 4. Launch opencode
+  └─ 5. On exit → restore original opencode.json
+```
+
+The wrapper ensures opencode.json stays clean in git while MCP servers get real credentials at runtime.
 
 ### Documentation Guides
 
@@ -179,7 +259,32 @@ git --version     # any recent version
 
 ### Installation
 
-#### Option 1: Install as plugin (recommended)
+#### Option 1: Clone + use directly (recommended)
+
+```sh
+# Clone the library
+git clone https://github.com/RizkiRachman/opencode-kit.git
+
+# Copy what you need to your project
+cp opencode-kit/opencode-run my-project/
+cp opencode-kit/.env.template my-project/
+chmod +x my-project/opencode-run
+
+# Fill in credentials
+cd my-project
+$EDITOR .env
+
+# Launch
+./opencode-run
+```
+
+Everything loads automatically — commands, agents, skills, MCP config.
+
+#### Option 2: Install as npm plugin
+
+```sh
+npm install @ikieaneh/opencode-kit
+```
 
 Add to your project's `opencode.json`:
 
@@ -192,59 +297,15 @@ Add to your project's `opencode.json`:
 }
 ```
 
-Then install:
-
-```sh
-npm install @ikieaneh/opencode-kit
-```
-
-The plugin auto-loads on next session. All 8 skills become available. The orchestration contract is injected into every session automatically.
-
 > **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
 
-#### Option 2: Quick scaffold (pre-v0.4 style)
+#### Option 3: Quick scaffold
 
 ```sh
 npx opencode-kit init
 ```
 
-This scaffolds the full framework into your current project directory. Compatible with plugin mode — use both for maximum control.
-
-#### Option 3: From source
-
-```sh
-git clone https://github.com/RizkiRachman/opencode-kit.git
-cd your-project
-/path/to/opencode-kit/src/init.sh
-```
-
-#### Option 4: TUI commands (optional)
-
-For `/`-slash commands and Ctrl+P command palette integration, add the TUI plugin:
-
-```json
-{
-  "plugin": [
-    "@ikieaneh/opencode-kit",
-    "@ikieaneh/opencode-kit/tui",   ← Adds Ctrl+P commands
-    "other-plugins..."
-  ]
-}
-```
-
-The TUI plugin registers 5 commands that appear in the command palette and as `/`-slash commands:
-
-| Slash | Alias | Action |
-|-------|-------|--------|
-| `/kit-init` | `/ki` | Scaffold orchestration framework |
-| `/kit-doctor` | `/kd` | Run diagnostics |
-| `/kit-status` | `/ks` | Show contract state |
-| `/kit-verify` | `/kv` | Verify installation |
-| `/kit-adr` | `/ka` | Record an Architecture Decision Record |
-
-Type `/kit-` in the chat input or `Ctrl+P` to see all available opencode-kit commands.
-
-> **Plugin ordering**: The TUI plugin (`@ikieaneh/opencode-kit/tui`) should come **after** the server plugin. The server plugin must still be first in the array.
+This scaffolds the full framework into your current project directory.
 
 
 
@@ -313,19 +374,19 @@ Once installed, run these from the project root:
 
 | Command | Purpose |
 |---------|---------|
-| `bash .opencode/src/status.sh` | Dashboard — contract state, telemetry, rules |
-| `bash .opencode/src/doctor.sh` | Diagnostics — MCPs, contract, git, persistence |
-| `bash .opencode/src/analytics.sh` | Telemetry aggregation — phase times, cost estimates |
-| `bash .opencode/src/diff.sh` [branch1] [branch2] | Compare contract state between branches |
-| `bash .opencode/src/adr.sh` | Record a new Architecture Decision Record |
-| `bash .opencode/src/telemetry.sh` | View telemetry details |
-| `bash .opencode/src/new-skill.sh` <name> | Scaffold a new skill SKILL.md |
-| `bash .opencode/rules/validation.sh` | Validate rules compliance |
-| `bash .opencode/src/adoption-check.sh` | Verify project is initialized |
-| `bash .opencode/src/contract-lock.sh acquire/release` | Contract file locking |
-| `bash .opencode/src/audit-trail.sh` | Audit trail management |
-| `bash .opencode/src/scoring-pipeline.sh` | Run scoring pipeline |
-| `bash .opencode/src/contract-lint.sh` | Validate contract structure |
+| `lean-ctx ctx_shell(command="bash .opencode/src/status.sh")` | Dashboard — contract state, telemetry, rules |
+| `lean-ctx ctx_shell(command="bash .opencode/src/doctor.sh")` | Diagnostics — MCPs, contract, git, persistence |
+| `lean-ctx ctx_shell(command="bash .opencode/src/analytics.sh")` | Telemetry aggregation — phase times, cost estimates |
+| `lean-ctx ctx_shell(command="bash .opencode/src/diff.sh [branch1] [branch2]")` | Compare contract state between branches |
+| `lean-ctx ctx_shell(command="bash .opencode/src/adr.sh")` | Record a new Architecture Decision Record |
+| `lean-ctx ctx_shell(command="bash .opencode/src/telemetry.sh")` | View telemetry details |
+| `lean-ctx ctx_shell(command="bash .opencode/src/new-skill.sh <name>")` | Scaffold a new skill SKILL.md |
+| `lean-ctx ctx_shell(command="bash .opencode/rules/validation.sh")` | Validate rules compliance |
+| `lean-ctx ctx_shell(command="bash .opencode/src/adoption-check.sh")` | Verify project is initialized |
+| `lean-ctx ctx_shell(command="bash .opencode/src/contract-lock.sh acquire/release")` | Contract file locking |
+| `lean-ctx ctx_shell(command="bash .opencode/src/audit-trail.sh")` | Audit trail management |
+| `lean-ctx ctx_shell(command="bash .opencode/src/scoring-pipeline.sh")` | Run scoring pipeline |
+| `lean-ctx ctx_shell(command="bash .opencode/src/contract-lint.sh")` | Validate contract structure |
 | `npx opencode-kit --version` | Print version |
 | `npx opencode-kit --help` | Print help |
 
@@ -363,54 +424,32 @@ All commands use `lean-ctx ctx_shell` internally (no bash permission required fo
 ## Structure
 
 ```
-opencode-kit/
- ├── rules/
- │   ├── rules.json              ← Machine-enforceable rules (CRITICAL/HIGH/state machine)
- │   └── validation.sh           ← Validates agent actions against rules
- ├── src/
- │   ├── init.sh                 ← Scaffold into target project
- │   ├── preflight.sh            ← Envelope load gate (zero deps, fails if rules violated)
- │   ├── postflight.sh           ← Auto-persist + scoring pipeline + contract migration
- │   ├── doctor.sh               ← Diagnostic command
- │   ├── status.sh               ← Dashboard view
- │   ├── diff.sh                 ← Compare contract across branches
- │   ├── analytics.sh            ← Telemetry aggregation
- │   ├── adr.sh                  ← ADR auto-generator
- │   ├── telemetry.sh            ← Phase telemetry viewer
- │   ├── new-skill.sh            ← Skill template generator
- │   ├── update.sh               ← Pull latest from GitHub
- │   ├── verify.sh               ← Installation health check
- │   ├── platform.sh             ← Cross-platform detection
- │   ├── global-config.sh        ← Config resolution chain
-  │   ├── scoring-pipeline.sh    ← Tier 1 rule-based scoring engine
-  │   ├── contract-lock.sh       ← File locking for concurrent access
-  │   ├── adoption-check.sh      ← Verify project is initialized
-  │   ├── audit-trail.sh         ← JSONL compliance audit log
-  │   └── cli.js                  ← --version / --help
-  ├── skills/                     ← 9 auto-registered skills
-  ├── templates/
-  │   ├── contract.json           ← Shared state contract
-  │   ├── contract.schema.json    ← JSON Schema for contract
-  │   ├── opencode-kit.schema.json ← Agent config schema
-  │   ├── judge-prompt.md         ← LLM judge prompt template
-  │   ├── escalation.md           ← BLOCKED recovery protocol
-  │   ├── handoff.md              ← Agent handoff protocol
-  │   ├── rollback.md             ← Rollback strategy
-  │   └── agents/                 ← 10 agent .md templates
- ├── docs/
- │   ├── guides/                  ← Usage guides (contract, scoring, troubleshooting)
- │   ├── examples/                ← Quickstart, model configs, extension skills
- │   └── plans/                   ← Implementation plans
- ├── test/                       ← Integration + E2E tests (16 total)
- ├── .github/workflows/          ← CI (ShellCheck + scaffold + tests)
- ├── .opencode/plugins/          ← Plugin entry points
- │   ├── opencode-kit.js        ← Server plugin (hooks, transform)
- │   └── opencode-kit-tui.js     ← TUI plugin (commands, palette)
- ├── .claude-plugin/             ← Plugin metadata
- ├── package.json                ← npm publish
-  ├── CHANGELOG.md
-  ├── CONTRIBUTING.md
-  └── RELEASE.md
+opencode-kit/ (npm package)
+├── opencode.json.template    # Framework config (no model/provider)
+├── AGENTS.md                 # Agent instructions
+├── contract.json             # Contract template (_meta.extends: null)
+├── contract.schema.json      # Contract schema
+├── superpowers-contract.json
+├── agents/                   # 15 agent templates
+├── skills/                   # 39 generic skills
+├── rules/                    # 7 rule files
+├── src/                      # 22 scripts (init, doctor, etc.)
+├── docs/                     # Architecture docs
+├── .github/workflows/        # CI/CD
+└── package.json
+```
+
+### What Projects Get (after init)
+
+```
+my-project/
+├── opencode.json             # Kit merged (agents + commands + MCPs)
+├── .opencode/
+│   ├── agents/               # 15 agents
+│   ├── skills/               # 39 skills
+│   ├── rules/                # 4 rule files (_meta.extends: opencode-kit)
+│   ├── orchestration/        # Contract (_meta.extends: opencode-kit)
+│   └── src/                  # Scripts
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -420,20 +459,20 @@ opencode-kit/
 
 ### 1. GitNexus — Code Intelligence
 
-**Rule**: `IMPACT_001` — CRITICAL. Agent MUST run `gitnexus_impact` before editing any symbol.
+**Rule**: `IMPACT_001` — CRITICAL. Agent MUST run impact analysis before editing any symbol.
 
 ```sh
 # Before touching any code:
-gitnexus_impact({target: "symbolName", direction: "upstream"})
+lean-ctx ctx_shell(command="gitnexus impact symbolName --direction upstream")
 # If HIGH/CRITICAL risk → BLOCK, report to user
 ```
 
-### 2. Graphify — Knowledge Graph
+### 2. Madar — Knowledge Graph
 
 **Rule**: Agents MUST explore unfamiliar code via graph queries, not linear file reads.
 
 ```sh
-graphify query "<question>"     # Scoped subgraph exploration
+lean-ctx ctx_shell(command="madar pack '<task or question>' --task explain")     # Scoped subgraph exploration
 ```
 
 ### 3. Lean Ctx — Context Persistence
@@ -484,7 +523,38 @@ After every subagent delegation, scoring runs automatically:
 2. **Tier 2** — LLM judge (fulfills requirements? follows governance? complete?)
 3. **Tier 3** — Combined verdict (PASS/RETRY/BLOCKED)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+### 7. Inheritance — Extension Model
+
+opencode-kit uses **class inheritance** — projects extend the base, not replace it.
+
+```json
+// Project's contract.json
+{
+  "_meta": {
+    "extends": "opencode-kit",
+    "overrides": ["requirements.goal"],
+    "appends": ["scope.included"]
+  },
+  "requirements": {
+    "goal": "Project-specific goal (overrides base)"
+  }
+}
+```
+
+| Layer | Extend Via | Example |
+|-------|-----------|---------|
+| **Contract** | `_meta.overrides` / `_meta.appends` | Override goal, append scope |
+| **Agents** | `_meta.append_skills` | Add project-specific skills |
+| **Rules** | `_meta.appends: ["rules"]` | Add custom rules |
+| **Skills** | Add to `.opencode/skills/` | Create `my-api-client/SKILL.md` |
+
+**Merge Rules:**
+- Scalars: project overrides base
+- Arrays: concatenated + deduplicated
+- Objects: deep merged (project wins)
+- Excludes: `_meta.excludes` removes inherited items
+
+See [docs/inheritance-model.md](docs/inheritance-model.md) for full architecture.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "extends": null,
+    "version": "0.1.0",
+    "overrides": [],
+    "appends": ["rules", "extraction_patterns"],
+    "excludes": []
+  },
+  "description": "Learner rules — governs post-execution learning and knowledge persistence",
+  "version": "0.1.0",
+
+  "enforcement": {
+    "readonly": {
+      "description": "Learner MUST NOT modify source code",
+      "severity": "CRITICAL",
+      "allowed_tools": ["lean-ctx_ctx_read", "lean-ctx_ctx_search", "lean-ctx_ctx_shell"],
+      "blocked_tools": ["lean-ctx_ctx_edit", "write", "edit"],
+      "violation_action": "BLOCKED"
+    },
+    "extraction_required": {
+      "description": "Learner MUST extract lessons from every completed execution",
+      "severity": "HIGH",
+      "condition": "phase == COMPLETE",
+      "violation_action": "WARN"
+    },
+    "persistence_required": {
+      "description": "Learner MUST persist knowledge after extraction",
+      "severity": "HIGH",
+      "condition": "lessons_extracted == true",
+      "violation_action": "WARN"
+    }
+  },
+
+  "extraction_patterns": {
+    "code_patterns": {
+      "description": "Patterns to extract from code changes",
+      "patterns": [
+        {
+          "id": "PATTERN_001",
+          "name": "error_handling",
+          "detect": "try/catch blocks, error callbacks, .catch()",
+          "extract": "error_types, recovery_strategies"
+        },
+        {
+          "id": "PATTERN_002",
+          "name": "authentication",
+          "detect": "auth middleware, token validation, session management",
+          "extract": "auth_mechanism, token_type, expiry"
+        },
+        {
+          "id": "PATTERN_003",
+          "name": "data_validation",
+          "detect": "schema validation, type checks, sanitization",
+          "extract": "validation_library, rules, error_messages"
+        },
+        {
+          "id": "PATTERN_004",
+          "name": "api_conventions",
+          "detect": "route definitions, middleware chains, response format",
+          "extract": "http_methods, url_patterns, response_shape"
+        },
+        {
+          "id": "PATTERN_005",
+          "name": "database_access",
+          "detect": "ORM usage, query builders, raw SQL",
+          "extract": "orm_type, query_patterns, transaction_handling"
+        }
+      ]
+    },
+    "architecture_patterns": {
+      "description": "Patterns to extract from project structure",
+      "patterns": [
+        {
+          "id": "ARCH_001",
+          "name": "module_structure",
+          "detect": "directory layout, file naming, export patterns",
+          "extract": "module_type, naming_conventions"
+        },
+        {
+          "id": "ARCH_002",
+          "name": "dependency_management",
+          "detect": "package.json, import patterns, dependency injection",
+          "extract": "dep_manager, injection_style"
+        },
+        {
+          "id": "ARCH_003",
+          "name": "testing_strategy",
+          "detect": "test files, test frameworks, coverage config",
+          "extract": "test_framework, coverage_threshold, test_patterns"
+        }
+      ]
+    }
+  },
+
+  "knowledge_persistence": {
+    "storage": {
+      "primary": "lean-ctx_ctx_knowledge",
+      "fallback": "contract.lessons_learned[]"
+    },
+    "categories": [
+      {
+        "id": "code_pattern",
+        "description": "Code patterns discovered during execution",
+        "key_format": "pattern/{pattern_name}",
+        "ttl": "permanent"
+      },
+      {
+        "id": "architecture_decision",
+        "description": "Architecture decisions and rationale",
+        "key_format": "decision/{decision_id}",
+        "ttl": "permanent"
+      },
+      {
+        "id": "gotcha",
+        "description": "Gotchas and pitfalls discovered",
+        "key_format": "gotcha/{gotcha_id}",
+        "ttl": "permanent"
+      },
+      {
+        "id": "convention",
+        "description": "Project conventions discovered",
+        "key_format": "convention/{convention_id}",
+        "ttl": "permanent"
+      }
+    ]
+  },
+
+  "rules": [
+    {
+      "id": "LEARN_001",
+      "severity": "HIGH",
+      "desc": "Learner MUST extract lessons from every completed execution",
+      "condition": "phase == COMPLETE",
+      "action": "extract_lessons"
+    },
+    {
+      "id": "LEARN_002",
+      "severity": "HIGH",
+      "desc": "Learner MUST persist knowledge to lean-ctx after extraction",
+      "condition": "lessons_extracted == true",
+      "action": "persist_knowledge"
+    },
+    {
+      "id": "LEARN_003",
+      "severity": "CRITICAL",
+      "desc": "Learner MUST NOT modify source code — read-only analysis",
+      "condition": "agent == learner",
+      "action": "readonly_enforcement"
+    },
+    {
+      "id": "LEARN_004",
+      "severity": "MEDIUM",
+      "desc": "Learner SHOULD update contract.lessons_learned[] with findings",
+      "condition": "phase == COMPLETE && lessons_count > 0",
+      "action": "update_contract"
+    },
+    {
+      "id": "LEARN_005",
+      "severity": "MEDIUM",
+      "desc": "Learner SHOULD detect patterns across multiple executions",
+      "condition": "execution_count > 3",
+      "action": "pattern_detection"
+    },
+    {
+      "id": "LEARN_006",
+      "severity": "LOW",
+      "desc": "Learner SHOULD suggest workflow improvements based on patterns",
+      "condition": "patterns_detected > 2",
+      "action": "suggest_improvements"
+    }
+  ]
+}
