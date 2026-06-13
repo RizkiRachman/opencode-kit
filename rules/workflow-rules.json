@@ -390,9 +390,9 @@
       {
         "id": "AGENT_006",
         "severity": "MEDIUM",
-        "desc": "Agents SHOULD use madar for codebase exploration",
+        "desc": "Agents SHOULD use graphify for codebase exploration",
         "condition": "task_requires_codebase_context",
-        "action": "madar_first"
+        "action": "graphify_first"
       },
       {
         "id": "AGENT_007",

@@ -344,6 +344,25 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   ensureRules(projectDir);
   ensureProjectConfig(projectDir);
 
+  // Check MCP availability — warn if not installed
+  try {
+    const { execSync } = await import('child_process');
+    const mcpsToCheck = {
+      'lean-ctx': { cmd: 'lean-ctx', install: 'brew install lean-ctx or https://github.com/yvgude/lean-ctx' },
+      'gitnexus': { cmd: 'gitnexus', install: 'npm install -g gitnexus' },
+      'graphify': { cmd: 'graphify', install: 'npm install -g @safishamsi/graphify' },
+    };
+    for (const [name, info] of Object.entries(mcpsToCheck)) {
+      try {
+        execSync(`which ${info.cmd}`, { stdio: 'pipe' });
+      } catch {
+        log('warn', `MCP "${name}" not found. Install: ${info.install}`);
+      }
+    }
+  } catch (err) {
+    log('warn', `MCP check failed: ${err.message}`);
+  }
+
   // Auto-register TUI plugin in tui.json if missing
   try {
     const tuiJsonPath = path.join(homeDir, '.config', 'opencode', 'tui.json');

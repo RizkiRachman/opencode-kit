@@ -128,7 +128,7 @@
             "additionalProperties": true
           },
           "properties": {
-            "madar": {
+            "graphify": {
               "type": "object",
               "properties": {
                 "required": {

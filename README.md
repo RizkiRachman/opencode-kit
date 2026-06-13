@@ -93,7 +93,7 @@ AI coding agents are powerful but **inconsistent**. Without structure, they:
 - **Node.js** ≥ 18
 - **Git**
 - **OpenCode** installed
-- MCP servers configured: `lean-ctx`, `gitnexus`, `madar`, `context7`, `firecrawl`, `github`
+- MCP servers configured: `lean-ctx`, `gitnexus`, `context7`, `firecrawl`, `github`
 
 ```sh
 node --version    # ≥ 18
@@ -136,7 +136,7 @@ Plugin provisions .opencode/:
   • rules/ (7 rule files)
   • orchestration/contract.json
 Plugin registers tui.json:
-  • @ikieaneh/opencode-kit/tui → slash commands
+  • @ikieaneh/opencode-kit/tui (auto-registered)
      ↓
 Everything ready — 15 slash commands available
 ```
@@ -181,7 +181,7 @@ When OpenCode starts with `@ikieaneh/opencode-kit` in the plugin array, the plug
    - 15 slash command configs
    - 6 MCP server configs
    - 18 permission configs
-3. Registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
+3. Auto-registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
 
 No manual copying. No wrapper scripts. Just install and go.
 
@@ -355,7 +355,7 @@ All 15 commands available in the OpenCode TUI:
 ## Known Limitations
 
 - **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked experimental in the OpenCode plugin SDK. If it breaks, the plugin falls back to per-project agent `.md` files, which remain functional.
-- **TUI plugin**: `@ikieaneh/opencode-kit/tui` requires OpenCode with TUI support. Scripts run synchronously via `execSync` — long-running scripts may block the UI temporarily.
+- **TUI plugin**: The TUI plugin is auto-registered by the main kit plugin. Requires OpenCode with TUI support. Scripts run synchronously via `execSync` — long-running scripts may block the UI temporarily.
 - **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

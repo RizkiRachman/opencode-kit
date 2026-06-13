@@ -98,7 +98,7 @@
       "can": [
         "read_files",
         "search_code",
-        "query_madar"
+        "query_graphify"
       ],
       "cannot": [
         "edit_files",

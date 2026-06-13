@@ -34,7 +34,7 @@ ALL MCP calls MUST go through lean-ctx_ctx_shell using CLI tools:
 |---------|-------------|---------|
 | GitHub API | `gh` | `lean-ctx ctx_shell(command="gh pr list --repo owner/repo")` |
 | GitNexus | `gitnexus` | `lean-ctx ctx_shell(command="gitnexus list")` |
-| Madar | `madar` | `lean-ctx ctx_shell(command="madar pack 'query' --task explain")` |
+| Graphify | `graphify` | `lean-ctx ctx_shell(command="graphify explain 'symbol' --graph graphify-out/graph.json")` |
 | PostgreSQL | `psql` | `lean-ctx ctx_shell(command="psql -c 'SELECT 1'")` |
 | Context7 | `npx @upstash/context7-mcp` | `lean-ctx ctx_shell(command="npx @upstash/context7-mcp --help")` |
 | Firecrawl | `firecrawl` | `lean-ctx ctx_shell(command="firecrawl search 'query'")` |
@@ -155,7 +155,7 @@ Present findings in the standard explorer output format.
 | List directory tree | `lean-ctx_ctx_tree` | Default depth 3, adjust as needed |
 | Read files | `lean-ctx_ctx_read` | minimal chunks — only what confirms a match |
 | Code intelligence | `lean-ctx ctx_shell(command="gitnexus query/context ..."`) | Concept and symbol search |
-| Context packs | `lean-ctx ctx_shell(command="madar pack '...' --task explain")` | Task-aware codebase context |
+| Context packs | `lean-ctx ctx_shell(command="graphify pack '...' --task explain")` | Task-aware codebase context |
 | Content search | `lean-ctx_ctx_search` | Regex patterns + structural matching |
 | Shell commands | `lean-ctx_ctx_shell` | Never use bash directly |
 | Write / Edit | **FORBIDDEN** | Explorer is read-only |
