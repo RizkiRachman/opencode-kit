@@ -1,4 +1,3 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -17,7 +16,7 @@
 <h3 align="center">opencode-kit</h3>
 
   <p align="center">
-    Standardized OpenCode orchestration framework — contract-based, rules-enforced, zero-touch agent workflow
+    Plugin that auto-provisions agents, skills, rules, and configs for OpenCode. Zero-config — just add the plugin.
     <br />
     <a href="https://github.com/RizkiRachman/opencode-kit"><strong>Explore the docs »</strong></a>
     <br />
@@ -29,7 +28,7 @@
 
   <p>
     <b>npm:</b> <code>@ikieaneh/opencode-kit</code> &middot;
-    <b>macOS M-Series</b> — Apple Silicon (arm64)
+    <b>Cross-platform</b> — macOS, Linux, Windows
   </p>
 </div>
 
@@ -37,18 +36,21 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#about-the-project">About</a></li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
+        <li><a href="#verification">Verification</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
     <li><a href="#structure">Structure</a></li>
-    <li><a href="#the-6-pillars">The 6 Pillars</a></li>
+    <li><a href="#enforcement-system">Enforcement System</a></li>
+    <li><a href="#agents--skills">Agents & Skills</a></li>
+    <li><a href="#slash-commands">Slash Commands</a></li>
+    <li><a href="#known-limitations">Known Limitations</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -56,93 +58,30 @@
 </details>
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## About
 
-`opencode-kit` is a **workflow enforcement framework** for AI coding agents. It ensures agents follow a structured process — plan, build, review, learn — instead of jumping straight to implementation.
+`opencode-kit` is an OpenCode **plugin** that auto-provisions a complete agent workflow framework. Install the plugin, and every session gets 15 agents, 39 skills, 7 rule files, 6 MCP configs, and 15 slash commands — automatically.
 
 ### The Problem
 
-AI agents (Claude, Copilot, etc.) are powerful but **unpredictable**. When given a task, they often:
+AI coding agents are powerful but **inconsistent**. Without structure, they:
 
-- Skip project conventions and jump directly to writing code
-- Ignore shared state — each session starts from scratch
+- Skip conventions and jump to implementation
+- Ignore shared state — each session starts fresh
 - Bypass quality gates — no review, no scoring, no learning
-- Use different approaches on every run — inconsistent results
-
-Traditional frameworks try to fix this with **prose in .md files** ("load the contract before any tool call"). But agents routinely ignore prose because there's no enforcement — it's a suggestion, not a requirement.
+- Use different approaches every run
 
 ### The Solution
 
-`opencode-kit` replaces prose conventions with **machine-readable enforcement**:
+`opencode-kit` replaces prose conventions with **machine-readable enforcement**. It injects a contract-based orchestration framework into every OpenCode session via a plugin hook — no manual setup required.
 
 | Instead of ... | opencode-kit uses ... |
 |:---------------|:----------------------|
 | "read the state file" | `contract.json` — a JSON state machine agents MUST read/write |
 | "follow the rules" | `rules.json` — CRITICAL rules BLOCK agents, HIGH rules FLAG them |
-| "check before editing" | `preflight.sh` — an enforcement gate that fails if rules aren't met |
-| "review your work" | **Scoring pipeline** — every output is scored (≥70 PASS, <50 BLOCK) |
-| "remember what you learned" | `postflight.sh` — auto-persists state + telemetry + lessons learned |
-
-The result: **zero-touch agent workflow**. Set a goal, and the system self-executes through Plan → Build → Review → Learn, pausing only when BLOCKED.
-
-### How It Works
-
-As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session globally via a **6-layer enforcement system**:
-
-1. **Plugin bootstrap** — every session auto-loads the orchestration contract before any work
-2. **Pre-flight gate** — validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations. Includes **state machine validation** (transition legality, required fields)
-3. **Contract locking** — prevents concurrent contract modifications via file-based locks (`contract-lock.sh acquire/release`)
-4. **Contract protocol** — shared state machine (`contract.json`) tracks phase, decisions, scores, telemetry
-5. **Scoring pipeline** — every subagent output scored via `src/scoring-pipeline.sh`. ≥70 PASS, 50-69 RETRY, <50 BLOCKED
-6. **Audit trail** — JSONL compliance logging (`audit-trail.sh`) records every enforcement action, score, and phase transition for later analysis
-7. **ADR logging** — every architectural decision recorded in `decisions.adr_log[]`
-8. **Extension model** — project-specific skills in `.opencode/skills/` override plugin defaults
-
-### The 8 Built-in Skills
-
-| Skill | Purpose |
-|-------|---------|
-| `orchestration-template` | Contract protocol, state machine, persistence rules |
-| `scoring-pipeline` | Tier 1 rule checks + Tier 2 LLM judge + verdict |
-| `adr-generator` | Architecture Decision Record format and auto-ID |
-| `qa-expert` | Test standards, edge cases, coverage goals |
-| `system-analyst` | Impact analysis, execution tracing, architecture checks |
-| `token-optimize` | Efficient reading, batching, and delegation |
-| `verification-before-completion` | Quality gates — formatting, compile, test, verify |
-| `learner` | Post-execution learning, memory persistence |
-| *(extensible)* | Create your own skills in `.opencode/skills/` |
-
-### Built for Cost-Efficient Models
-
-`opencode-kit` was designed for teams using **cost-optimized models** (DeepSeek V4 Flash, Gemini Flash, GPT-4o Mini, etc.) who want to compete with premium models through **process rigor**, not raw intelligence. The scoring pipeline and pre-flight enforcement create a quality floor that cheap models can meet through architecture, not model power.
-
-### Platform Support
-
-- **macOS M-Series** (Apple Silicon) — primary development target
-- **Linux** (Ubuntu) — CI-verified via GitHub Actions
-- **Any OpenCode-compatible environment** with `lean-ctx`, `gitnexus`, `madar`
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- PHILOSOPHY -->
-## Philosophy
-
-### Data-driven enforcement, not convention
-
-Most agent frameworks say "please load the envelope first" in prose. Agents ignore prose. `opencode-kit` stores rules as JSON and validates them with shell scripts — the agent can't work around a failing `preflight.sh`.
-
-### Contract over envelope
-
-The shared state is called a **contract**, not an envelope. A contract is legally binding — every agent agrees to its terms. Breaking the contract is a governance violation, not a suggestion.
-
-### Score or fail
-
-Every subagent output is scored on a 0-100 scale:
-- **≥70** → PASS, advance to next phase
-- **50-69** → RETRY (up to 3 attempts)
-- **<50** → BLOCKED (escalate to user)
-
-This creates a quality floor that cheap models can meet through architecture, not raw intelligence.
+| "check before editing" | Pre-flight gate — fails if rules aren't met |
+| "review your work" | Scoring pipeline — every output scored (≥70 PASS, <50 BLOCK) |
+| "remember what you learned" | Auto-persisted state, telemetry, and lessons learned |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -151,379 +90,100 @@ This creates a quality floor that cheap models can meet through architecture, no
 
 ### Prerequisites
 
-- **macOS** on Apple Silicon (M1, M2, M3, or M4)
-- **Node.js** ≥ 18 (for `npx` support)
-- **Git** (for version control)
-- **OpenCode** with the following MCPs configured:
-  - `lean-ctx` (context persistence)
-  - `gitnexus` (code intelligence)
-  - `madar` (knowledge graph)
-  - `context7` (documentation lookup)
-  - `firecrawl` (web scraping)
-  - `github` (repository management)
+- **Node.js** ≥ 18
+- **Git**
+- **OpenCode** installed
+- MCP servers configured: `lean-ctx`, `gitnexus`, `madar`, `context7`, `firecrawl`, `github`
 
 ```sh
-# Verify prerequisites
 node --version    # ≥ 18
 git --version     # any recent version
 ```
 
-### Quick Start (5 minutes)
-
-```sh
-# 1. Clone this repo
-git clone https://github.com/RizkiRachman/opencode-kit.git
-
-# 2. Copy the env template
-cp opencode-kit/.env.template my-project/.env
-# Edit .env with your credentials
-
-# 3. Copy the wrapper to your project
-cp opencode-kit/opencode-run my-project/
-chmod +x my-project/opencode-run
-
-# 4. Launch opencode
-cd my-project
-./opencode-run
-```
-
-That's it. Everything loads automatically.
-
-### Architecture: How It Works as a Library
-
-`opencode-kit` is designed as a **common library** — one plugin that provides everything to every project that uses it.
-
-```
-┌─────────────────────────────────────────────────────┐
-│  @ikieaneh/opencode-kit (npm package)               │
-│                                                     │
-│  Provides:                                          │
-│  ├─ opencode.json  → commands, agents, skills       │
-│  ├─ .opencode/skills/ → orchestration workflows     │
-│  ├─ .opencode/agents/ → agent definitions           │
-│  └─ opencode-run   → launcher wrapper               │
-└─────────────────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────┐
-│  Your Project                                       │
-│                                                     │
-│  Needs only:                                        │
-│  └─ .env  → credentials (gitignored)                │
-│                                                     │
-│  Gets automatically:                                │
-│  ├─ All commands (/opencode-kit:doctor, etc.)       │
-│  ├─ All agents (orchestrator, planner, etc.)        │
-│  ├─ All skills (orchestration-workflow, etc.)       │
-│  └─ MCP config (lean-ctx, gitnexus, madar, context7, firecrawl, github)       │
-└─────────────────────────────────────────────────────┘
-```
-
-**Key principle**: `opencode.json` is tracked in git with **zero credentials**. Secrets live only in `.env`. The wrapper injects them at runtime.
-
-#### File ownership
-
-| File | Tracked in git? | Contains secrets? | Purpose |
-|------|:-:|:-:|---------|
-| `opencode.json` | Yes | No | Commands, agents, skills, MCP config |
-| `.env` | No | Yes | All credentials |
-| `opencode-run` | Yes | No | Preflight validation + inject `.env` into config |
-| `.opencode/skills/` | Yes | No | Workflow skills |
-| `.opencode/agents/` | Yes | No | Agent definitions |
-
-#### How the wrapper works
-
-```
-./opencode-run
-  │
-  ├─ 1. Source .env → load credentials into shell
-  ├─ 2. Validate env vars + binaries
-  ├─ 3. Inject secrets into opencode.json (runtime patch)
-  ├─ 4. Launch opencode
-  └─ 5. On exit → restore original opencode.json
-```
-
-The wrapper ensures opencode.json stays clean in git while MCP servers get real credentials at runtime.
-
-### Documentation Guides
-
-| Guide | Description |
-|-------|-------------|
-| [Contract Protocol](docs/guides/contract-protocol.md) | State machine, fields, resolution order |
-| [Scoring Pipeline](docs/guides/scoring-pipeline.md) | Tier 1 + Tier 2 + verdict |
-| [Troubleshooting](docs/guides/troubleshooting.md) | Common issues and solutions |
-| [Quickstart](docs/examples/QUICKSTART.md) | 6-step setup from scratch |
-| [Extension Skills](docs/examples/extension-skill-template.md) | Create project-specific skills |
-| [Model Configs](docs/examples/model-configs.md) | Provider configuration examples |
-| [Enforcement Architecture](docs/guides/enforcement-architecture.md) | 6-layer enforcement system |
-
 ### Installation
 
-#### Option 1: Clone + use directly (recommended)
+**Step 1: Install globally (one-time)**
 
 ```sh
-# Clone the library
-git clone https://github.com/RizkiRachman/opencode-kit.git
-
-# Copy what you need to your project
-cp opencode-kit/opencode-run my-project/
-cp opencode-kit/.env.template my-project/
-chmod +x my-project/opencode-run
-
-# Fill in credentials
-cd my-project
-$EDITOR .env
-
-# Launch
-./opencode-run
+npm install -g @ikieaneh/opencode-kit
 ```
 
-Everything loads automatically — commands, agents, skills, MCP config.
+**Step 2: Add to your project**
 
-#### Option 2: Install as npm plugin
-
-```sh
-npm install @ikieaneh/opencode-kit
-```
-
-Add to your project's `opencode.json`:
+Create or edit `opencode.json` in your project root:
 
 ```json
 {
-  "plugin": [
-    "@ikieaneh/opencode-kit",      ← MUST be first
-    "other-plugins..."
-  ]
+  "plugin": ["@ikieaneh/opencode-kit"]
 }
 ```
 
-> **Plugin ordering**: opencode-kit MUST be first in the plugin array. Its system prompt transform is foundational — other plugins may add behavior, but opencode-kit enforces the workflow.
+That's it. On next session, the plugin auto-provisions everything:
 
-#### Option 3: Quick scaffold
+- `.opencode/agents/` — 15 agents
+- `.opencode/skills/` — 39 skills
+- `.opencode/rules/` — 7 rule files
+- `config.agent` — 15 agent configs injected at runtime
+- `config.command` — 15 slash commands
+- `config.mcp` — 6 MCP servers
+- `config.permission` — 18 permissions
+- `tui.json` — TUI plugin auto-registered
+
+### Verification
+
+After installation, verify everything loaded:
 
 ```sh
-npx opencode-kit init
-```
-
-This scaffolds the full framework into your current project directory.
-
-
-
-### Post-install verification
-
-```sh
-.opencode/src/verify.sh
+npx opencode-kit doctor
 ```
 
 Expected output:
+
 ```
 ✅ contract.json
 ✅ rules.json
-✅ agents/orchestrator.md (has pre-flight gate)
-✅ agents/planner.md (has pre-flight gate)
-...
+✅ 15 agents provisioned
+✅ 39 skills provisioned
+✅ 7 rule files loaded
 ✅ All checks passed
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE -->
-## Usage
+<!-- HOW IT WORKS -->
+## How It Works
 
-### 1. Set a goal
+### Plugin Auto-Provision Flow
 
-Edit `.opencode/orchestration/contract.json`:
+When OpenCode starts with `@ikieaneh/opencode-kit` in the plugin array, the plugin hook fires and:
 
-```json
-{
-  "state": "INIT",
-  "requirements": {
-    "goal": "Add user authentication with JWT",
-    "acceptance_criteria": [
-      "Users can register with email + password",
-      "Users can login and receive a JWT token",
-      "Tokens expire after 24 hours"
-    ],
-    "constraints": ["No new dependencies", "Follow hexagonal architecture"]
-  }
-}
-```
+1. Auto-provisions files from the package:
+   - `.opencode/agents/` — 15 agent templates
+   - `.opencode/skills/` — 39 skills
+   - `.opencode/rules/` — 7 rule files
+   - `.opencode/orchestration/contract.json`
+2. Auto-injects configs at runtime (no `opencode.json` edits needed):
+   - 15 agent configs (skills + tools)
+   - 15 slash command configs
+   - 6 MCP server configs
+   - 18 permission configs
+3. Auto-registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
 
-### 2. Start working
+No manual copying. No wrapper scripts. Just install and go.
 
-Every agent session automatically:
-
-1. **Loads the contract** (BLOCKED if missing)
-2. **Validates branch** (BLOCKED if on main)
-3. **Validates state** (BLOCKED if wrong phase)
-4. **Checks rules** (CRITICAL violations = BLOCK)
-
-### 3. The workflow runs itself
-
-```
-INIT → PLAN → PLAN_SCORED → EXECUTE → EXECUTE_SCORED → REVIEW → REVIEW_SCORED → COMPLETE
-                                        ↓
-                                     BLOCKED ← user intervention → retry
-```
-
-Each phase transition requires a score ≥70 to proceed.
-
-### CLI Commands
-
-Once installed, run these from the project root:
-
-| Command | Purpose |
-|---------|---------|
-| `lean-ctx ctx_shell(command="bash .opencode/src/status.sh")` | Dashboard — contract state, telemetry, rules |
-| `lean-ctx ctx_shell(command="bash .opencode/src/doctor.sh")` | Diagnostics — MCPs, contract, git, persistence |
-| `lean-ctx ctx_shell(command="bash .opencode/src/analytics.sh")` | Telemetry aggregation — phase times, cost estimates |
-| `lean-ctx ctx_shell(command="bash .opencode/src/diff.sh [branch1] [branch2]")` | Compare contract state between branches |
-| `lean-ctx ctx_shell(command="bash .opencode/src/adr.sh")` | Record a new Architecture Decision Record |
-| `lean-ctx ctx_shell(command="bash .opencode/src/telemetry.sh")` | View telemetry details |
-| `lean-ctx ctx_shell(command="bash .opencode/src/new-skill.sh <name>")` | Scaffold a new skill SKILL.md |
-| `lean-ctx ctx_shell(command="bash .opencode/rules/validation.sh")` | Validate rules compliance |
-| `lean-ctx ctx_shell(command="bash .opencode/src/adoption-check.sh")` | Verify project is initialized |
-| `lean-ctx ctx_shell(command="bash .opencode/src/contract-lock.sh acquire/release")` | Contract file locking |
-| `lean-ctx ctx_shell(command="bash .opencode/src/audit-trail.sh")` | Audit trail management |
-| `lean-ctx ctx_shell(command="bash .opencode/src/scoring-pipeline.sh")` | Run scoring pipeline |
-| `lean-ctx ctx_shell(command="bash .opencode/src/contract-lint.sh")` | Validate contract structure |
-| `npx opencode-kit --version` | Print version |
-| `npx opencode-kit --help` | Print help |
-
-## Slash Commands (TUI)
-
-Use these directly in the opencode TUI with the `opencode-kit:` prefix:
-
-| Command | Description |
-|---------|-------------|
-| `/opencode-kit:doctor` | Run project health checks |
-| `/opencode-kit:status` | Show project status |
-| `/opencode-kit:analytics` | Show project analytics |
-| `/opencode-kit:preflight` | Run pre-flight gate checks |
-| `/opencode-kit:score` | Run scoring pipeline |
-| `/opencode-kit:contract-lint` | Validate contract structure |
-| `/opencode-kit:checkpoint` | List saved checkpoints |
-| `/opencode-kit:checkpoint-save` | Save a checkpoint |
-| `/opencode-kit:diff` | Show contract changes |
-| `/opencode-kit:audit` | Query audit trail |
-| `/opencode-kit:verify` | Verify project setup |
-| `/opencode-kit:lock` | Check contract lock status |
-| `/opencode-kit:init` | Initialize opencode-kit |
-| `/opencode-kit:update` | Update templates |
-| `/opencode-kit:adr` | Create Architecture Decision Record |
-
-All commands use `lean-ctx ctx_shell` internally (no bash permission required for agents).
-
-
-
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- STRUCTURE -->
-## Structure
-
-```
-opencode-kit/ (npm package)
-├── opencode.json.template    # Framework config (no model/provider)
-├── AGENTS.md                 # Agent instructions
-├── contract.json             # Contract template (_meta.extends: null)
-├── contract.schema.json      # Contract schema
-├── superpowers-contract.json
-├── agents/                   # 15 agent templates
-├── skills/                   # 39 generic skills
-├── rules/                    # 7 rule files
-├── src/                      # 22 scripts (init, doctor, etc.)
-├── docs/                     # Architecture docs
-├── .github/workflows/        # CI/CD
-└── package.json
-```
-
-### What Projects Get (after init)
+### What Projects Get
 
 ```
 my-project/
-├── opencode.json             # Kit merged (agents + commands + MCPs)
 ├── .opencode/
-│   ├── agents/               # 15 agents
-│   ├── skills/               # 39 skills
-│   ├── rules/                # 4 rule files (_meta.extends: opencode-kit)
-│   ├── orchestration/        # Contract (_meta.extends: opencode-kit)
-│   └── src/                  # Scripts
+│   ├── agents/       (auto-provisioned: 15 agents)
+│   ├── skills/       (auto-provisioned: 39 skills)
+│   ├── rules/        (auto-provisioned: 7 rule files)
+│   ├── orchestration/ (auto-provisioned: contract.json)
+│   └── plugins/      (plugin entry points)
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- THE 6 PILLARS -->
-## The 6 Pillars
-
-### 1. GitNexus — Code Intelligence
-
-**Rule**: `IMPACT_001` — CRITICAL. Agent MUST run impact analysis before editing any symbol.
-
-```sh
-# Before touching any code:
-lean-ctx ctx_shell(command="gitnexus impact symbolName --direction upstream")
-# If HIGH/CRITICAL risk → BLOCK, report to user
-```
-
-### 2. Madar — Knowledge Graph
-
-**Rule**: Agents MUST explore unfamiliar code via graph queries, not linear file reads.
-
-```sh
-lean-ctx ctx_shell(command="madar pack '<task or question>' --task explain")     # Scoped subgraph exploration
-```
-
-### 3. Lean Ctx — Context Persistence
-
-**Rule**: `PERSIST_001` — HIGH. Contract MUST be persisted after every delegation/phase change.
-
-```sh
-lean-ctx ctx_knowledge remember key orchestration-contract value <updated JSON>
-```
-
-### 4. Workflow State — State Machine
-
-**Rule**: `STATE_001` — CRITICAL. Agents can only act in correct state.
-
-```json
-{
-  "transitions": [
-    { "from": "INIT", "to": "PLAN" },
-    { "from": "PLAN", "to": "PLAN_SCORED" },
-    { "from": "PLAN_SCORED", "to": "EXECUTE", "require_score": 70 },
-    ...
-    { "from": "*", "to": "BLOCKED", "condition": "score < 50 OR attempts >= 3" }
-  ]
-}
-```
-
-### 5. ADR — Architecture Decision Records
-
-Every decision is logged in `contract.json.decisions.adr_log[]` with structured format:
-
-```json
-{
-  "decisions": {
-    "adr_log": [
-      { "id": "ADR-001", "date": "2026-06-11", "title": "Orchestration framework",
-        "context": "Agents bypassed envelope protocol", "decision": "Switch to contract + rules.json",
-        "alternatives": ["Keep envelope", "Use script enforcement"],
-        "consequences": "Stronger enforcement, more scaffolding on init" }
-    ]
-  }
-}
-```
-
-### 6. Scoring — Quality Pipeline
-
-After every subagent delegation, scoring runs automatically:
-1. **Tier 1** — Rule-based checks (schema valid, permissions OK, blast radius safe)
-2. **Tier 2** — LLM judge (fulfills requirements? follows governance? complete?)
-3. **Tier 3** — Combined verdict (PASS/RETRY/BLOCKED)
-
-### 7. Inheritance — Extension Model
+### Inheritance Model
 
 opencode-kit uses **class inheritance** — projects extend the base, not replace it.
 
@@ -558,12 +218,140 @@ See [docs/inheritance-model.md](docs/inheritance-model.md) for full architecture
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- STRUCTURE -->
+## Structure
+
+```
+opencode-kit/
+├── opencode.json.template    # Framework config (no model/provider)
+├── AGENTS.md                 # Agent instructions
+├── contract.json             # Contract template
+├── contract.schema.json      # Contract schema
+├── agents/                   # 15 agent templates
+├── skills/                   # 39 skills
+├── rules/                    # 7 rule files
+├── src/                      # 22 scripts
+├── docs/                     # Architecture docs
+├── .github/workflows/        # CI/CD
+└── package.json
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ENFORCEMENT SYSTEM -->
+## Enforcement System
+
+### 1. Plugin Bootstrap
+
+Every session auto-loads the orchestration contract before any work begins.
+
+### 2. Pre-flight Gate
+
+Validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations. Includes state machine validation (transition legality, required fields).
+
+### 3. Contract Protocol
+
+Shared state machine (`contract.json`) tracks phase, decisions, scores, and telemetry. Every agent reads and writes to the contract.
+
+### 4. Scoring Pipeline
+
+Every subagent output is scored on a 0-100 scale:
+- **≥70** → PASS, advance to next phase
+- **50-69** → RETRY (up to 3 attempts)
+- **<50** → BLOCKED (escalate to user)
+
+### 5. Audit Trail
+
+JSONL compliance logging records every enforcement action, score, and phase transition for later analysis.
+
+### 6. ADR Logging
+
+Every architectural decision recorded in `decisions.adr_log[]` with structured format.
+
+### 7. Extension Model
+
+Project-specific skills in `.opencode/skills/` override plugin defaults via `_meta.extends`.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- AGENTS & SKILLS -->
+## Agents & Skills
+
+### 15 Agents
+
+| Agent | Role |
+|-------|------|
+| `orchestrator` | Coordinates multi-agent workflows, manages task delegation |
+| `planner` | Analyzes requests, traces impact, produces implementation plans |
+| `task-manager` | Breaks plans into tasks, implements each step |
+| `code-reviewer` | Read-only code review — quality, security, performance |
+| `explorer` | Fast codebase search specialist |
+| `librarian` | Authoritative source for library docs and API references |
+| `architect` | Strategic technical advisor for high-stakes decisions |
+| `fixer` | Fast implementation specialist for well-defined bounded tasks |
+| `learner` | Post-execution learning agent — extracts lessons, persists knowledge |
+| `observer` | System state monitor and reporter — read-only |
+| `database-specialist` | Database schema design, queries, migrations, optimization |
+| `devops-agent` | CI/CD, deployment, infrastructure, automation |
+| `documentation-agent` | Maintains README, API docs, inline documentation |
+| `security-reviewer` | Vulnerability assessment and security best practices |
+| `testing-specialist` | Unit tests, integration tests, test strategies |
+
+### 39 Skills
+
+Skills provide specialized instructions and workflows for specific tasks. Highlights include:
+
+- **orchestration-workflow** — Contract protocol, state machine, persistence rules
+- **firecrawl-\*** — Web search, scraping, interaction, monitoring (15 skills)
+- **superpowers** — brainstorming, TDD, debugging, code review, parallel agents, and more
+- **gitnexus-\*** — Code intelligence, impact analysis, debugging, refactoring
+- **quality-checks** — Linting, formatting, static analysis
+- **testing-strategies** — Test planning and coverage
+
+Full list: see `skills/` directory or load via the `skill` tool in OpenCode.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- SLASH COMMANDS -->
+## Slash Commands
+
+All 15 commands available in the OpenCode TUI:
+
+| Command | Description |
+|---------|-------------|
+| `/opencode-kit:doctor` | Run project health checks |
+| `/opencode-kit:status` | Show project status |
+| `/opencode-kit:analytics` | Show project analytics |
+| `/opencode-kit:preflight` | Run pre-flight gate checks |
+| `/opencode-kit:score` | Run scoring pipeline |
+| `/opencode-kit:contract-lint` | Validate contract structure |
+| `/opencode-kit:checkpoint` | List saved checkpoints |
+| `/opencode-kit:checkpoint-save` | Save a checkpoint |
+| `/opencode-kit:diff` | Show contract changes |
+| `/opencode-kit:audit` | Query audit trail |
+| `/opencode-kit:verify` | Verify project setup |
+| `/opencode-kit:lock` | Check contract lock status |
+| `/opencode-kit:init` | Initialize opencode-kit |
+| `/opencode-kit:update` | Update templates |
+| `/opencode-kit:adr` | Create Architecture Decision Record |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- KNOWN LIMITATIONS -->
+## Known Limitations
+
+- **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked experimental in the OpenCode plugin SDK. If it breaks, the plugin falls back to per-project agent `.md` files, which remain functional.
+- **TUI plugin**: `@ikieaneh/opencode-kit/tui` requires OpenCode with TUI support. Scripts run synchronously via `execSync` — long-running scripts may block the UI temporarily.
+- **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- CONTRIBUTING -->
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
 
-TL;DR: Fork → Feature branch → Commit → PR. Follow the 6-pillar architecture. All rules enforcements must be tested.
+Fork → Feature branch → Commit → PR. Follow the enforcement architecture. All rule enforcements must be tested.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -576,13 +364,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
 ## Contact
-
-## Known Limitations
-
-- **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked as experimental in the OpenCode plugin SDK. It may change in future versions. If it breaks, the plugin falls back to per-project agent .md files (`.opencode/agents/*.md`), which remain functional.
-- **Package name**: Currently published as `@ikieaneh/opencode-kit` (scoped). Requires `npm install @ikieaneh/opencode-kit`.
-- **TUI plugin**: `@ikieaneh/opencode-kit/tui` requires OpenCode with TUI support (version with `TuiPluginApi`). It registers commands in the Ctrl+P palette and as `/`-slash commands. Scripts are run synchronously via Node.js `execSync` — long-running scripts may block the UI temporarily.
-- **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
 
 Rizki Rachman — [GitHub](https://github.com/RizkiRachman)
 
