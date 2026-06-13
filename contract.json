@@ -63,7 +63,17 @@
     "approved_architecture": null,
     "coding_standard": [],
     "rejected_approaches": [],
-    "adr_log": []
+    "adr_log": [],
+    "adr_index": {
+      "folder": "adr",
+      "files": [],
+      "last_generated": null
+    },
+    "session_summary": {
+      "last_generated": null,
+      "file": null,
+      "context_ready": false
+    }
   },
   "governance": {
     "active_agent": "",

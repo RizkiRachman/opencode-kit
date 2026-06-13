@@ -1,34 +1,36 @@
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
+<div align="center">
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+[![npm][npm-shield]][npm-url]
+[![PRs Welcome][prs-shield]][prs-url]
 
+</div>
+
+<!-- PROJECT HEADER -->
 <br />
 <div align="center">
   <a href="https://github.com/RizkiRachman/opencode-kit">
     <img src="docs/images/logo.svg" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">opencode-kit</h3>
+<h1 align="center">opencode-kit</h1>
 
   <p align="center">
-    Plugin that auto-provisions agents, skills, rules, and configs for OpenCode. Zero-config — just add the plugin.
+    One plugin. Every project gets 15 agents, 39 skills, 15 slash commands, 5 MCPs, and contract-based orchestration — automatically.
     <br />
     <a href="https://github.com/RizkiRachman/opencode-kit"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/RizkiRachman/opencode-kit/issues/new?labels=bug">Report Bug</a>
-    &middot;
+    ·
     <a href="https://github.com/RizkiRachman/opencode-kit/issues/new?labels=enhancement">Request Feature</a>
-  </p>
-
-  <p>
-    <b>npm:</b> <code>@ikieaneh/opencode-kit</code> &middot;
-    <b>Cross-platform</b> — macOS, Linux, Windows
   </p>
 </div>
 
@@ -36,52 +38,59 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About</a></li>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#built-with">Built With</a></li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
-        <li><a href="#verification">Verification</a></li>
       </ul>
     </li>
-    <li><a href="#how-it-works">How It Works</a></li>
-    <li><a href="#structure">Structure</a></li>
-    <li><a href="#enforcement-system">Enforcement System</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#architecture">Architecture</a></li>
     <li><a href="#agents--skills">Agents & Skills</a></li>
-    <li><a href="#slash-commands">Slash Commands</a></li>
-    <li><a href="#known-limitations">Known Limitations</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
+---
+
 <!-- ABOUT THE PROJECT -->
-## About
+## About The Project
 
-`opencode-kit` is an OpenCode **plugin** that auto-provisions a complete agent workflow framework. Install the plugin, and every session gets 15 agents, 39 skills, 7 rule files, 6 MCP configs, and 15 slash commands — automatically.
+[![Product Name Screen Shot][product-screenshot]](https://github.com/RizkiRachman/opencode-kit)
 
-### The Problem
+AI coding agents are powerful but **inconsistent**. Without structure, they skip conventions, ignore shared state, bypass quality gates, and use different approaches every run.
 
-AI coding agents are powerful but **inconsistent**. Without structure, they:
+`opencode-kit` is an OpenCode plugin that replaces prose conventions with **machine-readable enforcement**. Install the plugin once, and every project session gets:
 
-- Skip conventions and jump to implementation
-- Ignore shared state — each session starts fresh
-- Bypass quality gates — no review, no scoring, no learning
-- Use different approaches every run
+- **15 agents** — orchestrator, planner, code-reviewer, and more
+- **39 skills** — orchestration, firecrawl, gitnexus, TDD, debugging
+- **15 slash commands** — doctor, status, preflight, ADR, and more
+- **5 MCPs** — lean-ctx, gitnexus, context7, firecrawl, github
+- **ADR reports** — Architecture Decision Records for every decision
+- **Session summaries** — auto-persisted state and lessons learned
 
-### The Solution
+All from a single plugin reference in `opencode.json`. Zero manual setup.
 
-`opencode-kit` replaces prose conventions with **machine-readable enforcement**. It injects a contract-based orchestration framework into every OpenCode session via a plugin hook — no manual setup required.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-| Instead of ... | opencode-kit uses ... |
-|:---------------|:----------------------|
-| "read the state file" | `contract.json` — a JSON state machine agents MUST read/write |
-| "follow the rules" | `rules.json` — CRITICAL rules BLOCK agents, HIGH rules FLAG them |
-| "check before editing" | Pre-flight gate — fails if rules aren't met |
-| "review your work" | Scoring pipeline — every output scored (≥70 PASS, <50 BLOCK) |
-| "remember what you learned" | Auto-persisted state, telemetry, and lessons learned |
+<!-- BUILT WITH -->
+## Built With
+
+| Technology | Purpose |
+|:-----------|:--------|
+| **[Node.js](https://nodejs.org/)** | Runtime and plugin system |
+| **[OpenCode](https://opencode.ai/)** | AI coding agent platform |
+| **[lean-ctx](https://github.com/RizkiRachman/lean-ctx)** | Token-compressed file/shell gateway |
+| **[graphify](https://github.com/RizkiRachman/graphify)** | Codebase graph intelligence |
+| **[GitNexus](https://github.com/RizkiRachman/gitnexus)** | Code intelligence and impact analysis |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -90,13 +99,12 @@ AI coding agents are powerful but **inconsistent**. Without structure, they:
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** >= 18
 - **Git**
-- **OpenCode** installed
-- MCP servers configured: `lean-ctx`, `gitnexus`, `context7`, `firecrawl`, `github`
+- **OpenCode** installed and configured
 
 ```sh
-node --version    # ≥ 18
+node --version    # >= 18
 git --version     # any recent version
 ```
 
@@ -108,9 +116,9 @@ git --version     # any recent version
 npm install -g @ikieaneh/opencode-kit
 ```
 
-**Step 2: Add to your project**
+**Step 2: Add plugin to your project**
 
-Create or edit `opencode.json` in your project root:
+Add to your project's `opencode.json`:
 
 ```json
 {
@@ -118,9 +126,14 @@ Create or edit `opencode.json` in your project root:
 }
 ```
 
-**Step 3: Open opencode — plugin initializes everything**
+That's it. Open your project in OpenCode — the plugin handles everything else.
 
-On first session, the plugin writes agent/command/MCP/permission configs directly to your `opencode.json` and auto-provisions `.opencode/` files:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- USAGE -->
+## Usage
+
+On first load, the plugin auto-provisions your project:
 
 ```
 opencode.json:   "plugin": ["@ikieaneh/opencode-kit"]
@@ -128,22 +141,18 @@ opencode.json:   "plugin": ["@ikieaneh/opencode-kit"]
 Plugin writes to opencode.json:
   • 15 agent configs (skills + tools)
   • 15 slash command configs
-  • 6 MCP server configs
+  • 5 MCP server configs
   • 18 permission configs
 Plugin provisions .opencode/:
-  • agents/ (15 .md files)
-  • skills/ (39 skill dirs)
-  • rules/ (7 rule files)
-  • orchestration/contract.json
+  • agents/     → 15 agent .md templates
+  • skills/     → 39 skill directories
+  • rules/      → 7 rule files
+  • orchestration/ → contract.json
 Plugin registers tui.json:
   • @ikieaneh/opencode-kit/tui (auto-registered)
      ↓
 Everything ready — 15 slash commands available
 ```
-
-> **Note**: Plugin writes to `opencode.json` on first load only. Existing entries are preserved — never overwritten.
-
-### Verification
 
 After installation, verify everything loaded:
 
@@ -164,37 +173,39 @@ Expected output:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- HOW IT WORKS -->
-## How It Works
+<!-- ARCHITECTURE -->
+## Architecture
 
-### Plugin Auto-Provision Flow
-
-When OpenCode starts with `@ikieaneh/opencode-kit` in the plugin array, the plugin hook fires and:
-
-1. Auto-provisions files from the package:
-   - `.opencode/agents/` — 15 agent templates
-   - `.opencode/skills/` — 39 skills
-   - `.opencode/rules/` — 7 rule files
-   - `.opencode/orchestration/contract.json`
-2. Writes configs directly to the project's `opencode.json`:
-   - 15 agent configs (skills + tools)
-   - 15 slash command configs
-   - 6 MCP server configs
-   - 18 permission configs
-3. Auto-registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
-
-No manual copying. No wrapper scripts. Just install and go.
-
-### What Projects Get
+### File Structure
 
 ```
-my-project/
-├── .opencode/
-│   ├── agents/       (auto-provisioned: 15 agents)
-│   ├── skills/       (auto-provisioned: 39 skills)
-│   ├── rules/        (auto-provisioned: 7 rule files)
-│   ├── orchestration/ (auto-provisioned: contract.json)
-│   └── plugins/      (plugin entry points)
+opencode-kit/
+├── opencode.json.template    # Framework config (no model/provider)
+├── AGENTS.md                 # Agent instructions
+├── contract.json             # Contract template
+├── contract.schema.json      # Contract schema
+├── agents/                   # 15 agent templates
+│   ├── orchestrator.md
+│   ├── planner.md
+│   ├── code-reviewer.md
+│   ├── task-manager.md
+│   ├── explorer.md
+│   ├── librarian.md
+│   ├── architect.md
+│   ├── fixer.md
+│   ├── learner.md
+│   ├── observer.md
+│   ├── database-specialist.md
+│   ├── devops-agent.md
+│   ├── documentation-agent.md
+│   ├── security-reviewer.md
+│   └── testing-specialist.md
+├── skills/                   # 39 skills (65 dirs)
+├── rules/                    # 7 rule files
+├── src/                      # 22 shell scripts
+├── docs/                     # Architecture docs
+├── adr/                      # ADR templates
+└── package.json
 ```
 
 ### Inheritance Model
@@ -216,7 +227,7 @@ opencode-kit uses **class inheritance** — projects extend the base, not replac
 ```
 
 | Layer | Extend Via | Example |
-|-------|-----------|---------|
+|:------|:-----------|:--------|
 | **Contract** | `_meta.overrides` / `_meta.appends` | Override goal, append scope |
 | **Agents** | `_meta.append_skills` | Add project-specific skills |
 | **Rules** | `_meta.appends: ["rules"]` | Add custom rules |
@@ -232,107 +243,58 @@ See [docs/inheritance-model.md](docs/inheritance-model.md) for full architecture
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- STRUCTURE -->
-## Structure
-
-```
-opencode-kit/
-├── opencode.json.template    # Framework config (no model/provider)
-├── AGENTS.md                 # Agent instructions
-├── contract.json             # Contract template
-├── contract.schema.json      # Contract schema
-├── agents/                   # 15 agent templates
-├── skills/                   # 39 skills
-├── rules/                    # 7 rule files
-├── src/                      # 22 scripts
-├── docs/                     # Architecture docs
-├── .github/workflows/        # CI/CD
-└── package.json
-```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ENFORCEMENT SYSTEM -->
-## Enforcement System
-
-### 1. Plugin Bootstrap
-
-Every session auto-loads the orchestration contract before any work begins.
-
-### 2. Pre-flight Gate
-
-Validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations. Includes state machine validation (transition legality, required fields).
-
-### 3. Contract Protocol
-
-Shared state machine (`contract.json`) tracks phase, decisions, scores, and telemetry. Every agent reads and writes to the contract.
-
-### 4. Scoring Pipeline
-
-Every subagent output is scored on a 0-100 scale:
-- **≥70** → PASS, advance to next phase
-- **50-69** → RETRY (up to 3 attempts)
-- **<50** → BLOCKED (escalate to user)
-
-### 5. Audit Trail
-
-JSONL compliance logging records every enforcement action, score, and phase transition for later analysis.
-
-### 6. ADR Logging
-
-Every architectural decision recorded in `decisions.adr_log[]` with structured format.
-
-### 7. Extension Model
-
-Project-specific skills in `.opencode/skills/` override plugin defaults via `_meta.extends`.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- AGENTS & SKILLS -->
 ## Agents & Skills
 
 ### 15 Agents
 
-| Agent | Role |
-|-------|------|
-| `orchestrator` | Coordinates multi-agent workflows, manages task delegation |
-| `planner` | Analyzes requests, traces impact, produces implementation plans |
-| `task-manager` | Breaks plans into tasks, implements each step |
-| `code-reviewer` | Read-only code review — quality, security, performance |
-| `explorer` | Fast codebase search specialist |
-| `librarian` | Authoritative source for library docs and API references |
-| `architect` | Strategic technical advisor for high-stakes decisions |
-| `fixer` | Fast implementation specialist for well-defined bounded tasks |
-| `learner` | Post-execution learning agent — extracts lessons, persists knowledge |
-| `observer` | System state monitor and reporter — read-only |
-| `database-specialist` | Database schema design, queries, migrations, optimization |
-| `devops-agent` | CI/CD, deployment, infrastructure, automation |
-| `documentation-agent` | Maintains README, API docs, inline documentation |
-| `security-reviewer` | Vulnerability assessment and security best practices |
-| `testing-specialist` | Unit tests, integration tests, test strategies |
+| Agent | Purpose | Key Skills |
+|:------|:--------|:-----------|
+| `orchestrator` | Delegates, validates, drives state machine | orchestration-template, dispatching-parallel-agents |
+| `planner` | Analyzes requests, traces impact, produces plans | writing-plans, executing-plans |
+| `task-manager` | Breaks plans into tasks, implements each step | subagent-driven-dev, test-driven-dev |
+| `code-reviewer` | Read-only code review — quality, security, performance | receiving-code-review, requesting-code-review |
+| `explorer` | Fast codebase search across the entire project | gitnexus-exploring, firecrawl-search |
+| `librarian` | Authoritative source for library docs and API references | firecrawl-scrape, firecrawl-knowledge-base |
+| `architect` | Strategic technical advisor for high-stakes decisions | systematic-debugging, gitnexus-exploring |
+| `fixer` | Fast implementation for well-defined bounded tasks | lean-ctx_* |
+| `learner` | Post-execution learning — extracts lessons, persists knowledge | firecrawl-deep-research, firecrawl-knowledge-base |
+| `observer` | System state monitor — read-only | firecrawl-scrape |
+| `database-specialist` | Schema design, queries, migrations, optimization | db-design |
+| `devops-agent` | CI/CD, deployment, infrastructure, automation | ci-cd, deployment |
+| `documentation-agent` | Maintains README, API docs, inline documentation | firecrawl-scrape, firecrawl-knowledge-base |
+| `security-reviewer` | Vulnerability assessment and security best practices | security-audit |
+| `testing-specialist` | Unit tests, integration tests, test strategies | testing-strategies, test-driven-dev |
 
 ### 39 Skills
 
-Skills provide specialized instructions and workflows for specific tasks. Highlights include:
+| Category | Skills |
+|:---------|:-------|
+| **Orchestration** | orchestration-template, orchestration-workflow, dispatching-parallel-agents, executing-plans, subagent-driven-dev |
+| **Quality** | test-driven-dev, systematic-debugging, verification-before-completion, quality-checks, receiving-code-review, requesting-code-review, simplify |
+| **Planning** | writing-plans, brainstorming, using-git-worktrees |
+| **Web Research** | firecrawl-search, firecrawl-scrape, firecrawl-deep-research, firecrawl-knowledge-base, firecrawl-knowledge-ingest, firecrawl-map, firecrawl-qa, firecrawl-workflows |
+| **Code Intelligence** | gitnexus-exploring, codemap, token-optimize |
+| **Domain** | database-design, sql-optimization, ci-cd, deployment, infrastructure, security-audit, testing-strategies |
+| **Learning** | learner, using-superpowers, system-analyst, scoring-pipeline, qa-expert |
+| **Workflow** | adr-generator |
 
-- **orchestration-workflow** — Contract protocol, state machine, persistence rules
-- **firecrawl-\*** — Web search, scraping, interaction, monitoring (15 skills)
-- **superpowers** — brainstorming, TDD, debugging, code review, parallel agents, and more
-- **gitnexus-\*** — Code intelligence, impact analysis, debugging, refactoring
-- **quality-checks** — Linting, formatting, static analysis
-- **testing-strategies** — Test planning and coverage
+### 5 MCPs
 
-Full list: see `skills/` directory or load via the `skill` tool in OpenCode.
+| MCP | Purpose |
+|:----|:--------|
+| **lean-ctx** | Token-compressed file/shell gateway (mandatory) |
+| **gitnexus** | Code intelligence and impact analysis |
+| **context7** | Library documentation lookup |
+| **firecrawl** | Web search, scraping, and interaction |
+| **github** | GitHub API access |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Plus **graphify** (CLI tool, not MCP) for codebase graph intelligence.
 
-<!-- SLASH COMMANDS -->
-## Slash Commands
-
-All 15 commands available in the OpenCode TUI:
+### 15 Slash Commands
 
 | Command | Description |
-|---------|-------------|
+|:--------|:------------|
 | `/opencode-kit:doctor` | Run project health checks |
 | `/opencode-kit:status` | Show project status |
 | `/opencode-kit:analytics` | Show project analytics |
@@ -351,12 +313,55 @@ All 15 commands available in the OpenCode TUI:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- KNOWN LIMITATIONS -->
-## Known Limitations
+<!-- HOW IT WORKS -->
+## How It Works
 
-- **Plugin hook API**: The `experimental.chat.messages.transform` hook is marked experimental in the OpenCode plugin SDK. If it breaks, the plugin falls back to per-project agent `.md` files, which remain functional.
-- **TUI plugin**: The TUI plugin is auto-registered by the main kit plugin. Requires OpenCode with TUI support. Scripts run synchronously via `execSync` — long-running scripts may block the UI temporarily.
-- **Contract auto-init**: Requires a git repository. Non-git projects use absolute path as hash fallback.
+### 1. Plugin Auto-Provision
+
+When OpenCode starts with `@ikieaneh/opencode-kit` in the plugin array, the plugin hook fires and provisions files from the package into `.opencode/`:
+
+- `agents/` — 15 agent templates
+- `skills/` — 39 skills
+- `rules/` — 7 rule files
+- `orchestration/contract.json`
+
+### 2. Auto-Config
+
+The plugin writes directly to the project's `opencode.json`:
+
+- 15 agent configs (skills + tools)
+- 15 slash command configs
+- 5 MCP server configs
+- 18 permission configs
+
+Existing entries are preserved — never overwritten.
+
+### 3. TUI Registration
+
+The plugin auto-registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash command support in the OpenCode terminal UI.
+
+### 4. MCP Availability Check
+
+On startup, the plugin checks for required MCPs (`lean-ctx`, `gitnexus`, `graphify`) and warns if any are missing.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ROADMAP -->
+## Roadmap
+
+- [x] Auto-provision agents, skills, rules
+- [x] Auto-config opencode.json
+- [x] ADR reports and session summaries
+- [x] Task complexity detection
+- [x] Graphify integration
+- [x] MCP availability checks
+- [x] Inheritance model with overrides and appends
+- [x] Scoring pipeline (PASS/RETRY/BLOCKED)
+- [ ] Multi-language agent support
+- [ ] Web-based dashboard
+- [ ] VS Code extension
+
+See [ROADMAP.md](ROADMAP.md) for full details.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -379,9 +384,20 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Rizki Rachman — [GitHub](https://github.com/RizkiRachman)
+**RizkiRachman** — [GitHub](https://github.com/RizkiRachman)
 
 Project Link: [https://github.com/RizkiRachman/opencode-kit](https://github.com/RizkiRachman/opencode-kit)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+- [Best-README-Template](https://github.com/othneildrew/Best-README-Template) — README structure
+- [OpenCode](https://opencode.ai/) — AI coding agent platform
+- [lean-ctx](https://github.com/RizkiRachman/lean-ctx) — Token-compressed gateway
+- [graphify](https://github.com/RizkiRachman/graphify) — Codebase graph intelligence
+- [GitNexus](https://github.com/RizkiRachman/gitnexus) — Code intelligence
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -396,3 +412,8 @@ Project Link: [https://github.com/RizkiRachman/opencode-kit](https://github.com/
 [issues-url]: https://github.com/RizkiRachman/opencode-kit/issues
 [license-shield]: https://img.shields.io/github/license/RizkiRachman/opencode-kit.svg?style=for-the-badge
 [license-url]: https://github.com/RizkiRachman/opencode-kit/blob/main/LICENSE
+[npm-shield]: https://img.shields.io/npm/v/@ikieaneh/opencode-kit.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@ikieaneh/opencode-kit
+[prs-shield]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-url]: https://github.com/RizkiRachman/opencode-kit/pulls
+[product-screenshot]: docs/images/screenshot.png
