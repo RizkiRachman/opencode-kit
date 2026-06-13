@@ -503,6 +503,27 @@ Agents access enforcement via lean-ctx_* tools:
 
 See [Troubleshooting Guide](troubleshooting.md) for common issues with enforcement scripts.
 
+## Slash Commands
+
+All enforcement tools are accessible as slash commands in the opencode TUI using the `opencode-kit:` prefix:
+
+| Command | Layer | Script |
+|---------|-------|--------|
+| `/opencode-kit:doctor` | Layer 2 | `doctor.sh` |
+| `/opencode-kit:preflight` | Layer 2 | `preflight.sh` |
+| `/opencode-kit:contract-lint` | Layer 2 | `contract-lint.sh` |
+| `/opencode-kit:score` | Layer 4 | `scoring-pipeline.sh` |
+| `/opencode-kit:checkpoint` | Layer 7 | `checkpoint.sh list` |
+| `/opencode-kit:checkpoint-save` | Layer 7 | `checkpoint.sh save` |
+| `/opencode-kit:audit` | Layer 5 | `audit-trail.sh query` |
+| `/opencode-kit:lock` | Layer 3 | `contract-lock.sh check` |
+| `/opencode-kit:verify` | — | `verify.sh` |
+| `/opencode-kit:status` | — | `status.sh` |
+| `/opencode-kit:diff` | — | `diff.sh` |
+| `/opencode-kit:adr` | — | `adr.sh` |
+
+All commands use `lean-ctx ctx_shell` internally — no bash permission required for agents.
+
 ## Related Documentation
 
 - [Contract Protocol](contract-protocol.md) — Contract state machine and fields
