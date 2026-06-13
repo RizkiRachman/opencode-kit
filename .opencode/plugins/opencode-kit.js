@@ -319,6 +319,70 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
           }
         }
 
+        // Inject agent configs from template if not present in project
+        const templateConfigPath = path.join(ROOT_DIR, 'opencode.json.template');
+        if (fs.existsSync(templateConfigPath)) {
+          try {
+            const templateConfig = JSON.parse(fs.readFileSync(templateConfigPath, 'utf8'));
+            const templateAgents = templateConfig.agent || {};
+            config.agent = config.agent || {};
+            let injected = 0;
+            for (const [name, agentCfg] of Object.entries(templateAgents)) {
+              if (!config.agent[name]) {
+                config.agent[name] = agentCfg;
+                injected++;
+              }
+            }
+            // Inject command configs from template if not present
+            const templateCommands = templateConfig.command || {};
+            config.command = config.command || {};
+            let cmdsInjected = 0;
+            for (const [name, cmdCfg] of Object.entries(templateCommands)) {
+              if (!config.command[name]) {
+                config.command[name] = cmdCfg;
+                cmdsInjected++;
+              }
+            }
+            if (cmdsInjected > 0) {
+              log('info', `Injected ${cmdsInjected} command configs from kit template`);
+            }
+
+            // Inject MCP configs from template if not present
+            const templateMcp = templateConfig.mcp || {};
+            config.mcp = config.mcp || {};
+            let mcpsInjected = 0;
+            for (const [name, mcpCfg] of Object.entries(templateMcp)) {
+              if (!config.mcp[name]) {
+                config.mcp[name] = mcpCfg;
+                mcpsInjected++;
+              }
+            }
+            if (mcpsInjected > 0) {
+              log('info', `Injected ${mcpsInjected} MCP configs from kit template`);
+            }
+
+            // Inject permission configs from template if not present
+            const templatePerms = templateConfig.permission || {};
+            config.permission = config.permission || {};
+            let permsInjected = 0;
+            for (const [name, permCfg] of Object.entries(templatePerms)) {
+              if (!config.permission[name]) {
+                config.permission[name] = permCfg;
+                permsInjected++;
+              }
+            }
+            if (permsInjected > 0) {
+              log('info', `Injected ${permsInjected} permission configs from kit template`);
+            }
+
+            if (injected > 0) {
+              log('info', `Injected ${injected} agent configs from kit template`);
+            }
+          } catch (err) {
+            log('warn', `Failed to inject agent configs: ${err.message}`);
+          }
+        }
+
         // Provide default contract key hint for agents
         config.contractKey = contractKey;
       } catch (err) {
