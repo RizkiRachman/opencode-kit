@@ -40,7 +40,7 @@ This separation ensures agents operate within controlled boundaries while operat
 │  File locking prevents concurrent contract writes    │
 ├─────────────────────────────────────────────────────┤
 │  Layer 2: Pre-flight Gate                            │
-│  State machine validation, branch checks, rules      │
+│  State machine, schema validation, br, rules    │
 ├─────────────────────────────────────────────────────┤
 │  Layer 1: Adoption Check                             │
 │  Verifies project is initialized before any work     │
@@ -102,7 +102,58 @@ bash .opencode/src/adoption-check.sh --fix
 ### Failure Behavior
 - CRITICAL violations → BLOCK agent
 - HIGH violations → FLAG to orchestrator
-- Invalid state → BLOCK with error message
+- Invalid state → BLOCK with err msg
+- Contract validation errors → BLOCK (agents cannot run)
+
+### Contract Schema Validation (Check 8)
+
+**Script**: `src/contract-lint.sh`
+**When**: Before any agent work — integrated into preflight.sh Check 8 and doctor.sh
+**What**: Validates contract.json structure, types, and required fields against the orchestration contract specification
+
+**10 validation checks:**
+
+| # | Check | What it validates | Blocks on |
+|---|-------|-------------------|-----------|
+| 1 | Required top-level fields | state, session, scope, requirements, governance, validation, outputs, score, retry, metrics | Missing fields |
+| 2 | State enum | state must be one of 9 valid states | Invalid state string |
+| 3 | Session fields | task_id, branch, created_at, model exist | Missing session data |
+| 4 | Requirements | goal is non-empty, constraints is object not array | Missing goal, wrong type |
+| 5 | Governance | active_agent exists, mode is valid enum | Invalid mode |
+| 6 | Score | verdict is valid enum, combined is 0-100 | Invalid verdict |
+| 7 | Retry | attempt is non-negative int, max_attempts is positive int | Invalid retry config |
+| 8 | Outputs | code_changes and agent_reports are arrays | Wrong types |
+| 9 | Metrics | cost_tokens is int, agents_used is array | Wrong types |
+| 10 | Required tools | bash cannot be both blocked+required, lean-ctx_* must be required | Config conflict |
+
+**Usage:**
+```bash
+# Validate contract (default: finds .opencode/orchestration/contract.json)
+bash src/contract-lint.sh
+
+# Strict mode (warnings also cause non-zero exit)
+bash src/contract-lint.sh --strict
+
+# JSON output for CI pipelines
+bash src/contract-lint.sh --json
+
+# Explicit contract path
+bash src/contract-lint.sh --contract .opencode/orchestration/contract.json
+```
+
+**Exit codes:**
+- `0` = PASS — all checks passed
+- `1` = ERRORS — contract has structural errors (blocks agents)
+- `2` = WARNINGS — contract has warnings (advisory, blocks in --strict mode)
+- `3` = NO_CONTRACT — contract.json not found
+
+**How it protects against broken overrides:**
+
+When a downstream project (e.g., `goods-price-service`) overrides `contract.json` with invalid structure:
+1. `contract-lint.sh` detects missing fields, wrong types, invalid enums
+2. `doctor.sh` calls `contract-lint.sh` and reports individual errors
+3. `preflight.sh` Check 8 runs `contract-lint.sh --strict` and BLOCKS if errors found
+4. Agents never run with a broken contract — the enforcement chain stops them
 
 ## Layer 3: Contract Locking
 
@@ -304,7 +355,7 @@ User sets goal in contract.json
          │
          ▼
 ┌─────────────────┐
-│  Pre-flight Gate │ ← Layer 2: Validate state, branch, rules
+│  Pre-flight Gate │ ← Layer 2: Validate state, br, rules, schema
 └────────┬────────┘
          │
          ▼

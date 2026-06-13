@@ -325,6 +325,7 @@ Once installed, run these from the project root:
 | `bash .opencode/src/contract-lock.sh acquire/release` | Contract file locking |
 | `bash .opencode/src/audit-trail.sh` | Audit trail management |
 | `bash .opencode/src/scoring-pipeline.sh` | Run scoring pipeline |
+| `bash .opencode/src/contract-lint.sh` | Validate contract structure |
 | `npx opencode-kit --version` | Print version |
 | `npx opencode-kit --help` | Print help |
 

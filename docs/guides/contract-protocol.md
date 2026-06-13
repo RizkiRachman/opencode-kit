@@ -118,6 +118,38 @@ bash .opencode/src/adoption-check.sh      # Check only
 bash .opencode/src/adoption-check.sh --fix # Auto-repair via init
 ```
 
+### Contract Override Validation
+
+When a downstream project overrides `contract.json` (e.g., `goods-price-service` customizing the contract), the `contract-lint.sh` validator ensures the override doesn't break the workflow.
+
+**How the override chain works:**
+1. `global-config.sh` resolves contract from: project override → global defaults → plugin defaults
+2. The project's `.opencode/orchestration/contract.json` takes priority (override wins)
+3. `contract-lint.sh` validates the resolved contract against 10 structural checks
+
+**What gets validated:**
+- Required top-level fields (state, session, scope, requirements, governance, validation, outputs, score, retry, metrics)
+- State enum (must be one of 9 valid states)
+- Nested field types (session.task_id must exist, requirements.goal must be non-empty, score.verdict must be valid enum)
+- Type correctness (constraints must be object not array, outputs.code_changes must be array)
+
+**What happens on invalid override:**
+- `doctor.sh` → reports individual errors with field names and messages
+- `preflight.sh` Check 8 → BLOCKS agents from running (exit code 1)
+- Scoring pipeline → deducts 15 points for schema violations (Tier 1)
+
+**Operator fix:**
+```bash
+# Find what's wrong
+bash .opencode/src/contract-lint.sh --contract .opencode/orchestration/contract.json
+
+# Fix interactively
+bash .opencode/src/doctor.sh   # Shows errors with field paths
+
+# Or re-scaffold from template
+bash .opencode/src/init.sh --force
+```
+
 ## Audit Trail
 
 The `audit-trail.sh` script logs all contract events to a JSONL audit log for traceability and debugging.
