@@ -2,6 +2,27 @@
 
 opencode-kit enforces workflow adherence through 6 layered mechanisms. Each layer catches violations that earlier layers miss, creating defense-in-depth.
 
+## Tool Usage: lean-ctx vs bash
+
+opencode-kit enforces a strict tool boundary between agents and operators:
+
+| Who | Tool | Why |
+|-----|------|-----|
+| **Agents** (all 10) | `lean-ctx_*` tools only | Context persistence, audit trail, contract locking, state machine compliance |
+| **Operators** (manual) | `bash` scripts directly | Enforce, inspect, repair, debug the system |
+
+**Agents MUST NOT use bash.** The `opencode.json` configuration sets `bash: false` and `lean-ctx_*: true` for every agent. Rules `TOOL_001` and `TOOL_002` in `rules.json` enforce this — violations are BLOCKED.
+
+**Operators run enforcement scripts via bash** when they need to:
+- Initialize or update a project (`init.sh`, `update.sh`)
+- Check project health (`doctor.sh`, `adoption-check.sh`)
+- Inspect contract state (`status.sh`, `diff.sh`)
+- Force scoring or audit queries (`scoring-pipeline.sh`, `audit-trail.sh`)
+- Release stale locks (`contract-lock.sh force`)
+- Debug issues (`preflight.sh`, `verify.sh`)
+
+This separation ensures agents operate within controlled boundaries while operators retain full system access for maintenance and oversight.
+
 ## The 6 Layers
 
 ```
@@ -40,7 +61,7 @@ opencode-kit enforces workflow adherence through 6 layered mechanisms. Each laye
 5. `opencode.json` has opencode-kit plugin configured
 6. `src/` directory exists with enforcement scripts
 
-### Usage
+### Usage (Operator — run via bash)
 ```sh
 # Check adoption status
 bash .opencode/src/adoption-check.sh
@@ -53,6 +74,8 @@ bash .opencode/src/adoption-check.sh --fix
 - Exit code 1: Adoption checks failed
 - Exit code 0: All checks passed
 - `--fix` mode runs `init.sh` to repair missing components
+
+> **Note:** Agents do not call this directly. The orchestrator runs this as part of pre-flight, but the actual execution is via `lean-ctx ctx_shell` which wraps the bash script.
 
 ## Layer 2: Pre-flight Gate
 
@@ -74,6 +97,8 @@ bash .opencode/src/adoption-check.sh --fix
 # Terminal states (COMPLETE, BLOCKED) have no outgoing transitions
 ```
 
+> **Agent access:** Agents run preflight via `lean-ctx ctx_shell` which wraps `preflight.sh`. Direct bash is blocked for agents.
+
 ### Failure Behavior
 - CRITICAL violations → BLOCK agent
 - HIGH violations → FLAG to orchestrator
@@ -91,7 +116,7 @@ bash .opencode/src/adoption-check.sh --fix
 - **Timeout**: 30 seconds with 1-second polling
 - **Stale detection**: auto-clears locks older than 5 minutes
 
-### Usage
+### Usage (Operator — run via bash)
 ```sh
 # Acquire lock before modifying contract
 bash .opencode/src/contract-lock.sh acquire orchestrator
@@ -107,6 +132,8 @@ bash .opencode/src/contract-lock.sh check
 # Force release stale lock
 bash .opencode/src/contract-lock.sh force
 ```
+
+> **Agent access:** Agents acquire/release locks via `lean-ctx ctx_shell` which wraps `contract-lock.sh`. Direct bash is blocked for agents.
 
 ### Failure Behavior
 - Lock timeout → error message, agent must retry
@@ -143,7 +170,7 @@ If Tier 1 score ≥ 70, runs judge via `subtask()`:
 | 50–69 | **RETRY** | Increment retry, re-delegate |
 | < 50 | **BLOCKED** | Escalate to user |
 
-### Usage
+### Usage (Operator — run via bash)
 ```sh
 # Run scoring pipeline
 bash .opencode/src/scoring-pipeline.sh
@@ -154,6 +181,8 @@ bash .opencode/src/scoring-pipeline.sh --contract .opencode/orchestration/contra
 # Output to JSON
 bash .opencode/src/scoring-pipeline.sh --output .opencode/scoring-result.json
 ```
+
+> **Agent access:** Agents trigger scoring via `lean-ctx ctx_shell` which wraps `scoring-pipeline.sh`. Direct bash is blocked for agents.
 
 ### Exit Codes
 - `0` = PASS
@@ -187,7 +216,7 @@ bash .opencode/src/scoring-pipeline.sh --output .opencode/scoring-result.json
 }
 ```
 
-### Usage
+### Usage (Operator — run via bash)
 ```sh
 # Log an event
 bash .opencode/src/audit-trail.sh log <agent> <action> '<details_json>'
@@ -207,6 +236,8 @@ bash .opencode/src/audit-trail.sh query --type scoring --since 2026-06-01
 # Export as JSON
 bash .opencode/src/audit-trail.sh export --format json
 ```
+
+> **Agent access:** Agents log events via `lean-ctx ctx_shell` which wraps `audit-trail.sh`. Direct bash is blocked for agents.
 
 ### Storage
 - Location: `.opencode/audit/audit.log`
@@ -284,7 +315,7 @@ User sets goal in contract.json
          ▼
 ┌─────────────────┐
 │  Agent Work      │ ← Layer 6: Agent template enforces pre-flight
-└────────┬────────┘
+└────────┬────────┘      (lean-ctx_* tools only — bash BLOCKED)
          │
          ▼
 ┌─────────────────┐
@@ -299,6 +330,30 @@ User sets goal in contract.json
          ▼
     Next Phase or BLOCKED
 ```
+
+### Operator vs Agent Boundaries
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     OPERATOR (bash)                              │
+│  init.sh  doctor.sh  status.sh  diff.sh  adoption-check.sh     │
+│  scoring-pipeline.sh  contract-lock.sh  audit-trail.sh          │
+│  preflight.sh  verify.sh  postflight.sh  update.sh              │
+├─────────────────────────────────────────────────────────────────┤
+│                     AGENTS (lean-ctx_*)                          │
+│  ctx_read → ctx_write → ctx_shell → ctx_knowledge               │
+│  ctx_search → ctx_multi_read → ctx_edit → ctx_tree              │
+│  ctx_session → ctx_graph (if available)                          │
+└─────────────────────────────────────────────────────────────────┘
+
+Agents access enforcement via lean-ctx_* tools:
+  lean-ctx ctx_shell   → wraps bash scripts (e.g., preflight.sh)
+  lean-ctx ctx_read    → reads contract.json, rules.json
+  lean-ctx ctx_knowledge → persists contract state, lessons learned
+  lean-ctx ctx_write   → updates contract.json atomically
+```
+
+> **Why this matters:** bash bypasses the audit trail, context persistence, and contract locking that lean-ctx provides. If an agent uses bash directly, it breaks the enforcement chain. This is why `TOOL_001` blocks bash for agents — it's not a preference, it's a safety mechanism.
 
 ## Troubleshooting
 
