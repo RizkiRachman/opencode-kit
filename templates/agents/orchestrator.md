@@ -9,13 +9,7 @@ permission:
   grep: allow
   list: allow
   webfetch: allow
-  bash:
-    "*": ask
-    "npm test": allow
-    "npm run build": allow
-    "npm run format": allow
-    "git diff*": allow
-    "git log*": allow
+  lean-ctx_*: allow
   task:
     "*": allow
 ---
