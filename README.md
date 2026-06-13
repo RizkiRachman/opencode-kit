@@ -118,16 +118,30 @@ Create or edit `opencode.json` in your project root:
 }
 ```
 
-That's it. On next session, the plugin auto-provisions everything:
+**Step 3: Open opencode — plugin initializes everything**
 
-- `.opencode/agents/` — 15 agents
-- `.opencode/skills/` — 39 skills
-- `.opencode/rules/` — 7 rule files
-- `config.agent` — 15 agent configs injected at runtime
-- `config.command` — 15 slash commands
-- `config.mcp` — 6 MCP servers
-- `config.permission` — 18 permissions
-- `tui.json` — TUI plugin auto-registered
+On first session, the plugin writes agent/command/MCP/permission configs directly to your `opencode.json` and auto-provisions `.opencode/` files:
+
+```
+opencode.json:   "plugin": ["@ikieaneh/opencode-kit"]
+     ↓ (first open)
+Plugin writes to opencode.json:
+  • 15 agent configs (skills + tools)
+  • 15 slash command configs
+  • 6 MCP server configs
+  • 18 permission configs
+Plugin provisions .opencode/:
+  • agents/ (15 .md files)
+  • skills/ (39 skill dirs)
+  • rules/ (7 rule files)
+  • orchestration/contract.json
+Plugin registers tui.json:
+  • @ikieaneh/opencode-kit/tui → slash commands
+     ↓
+Everything ready — 15 slash commands available
+```
+
+> **Note**: Plugin writes to `opencode.json` on first load only. Existing entries are preserved — never overwritten.
 
 ### Verification
 
@@ -162,12 +176,12 @@ When OpenCode starts with `@ikieaneh/opencode-kit` in the plugin array, the plug
    - `.opencode/skills/` — 39 skills
    - `.opencode/rules/` — 7 rule files
    - `.opencode/orchestration/contract.json`
-2. Auto-injects configs at runtime (no `opencode.json` edits needed):
+2. Writes configs directly to the project's `opencode.json`:
    - 15 agent configs (skills + tools)
    - 15 slash command configs
    - 6 MCP server configs
    - 18 permission configs
-3. Auto-registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
+3. Registers `@ikieaneh/opencode-kit/tui` in `tui.json` for slash commands
 
 No manual copying. No wrapper scripts. Just install and go.
 

@@ -208,6 +208,78 @@ const ensureRules = (projectDir) => {
   }
 };
 
+// --- Auto-write agent/command/MCP/permission configs to project opencode.json ---
+const STRIP_KEYS = ['model', 'fallback_models', 'temperature', 'top_p', 'reasoningEffort', 'textVerbosity', 'steps'];
+
+const ensureProjectConfig = (projectDir) => {
+  try {
+    const templateConfigPath = path.join(ROOT_DIR, 'opencode.json.template');
+    if (!fs.existsSync(templateConfigPath)) {
+      log('warn', 'opencode.json.template not found — skipping config write');
+      return;
+    }
+
+    const projectConfigPath = path.join(projectDir, 'opencode.json');
+    const templateConfig = JSON.parse(fs.readFileSync(templateConfigPath, 'utf8'));
+
+    let projectConfig = {};
+    if (fs.existsSync(projectConfigPath)) {
+      try {
+        projectConfig = JSON.parse(fs.readFileSync(projectConfigPath, 'utf8'));
+      } catch (e) {
+        log('warn', `Failed to parse project opencode.json: ${e.message}`);
+        projectConfig = {};
+      }
+    }
+
+    let wrote = false;
+
+    // Write agent configs (project wins — only add missing)
+    const templateAgents = templateConfig.agent || {};
+    if (Object.keys(projectConfig.agent || {}).length === 0 && Object.keys(templateAgents).length > 0) {
+      projectConfig.agent = {};
+      for (const [name, cfg] of Object.entries(templateAgents)) {
+        const cleaned = { ...cfg };
+        for (const key of STRIP_KEYS) delete cleaned[key];
+        projectConfig.agent[name] = cleaned;
+      }
+      log('info', `Wrote ${Object.keys(templateAgents).length} agent configs to opencode.json`);
+      wrote = true;
+    }
+
+    // Write command configs (project wins — only add missing)
+    const templateCommands = templateConfig.command || {};
+    if (Object.keys(projectConfig.command || {}).length === 0 && Object.keys(templateCommands).length > 0) {
+      projectConfig.command = templateCommands;
+      log('info', `Wrote ${Object.keys(templateCommands).length} command configs to opencode.json`);
+      wrote = true;
+    }
+
+    // Write MCP configs (project wins — only add missing)
+    const templateMcp = templateConfig.mcp || {};
+    if (Object.keys(projectConfig.mcp || {}).length === 0 && Object.keys(templateMcp).length > 0) {
+      projectConfig.mcp = templateMcp;
+      log('info', `Wrote ${Object.keys(templateMcp).length} MCP configs to opencode.json`);
+      wrote = true;
+    }
+
+    // Write permission configs (project wins — only add missing)
+    const templatePerms = templateConfig.permission || {};
+    if (Object.keys(projectConfig.permission || {}).length === 0 && Object.keys(templatePerms).length > 0) {
+      projectConfig.permission = templatePerms;
+      log('info', `Wrote ${Object.keys(templatePerms).length} permission configs to opencode.json`);
+      wrote = true;
+    }
+
+    if (wrote) {
+      fs.writeFileSync(projectConfigPath, JSON.stringify(projectConfig, null, 2));
+      log('info', `Project opencode.json updated`);
+    }
+  } catch (err) {
+    log('error', `Failed to write project config: ${err.message}`);
+  }
+};
+
 // --- Load bootstrap content (cached) ---
 const getBootstrapContent = () => {
   if (_bootstrapCache !== undefined) return _bootstrapCache;
@@ -270,6 +342,7 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   ensureAgents(projectDir);
   ensureSkills(projectDir);
   ensureRules(projectDir);
+  ensureProjectConfig(projectDir);
 
   // Auto-register TUI plugin in tui.json if missing
   try {
