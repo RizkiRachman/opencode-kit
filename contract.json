@@ -7,7 +7,7 @@
     "excludes": []
   },
   "state": "INIT",
-  "contract_version": "0.6.15",
+  "contract_version": "0.6.16",
   "session": {
     "task_id": "",
     "branch": "",
@@ -25,7 +25,7 @@
     "max_parallel_agents": 1
   },
   "required_tools": {
-    "description": "Tools agents MUST use. bash is BLOCKED \u2014 all operations use lean-ctx_* tools.",
+    "description": "Tools agents MUST use. bash is BLOCKED — all operations use lean-ctx_* tools.",
     "mandatory_gateway": "lean-ctx",
     "enforced": true,
     "tools": {
@@ -40,7 +40,7 @@
       },
       "madar": {
         "required": true,
-        "reason": "Codebase context packs \u2014 use before any code search or exploration"
+        "reason": "Codebase context packs — use before any code search or exploration"
       }
     }
   },
@@ -73,9 +73,9 @@
       {
         "source": "AGENTS.md",
         "sections": [
-          "\u00a73 - Non-Negotiable Rules",
-          "\u00a75 - Writing Order",
-          "\u00a78 - Null Handling"
+          "§3 - Non-Negotiable Rules",
+          "§5 - Writing Order",
+          "§8 - Null Handling"
         ]
       },
       {
@@ -111,7 +111,7 @@
       "allowed_execution": {
         "description": "Contract-based execution whitelist. Agents may ONLY use tools matching these patterns for shell execution. Default: lean-ctx_* tools.",
         "mandatory_gateway": "lean-ctx",
-        "explanation": "Principle of least privilege \u2014 whitelist allowed tool patterns instead of denying specific tools. The pre-flight bootstrap uses this contract field to inject execution constraints into every agent session.",
+        "explanation": "Principle of least privilege — whitelist allowed tool patterns instead of denying specific tools. The pre-flight bootstrap uses this contract field to inject execution constraints into every agent session.",
         "tools": [
           "lean-ctx_*"
         ],
