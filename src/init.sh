@@ -287,35 +287,35 @@ if [ "$SAMPLE" = true ]; then
   "command": {
     "opencode-kit:doctor": {
       "description": "Run opencode-kit project health checks",
-      "prompt": "Run the opencode-kit doctor check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/doctor.sh\") — then summarize the results for the user."
+      "template": "Run the opencode-kit doctor check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/doctor.sh\") — then summarize the results for the user."
     },
     "opencode-kit:status": {
       "description": "Show opencode-kit project status",
-      "prompt": "Show the opencode-kit project status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/status.sh\") — then summarize the results for the user."
+      "template": "Show the opencode-kit project status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/status.sh\") — then summarize the results for the user."
     },
     "opencode-kit:preflight": {
       "description": "Run opencode-kit pre-flight gate checks",
-      "prompt": "Run the opencode-kit pre-flight gate. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/preflight.sh\") — report pass/fail for each check and any issues found."
+      "template": "Run the opencode-kit pre-flight gate. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/preflight.sh\") — report pass/fail for each check and any issues found."
     },
     "opencode-kit:score": {
       "description": "Run opencode-kit scoring pipeline on current contract",
-      "prompt": "Run the opencode-kit scoring pipeline. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/scoring-pipeline.sh\") — report the score, verdict (PASS/RETRY/BLOCKED), and any deductions."
+      "template": "Run the opencode-kit scoring pipeline. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/scoring-pipeline.sh\") — report the score, verdict (PASS/RETRY/BLOCKED), and any deductions."
     },
     "opencode-kit:contract-lint": {
       "description": "Validate opencode-kit contract.json structure",
-      "prompt": "Validate the opencode-kit contract. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lint.sh\") — report any validation errors or warnings."
+      "template": "Validate the opencode-kit contract. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lint.sh\") — report any validation errors or warnings."
     },
     "opencode-kit:checkpoint": {
       "description": "List opencode-kit checkpoints",
-      "prompt": "List the current opencode-kit checkpoints. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh list\") — show the user all saved checkpoints."
+      "template": "List the current opencode-kit checkpoints. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh list\") — show the user all saved checkpoints."
     },
     "opencode-kit:audit": {
       "description": "Query the opencode-kit audit trail",
-      "prompt": "Query the recent opencode-kit audit trail. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/audit-trail.sh query --limit 20\") — show the user recent audit events."
+      "template": "Query the recent opencode-kit audit trail. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/audit-trail.sh query --limit 20\") — show the user recent audit events."
     },
     "opencode-kit:verify": {
       "description": "Verify opencode-kit project setup",
-      "prompt": "Run the opencode-kit verification check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/verify.sh\") — report which checks pass and which fail."
+      "template": "Run the opencode-kit verification check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/verify.sh\") — report which checks pass and which fail."
     }
   }
 }
