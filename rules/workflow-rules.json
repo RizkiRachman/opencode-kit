@@ -25,34 +25,95 @@
       {
         "from": "INIT",
         "to": "PLAN",
-        "condition": "contract loaded"
+        "condition": "contract loaded",
+        "auto": true
       },
       {
         "from": "PLAN",
         "to": "EXECUTE",
-        "condition": "plan_score >= 70"
+        "condition": "plan_score >= 70 OR trivial_task",
+        "auto": true
       },
       {
         "from": "EXECUTE",
         "to": "REVIEW",
-        "condition": "execution complete"
+        "condition": "execution complete",
+        "auto": true
       },
       {
         "from": "REVIEW",
         "to": "COMPLETE",
-        "condition": "review_score >= 70"
+        "condition": "review_score >= 70 OR trivial_task",
+        "auto": true
       },
       {
         "from": "REVIEW",
         "to": "EXECUTE",
-        "condition": "review_score < 70 && retries < 3"
+        "condition": "review_score < 70 && retries < 3",
+        "auto": false
       },
       {
         "from": "ANY",
         "to": "BLOCKED",
-        "condition": "critical_error || retries >= 3"
+        "condition": "critical_error || retries >= 3",
+        "auto": false
+      },
+      {
+        "from": "BLOCKED",
+        "to": "INIT",
+        "condition": "user_intervention",
+        "auto": false
       }
-    ]
+    ],
+    "complexity_aware": {
+      "trivial": {
+        "description": "Skip explore, plan, plan-review. Direct to fixer.",
+        "allowed_phases": ["INIT", "EXECUTE", "COMPLETE"],
+        "skip_validation": true,
+        "auto_transition": true
+      },
+      "simple": {
+        "description": "Skip plan-review and learn phases.",
+        "allowed_phases": ["INIT", "PLAN", "EXECUTE", "REVIEW", "COMPLETE"],
+        "skip_validation": false,
+        "auto_transition": true
+      },
+      "complex": {
+        "description": "Full workflow with all phases.",
+        "allowed_phases": ["INIT", "PLAN", "EXECUTE", "REVIEW", "COMPLETE"],
+        "skip_validation": false,
+        "auto_transition": false
+      }
+    }
+  },
+  "complexity_levels": {
+    "trivial": {
+      "description": "Single file, < 50 lines, no architecture decisions",
+      "examples": ["create hello world", "fix typo", "add console.log", "create simple class"],
+      "workflow": "direct",
+      "skip": ["explore", "plan", "plan-review", "learn"],
+      "agents": ["fixer"],
+      "pre_flight": "warn",
+      "graphify": false
+    },
+    "simple": {
+      "description": "1-3 files, straightforward changes, known patterns",
+      "examples": ["add API endpoint", "create component", "write test"],
+      "workflow": "simplified",
+      "skip": ["plan-review", "learn"],
+      "agents": ["planner", "task-manager"],
+      "pre_flight": "warn",
+      "graphify": true
+    },
+    "complex": {
+      "description": "Multi-file, architecture decisions, unclear requirements",
+      "examples": ["refactor module", "add authentication", "performance optimization"],
+      "workflow": "full",
+      "skip": [],
+      "agents": ["explorer", "planner", "architect", "task-manager", "code-reviewer", "learner"],
+      "pre_flight": "block",
+      "graphify": true
+    }
   },
   "steps": [
     {
@@ -389,8 +450,8 @@
       },
       {
         "id": "AGENT_006",
-        "severity": "MEDIUM",
-        "desc": "Agents SHOULD use graphify for codebase exploration",
+        "severity": "HIGH",
+        "desc": "Agents MUST use graphify before any code exploration or search",
         "condition": "task_requires_codebase_context",
         "action": "graphify_first"
       },
@@ -407,6 +468,13 @@
         "desc": "Agents SHOULD log decisions to contract.decisions_log[]",
         "condition": "decision_made",
         "action": "decision_logging"
+      },
+      {
+        "id": "AGENT_009",
+        "severity": "HIGH",
+        "desc": "Orchestrator MUST detect task complexity and skip unnecessary workflow steps for trivial tasks",
+        "condition": "always",
+        "action": "complexity_detection"
       }
     ]
   }

@@ -280,6 +280,34 @@ const ensureProjectConfig = (projectDir) => {
   }
 };
 
+// --- Auto-provision adr/ folder with templates ---
+const ensureAdrFolder = (projectDir) => {
+  try {
+    const adrDir = path.join(projectDir, 'adr');
+    const adrSource = path.join(ROOT_DIR, 'adr');
+
+    // Create adr/ if missing
+    if (!fs.existsSync(adrDir)) {
+      fs.mkdirSync(adrDir, { recursive: true });
+    }
+
+    // Copy templates from package if not present
+    if (fs.existsSync(adrSource)) {
+      const templates = ['TEMPLATE.md', 'SESSION-TEMPLATE.md'];
+      for (const tpl of templates) {
+        const src = path.join(adrSource, tpl);
+        const dst = path.join(adrDir, tpl);
+        if (fs.existsSync(src) && !fs.existsSync(dst)) {
+          fs.copyFileSync(src, dst);
+        }
+      }
+      log('info', `Provisioned adr/ folder with templates`);
+    }
+  } catch (err) {
+    log('warn', `Failed to provision adr/: ${err.message}`);
+  }
+};
+
 // --- Load bootstrap content (cached) ---
 const getBootstrapContent = () => {
   if (_bootstrapCache !== undefined) return _bootstrapCache;
@@ -343,6 +371,7 @@ export const OpencodeKitPlugin = async ({ client, directory }) => {
   ensureSkills(projectDir);
   ensureRules(projectDir);
   ensureProjectConfig(projectDir);
+  ensureAdrFolder(projectDir);
 
   // Check MCP availability — warn if not installed
   try {

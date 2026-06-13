@@ -18,7 +18,7 @@
     },
     "graphify": {
       "description": "Knowledge graph — codebase exploration (depends on gitnexus index)",
-      "severity": "optional",
+      "severity": "required",
       "check_cli": "npx --yes gitnexus analyze --help"
     }
   },
@@ -48,11 +48,13 @@
     },
     {
       "id": "PREFLIGHT_002",
-      "severity": "CRITICAL",
+      "severity": "HIGH",
+      "configurable": true,
       "description": "Agent MUST NOT work on main branch",
       "condition": "git_branch_is_main",
       "action": "BLOCK",
-      "message": "⛔ PREFLIGHT FAILED: Current branch is main. Create a feature branch first."
+      "message": "⚠️ PREFLIGHT WARNING: Working on main branch. Consider creating a feature branch.",
+      "note": "For trivial tasks, this is advisory. For complex tasks, this blocks."
     },
     {
       "id": "PREFLIGHT_003",
