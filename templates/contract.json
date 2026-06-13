@@ -4,7 +4,11 @@
   "session": {
     "task_id": "",
     "branch": "",
-    "created_at": ""
+    "created_at": "",
+    "model": "",
+    "previous_model": "",
+    "model_changed_at": "",
+    "model_change_count": 0
   },
   "scope": {
     "included": [],
@@ -13,10 +17,35 @@
     "parallel_eligible": false,
     "max_parallel_agents": 1
   },
+  "required_tools": {
+    "description": "Tools agents MUST use. bash is BLOCKED — all operations use lean-ctx_* tools.",
+    "enforced": true,
+    "tools": {
+      "lean-ctx_*": {
+        "required": true,
+        "reason": "Context persistence, audit trail, contract locking"
+      },
+      "bash": {
+        "required": false,
+        "blocked": true,
+        "reason": "Bypasses audit trail, contract locking, and context persistence. Use lean-ctx ctx_shell instead."
+      }
+    }
+  },
   "requirements": {
     "goal": "",
+    "scope": {
+      "boundary": "",
+      "exclusions": []
+    },
+    "success_criteria": [],
     "acceptance_criteria": [],
-    "constraints": []
+    "constraints": {
+      "time_limit_minutes": null,
+      "step_limit": null,
+      "budget_limit": null,
+      "tool_restrictions": []
+    }
   },
   "decisions": {
     "approved_architecture": null,
@@ -80,7 +109,12 @@
       }
     },
     "previous_blockers": [],
-    "decisions_log": []
+    "decisions_log": [],
+    "timeout": {
+      "max_session_minutes": 60,
+      "max_retries": 2,
+      "escalation_on_timeout": "handoff"
+    }
   },
   "validation": {
     "block_on": {

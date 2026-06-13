@@ -63,5 +63,108 @@ INIT → PLAN → PLAN_SCORED → EXECUTE → EXECUTE_SCORED → REVIEW → REVI
 
 ## CLI
 
-View contract state: `bash .opencode/src/status.sh`
-Compare across branches: `bash .opencode/src/diff.sh [branch1] [branch2]`
+| Command | Description |
+|---------|-------------|
+| `bash .opencode/src/status.sh` | View contract state |
+| `bash .opencode/src/diff.sh [branch1] [branch2]` | Compare across branches |
+| `bash .opencode/src/adoption-check.sh` | Verify project adoption |
+| `bash .opencode/src/contract-lock.sh acquire/release` | Contract locking |
+| `bash .opencode/src/audit-trail.sh` | Audit trail management |
+| `bash .opencode/src/scoring-pipeline.sh` | Run scoring pipeline |
+
+## Enforcement Mechanisms
+
+### State Machine Validation
+
+The `preflight.sh` Check 6 validates contract state against `rules.json` transitions:
+
+- Ensures the current state is known and valid transitions exist
+- Prevents illegal state transitions before they occur
+- Terminal states (`COMPLETE`, `BLOCKED`) have no outgoing transitions — once reached, no further work proceeds
+
+This validation runs automatically before any contract operation, ensuring the state machine invariants are always respected.
+
+### Contract Locking
+
+The `contract-lock.sh` script provides file-based locking for concurrent agent access to the contract.
+
+**Commands:** `acquire`, `release`, `check`, `force`
+
+**Features:**
+- Atomic writes via temp file + `mv` to prevent corruption
+- 30-second retry timeout with exponential backoff
+- 5-minute stale lock detection and cleanup
+
+```sh
+bash .opencode/src/contract-lock.sh acquire <agent_name>
+# ... do work ...
+bash .opencode/src/contract-lock.sh release
+```
+
+### Adoption Enforcement
+
+The `adoption-check.sh` script verifies the project is properly initialized and all required artifacts exist.
+
+**6 checks performed:**
+1. `contract.json` — Contract file exists
+2. `rules.json` — State machine rules exist
+3. `agents/` — Agent configurations exist
+4. `skills/` — Skill definitions exist
+5. `opencode.json` — Project configuration exists
+6. `src/` — Source scripts exist
+
+```sh
+bash .opencode/src/adoption-check.sh      # Check only
+bash .opencode/src/adoption-check.sh --fix # Auto-repair via init
+```
+
+### Contract Override Validation
+
+When a downstream project overrides `contract.json` (e.g., `goods-price-service` customizing the contract), the `contract-lint.sh` validator ensures the override doesn't break the workflow.
+
+**How the override chain works:**
+1. `global-config.sh` resolves contract from: project override → global defaults → plugin defaults
+2. The project's `.opencode/orchestration/contract.json` takes priority (override wins)
+3. `contract-lint.sh` validates the resolved contract against 10 structural checks
+
+**What gets validated:**
+- Required top-level fields (state, session, scope, requirements, governance, validation, outputs, score, retry, metrics)
+- State enum (must be one of 9 valid states)
+- Nested field types (session.task_id must exist, requirements.goal must be non-empty, score.verdict must be valid enum)
+- Type correctness (constraints must be object not array, outputs.code_changes must be array)
+
+**What happens on invalid override:**
+- `doctor.sh` → reports individual errors with field names and messages
+- `preflight.sh` Check 8 → BLOCKS agents from running (exit code 1)
+- Scoring pipeline → deducts 15 points for schema violations (Tier 1)
+
+**Operator fix:**
+```bash
+# Find what's wrong
+bash .opencode/src/contract-lint.sh --contract .opencode/orchestration/contract.json
+
+# Fix interactively
+bash .opencode/src/doctor.sh   # Shows errors with field paths
+
+# Or re-scaffold from template
+bash .opencode/src/init.sh --force
+```
+
+## Audit Trail
+
+The `audit-trail.sh` script logs all contract events to a JSONL audit log for traceability and debugging.
+
+**Commands:** `log`, `transition`, `scoring`, `violation`, `query`, `export`
+
+**Event fields:** timestamp, agent, action, contract_state, git branch
+
+```sh
+# Log an event
+bash .opencode/src/audit-trail.sh log <agent> <action> '<details_json>'
+
+# Query events by type and date range
+bash .opencode/src/audit-trail.sh query --type scoring --since 2026-06-01
+
+# Export full audit log as JSON
+bash .opencode/src/audit-trail.sh export --format json
+```

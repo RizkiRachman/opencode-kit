@@ -36,8 +36,27 @@ Commands:
   doctor                 Run project health checks
   status                 Show project status
   analytics              Show project analytics
-  --version, -v          Print version
-  --help, -h             Print this help
+  preflight              Run pre-flight gate checks
+  score                  Run scoring pipeline
+  contract-lint          Validate contract structure
+  checkpoint             Checkpoint management (save/list/validate/fix)
+  diff                   Show contract changes since last checkpoint
+  audit                  Query audit trail
+  verify                 Verify project setup
+  adoption-check         Check project adoption status
+  contract-lock          Check/manage contract lock
+  adr <title>            Create Architecture Decision Record
+
+Slash commands (in opencode TUI):
+  /opencode-kit:doctor          Health checks
+  /opencode-kit:status          Project status
+  /opencode-kit:preflight       Pre-flight gate
+  /opencode-kit:score           Scoring pipeline
+  /opencode-kit:contract-lint   Contract validation
+  /opencode-kit:checkpoint      List checkpoints
+  /opencode-kit:audit           Audit trail
+  /opencode-kit:verify          Setup verification
+  /opencode-kit:lock            Contract lock status
 
 Plugin mode:
   Add "opencode-kit" to opencode.json plugin array (FIRST position).
@@ -71,6 +90,15 @@ const commands = {
   doctor: '.opencode/src/doctor.sh',
   status: '.opencode/src/status.sh',
   analytics: '.opencode/src/analytics.sh',
+  preflight: '.opencode/src/preflight.sh',
+  score: '.opencode/src/scoring-pipeline.sh',
+  'contract-lint': '.opencode/src/contract-lint.sh',
+  checkpoint: '.opencode/src/checkpoint.sh',
+  diff: '.opencode/src/diff.sh',
+  audit: '.opencode/src/audit-trail.sh',
+  verify: '.opencode/src/verify.sh',
+  'adoption-check': '.opencode/src/adoption-check.sh',
+  'contract-lock': '.opencode/src/contract-lock.sh',
 };
 
 const command = args[0];
@@ -88,7 +116,30 @@ if (commands[command]) {
   process.exit(result.status);
 }
 
-if (command === 'init' || command === 'update') {
-  console.log(`To run '${command}', use the script directly:\n  bash src/${command}.sh [--force]\n`);
-  process.exit(0);
+if (command === 'init') {
+  const scriptPath = path.resolve(__dirname, 'init.sh');
+  const result = spawnSync('bash', [scriptPath], { stdio: 'inherit', cwd: process.cwd() });
+  process.exit(result.status);
+}
+
+if (command === 'update') {
+  const scriptPath = path.resolve(__dirname, 'update.sh');
+  const result = spawnSync('bash', [scriptPath], { stdio: 'inherit', cwd: process.cwd() });
+  process.exit(result.status);
+}
+
+if (command === 'adr') {
+  const title = args.slice(1).join(' ');
+  if (!title) {
+    console.error('Usage: npx opencode-kit adr <title>');
+    process.exit(1);
+  }
+  const projectRoot = findProjectRoot(process.cwd());
+  if (!projectRoot) {
+    console.error('Not in an opencode-kit project');
+    process.exit(1);
+  }
+  const scriptPath = path.resolve(projectRoot, '.opencode/src/adr.sh');
+  const result = spawnSync('bash', [scriptPath, title], { stdio: 'inherit', cwd: projectRoot });
+  process.exit(result.status);
 }

@@ -42,28 +42,28 @@ else
   fi
 fi
 
-# === 1b. Contract schema validation ===
-SCHEMA_FILE=".opencode/templates/contract.schema.json"
-if [ -f "$CONTRACT_FILE" ] && [ -f "$SCHEMA_FILE" ] && [ -n "$PYTHON_CMD" ]; then
-  if $PYTHON_CMD -c "
-import json, sys
-with open('$CONTRACT_FILE') as f: contract = json.load(f)
-with open('$SCHEMA_FILE') as f: schema = json.load(f)
-# Basic required-field validation
-errors = []
-if not contract.get('state'): errors.append('Missing state')
-if not contract.get('requirements', {}).get('goal'): errors.append('Missing requirements.goal')
-if contract.get('state') not in ['INIT','PLAN','PLAN_SCORED','EXECUTE','EXECUTE_SCORED','REVIEW','REVIEW_SCORED','COMPLETE','BLOCKED']:
-  errors.append('Invalid state')
-if errors:
-  print('; '.join(errors))
-  sys.exit(1)
-else:
-  print('OK')
-" 2>/dev/null; then
-    echo -e "  ✅ Contract schema valid"
+# === 1b. Contract schema validation (strict) ===
+if [ -f "$CONTRACT_FILE" ]; then
+  LINT_RESULT=$("$SCRIPT_DIR/contract-lint.sh" --contract "$CONTRACT_FILE" --json 2>/dev/null || echo '{"valid":false,"errors":[{"field":"lint","message":"contract-lint.sh failed"}],"warnings":[]}')
+  LINT_VALID=$($PYTHON_CMD -c "import json,sys; print(json.loads('''$LINT_RESULT''').get('valid',False))" 2>/dev/null || echo "False")
+  LINT_ERRORS=$($PYTHON_CMD -c "import json,sys; print(len(json.loads('''$LINT_RESULT''').get('errors',[])))" 2>/dev/null || echo "0")
+  LINT_WARNINGS=$($PYTHON_CMD -c "import json,sys; print(len(json.loads('''$LINT_RESULT''').get('warnings',[])))" 2>/dev/null || echo "0")
+
+  if [ "$LINT_VALID" = "True" ]; then
+    if [ "$LINT_WARNINGS" -gt 0 ]; then
+      echo -e "  ⚠️  Contract valid with $LINT_WARNINGS warning(s)"
+    else
+      echo -e "  ✅ Contract schema valid"
+    fi
   else
-    echo -e "  ⚠️  Contract schema issues found (non-blocking)"
+    echo -e "  ${RED}❌ Contract validation FAILED — $LINT_ERRORS error(s)${NC}"
+    # Print individual errors
+    $PYTHON_CMD -c "
+import json
+data = json.loads('''$LINT_RESULT''')
+for e in data.get('errors', []):
+    print(f\"  {chr(27)}[0;31m  ✗ {e['field']}: {e['message']}{chr(27)}[0m\")
+" 2>/dev/null || true
     ISSUES=$((ISSUES + 1))
   fi
 fi

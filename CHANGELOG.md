@@ -5,6 +5,28 @@ All notable changes to opencode-kit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Iteration 9
+
+### Added
+
+- **6-layer enforcement architecture** — machine-readable enforcement that agents cannot ignore. (#26)
+- **scoring-pipeline.sh** (461 lines): Tier 1 rule-based scoring engine. Reads contract.json + rules.json, applies 5 deduction checks, computes score (0-100), determines verdict (PASS/RETRY/BLOCKED), updates contract. Exit codes: 0=PASS, 2=RETRY, 3=BLOCKED. (#26)
+- **contract-lock.sh** (223 lines): File locking for concurrent contract access. Atomic writes via temp file + mv, 30s timeout, 5min stale detection. Commands: acquire, release, check, force. (#26)
+- **adoption-check.sh** (161 lines): Verifies project initialization before agent work. 6 checks: contract.json, rules.json, agents/, skills/, opencode.json, src/. Supports --fix mode. (#26)
+- **audit-trail.sh** (291 lines): JSONL compliance logging for all contract events. Commands: log, transition, scoring, violation, query, export. Events include timestamp, agent, action, contract_state, git branch. (#26)
+- **preflight.sh Check 6**: State machine transition validation. Validates current state exists in rules.json transitions and valid transition path exists. (#26)
+- **init.sh**: Now copies all 10 agent templates (was 6). Expanded sample opencode.json to 10 agents with tools/skills config. (#26)
+- **Agent templates**: 4 new templates — explorer.md (codebase search), librarian.md (library docs), architect.md (strategic advisor), observer.md (system monitor). All use lean-ctx_* tools, no bash. (#26)
+- **Protocol templates**: 3 new templates — escalation.md (BLOCKED recovery), handoff.md (agent handoff), rollback.md (rollback strategy). (#26)
+- **contract.json**: Added `requirements.scope` (boundary + exclusions), `requirements.success_criteria`, `governance.timeout` (max_session_minutes, max_retries). Fixed `constraints` from array to object. (#26)
+- **contract.schema.json**: Added `format: date-time` to session.created_at, enum to scope.boundary, enum to governance.mode, allowed_execution enum, timeout schema, blocked_recovery schema. (#26)
+- **docs/guides/enforcement-architecture.md**: New 311-line guide documenting all 6 enforcement layers. (#26)
+
+### Fixed
+
+- **Agent templates (6 existing)**: Removed bash references, enforced lean-ctx_* consistency across all templates. (#26)
+- **contract.json constraints type**: Changed from array to object (schema mismatch). (#26)
+
 ## [Unreleased] — Iteration 8
 
 ### Added

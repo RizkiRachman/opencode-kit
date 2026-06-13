@@ -67,7 +67,10 @@ Every contribution should fit one or more of the 6 pillars:
 | Lean Ctx | `postflight.sh` | `PERSIST_001` |
 | Workflow State | `contract.json` | `STATE_001` |
 | ADR | `contract.json.decisions` | — |
-| Scoring | `postflight.sh` | `SCORE_001` |
+| Scoring | `scoring-pipeline.sh` | `SCORE_001` |
+| Contract Locking | `contract-lock.sh` | — |
+| Adoption | `adoption-check.sh` | — |
+| Audit Trail | `audit-trail.sh` | — |
 
 ### Rules First
 
@@ -86,6 +89,9 @@ Every contribution should fit one or more of the 6 pillars:
 - Must be portable POSIX shell (`/usr/bin/env bash`)
 - Must use `which` for tool discovery (no hardcoded paths)
 - Must test on macOS M-series before committing
+- Must use `lean-ctx_*` tools for context persistence (never bash for context operations)
+- Must follow contract state machine — never skip states
+- Must log to audit trail for compliance
 
 ## Development Setup
 
@@ -99,7 +105,26 @@ mkdir -p /tmp/test-project && cd /tmp/test-project
 git init
 /path/to/opencode-kit/src/init.sh
 /path/to/opencode-kit/src/verify.sh
+
+# Verify new enforcement scripts
+bash .opencode/src/adoption-check.sh
+bash .opencode/src/scoring-pipeline.sh
+bash .opencode/src/audit-trail.sh log test "setup" '{"test": true}'
+bash .opencode/src/contract-lint.sh
 ```
+
+## Enforcement Architecture
+
+The project uses a 6-layer enforcement system to maintain consistency and compliance across all agent interactions:
+
+- **Layer 1: Adoption check** — runs before anything to ensure the project is properly initialized
+- **Layer 2: Pre-flight gate** — executes on every agent invocation to verify contract, rules, and schema validation
+- **Layer 3: Contract locking** — prevents concurrent access conflicts via `contract-lock.sh`
+- **Layer 4: Scoring pipeline** — evaluates agent behavior after each agent returns via `scoring-pipeline.sh`
+- **Layer 5: Audit trail** — logs all compliance-relevant actions via `audit-trail.sh`
+- **Layer 6: Agent templates** — pre-flight gates embedded in all 10 agent `.md` files
+
+See [Enforcement Architecture](docs/guides/enforcement-architecture.md) for details.
 
 ## Release Process
 
