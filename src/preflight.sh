@@ -252,6 +252,61 @@ if [ -f "$CONTRACT_LINT" ] && [ -f "$CONTRACT_FILE" ]; then
   fi
 fi
 
+# --- Check 9: Checkpoint validation (auto-fix if needed) ---
+CHECKPOINT_FILE="$SCRIPT_DIR/checkpoint.sh"
+if [ -f "$CHECKPOINT_FILE" ] && [ -f "$CONTRACT_FILE" ]; then
+  # Check if there's a latest checkpoint
+  CHECKPOINT_DIR=".opencode/orchestration/checkpoints"
+  if [ -f "$CHECKPOINT_DIR/latest.json" ] && [ -n "$PYTHON_CMD" ]; then
+    # Compare current contract with last checkpoint
+    CP_DRIFT=$($PYTHON_CMD -c "
+import json, sys
+try:
+    with open('$CHECKPOINT_DIR/latest.json') as f:
+        cp = json.load(f)
+    with open('$CONTRACT_FILE') as f:
+        current = json.load(f)
+    # Check if state differs from checkpoint
+    cp_state = cp.get('state', '')
+    cur_state = current.get('state', '')
+    if cp_state != cur_state:
+        print(f'STATE_CHANGE|{cp_state}|{cur_state}')
+    else:
+        print('NO_DRIFT')
+except Exception as e:
+    print(f'ERROR|{e}')
+" 2>/dev/null || echo "ERROR")
+
+    case "$CP_DRIFT" in
+      STATE_CHANGE\|*)
+        OLD_STATE="${CP_DRIFT#STATE_CHANGE|}"
+        OLD_STATE="${OLD_STATE%%|*}"
+        NEW_STATE="${CP_DRIFT##*|}"
+        echo -e "${YELLOW}  ⚠️  Checkpoint drift: state changed from '$OLD_STATE' to '$NEW_STATE' since last checkpoint${NC}"
+        # Auto-fix if contract-lint found issues
+        if [ -f "$CONTRACT_LINT" ]; then
+          LINT_CHECK=$("$CONTRACT_LINT" --contract "$CONTRACT_FILE" --json 2>/dev/null || echo '{"valid":true}')
+          LINT_VALID=$($PYTHON_CMD -c "import json; print(json.loads('''$LINT_CHECK''').get('valid',True))" 2>/dev/null || echo "True")
+          if [ "$LINT_VALID" = "False" ]; then
+            echo -e "${YELLOW}  ⚠️  Contract has lint errors — running auto-fix...${NC}"
+            "$CHECKPOINT_FILE" fix --json 2>/dev/null | head -5 || true
+          fi
+        fi
+        ;;
+      NO_DRIFT)
+        echo "  ✅ Checkpoint: no drift from last checkpoint"
+        ;;
+      ERROR\|*)
+        echo -e "${YELLOW}  ⚠️  Could not compare with last checkpoint${NC}"
+        ;;
+    esac
+  elif [ -d "$CHECKPOINT_DIR" ]; then
+    echo "  ℹ️  Checkpoint directory exists but no latest checkpoint"
+  else
+    echo "  ℹ️  No checkpoints yet — first save will create baseline"
+  fi
+fi
+
 # --- Final verdict ---
 if [ "$MCP_FAIL" -eq 1 ]; then
   echo -e "${RED}⛔ PREFLIGHT FAILED: Required MCPs not available.${NC}"

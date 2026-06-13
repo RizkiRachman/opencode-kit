@@ -32,6 +32,7 @@
     "src/contract-lint.sh",
     "src/adoption-check.sh",
     "src/audit-trail.sh",
+    "src/checkpoint.sh",
     "src/doctor.sh",
     "src/status.sh",
     "src/diff.sh",

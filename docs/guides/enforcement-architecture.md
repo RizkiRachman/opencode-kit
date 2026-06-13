@@ -23,10 +23,13 @@ opencode-kit enforces a strict tool boundary between agents and operators:
 
 This separation ensures agents operate within controlled boundaries while operators retain full system access for maintenance and oversight.
 
-## The 6 Layers
+## The 7 Layers
 
 ```
 ┌─────────────────────────────────────────────────────┐
+│  Layer 7: Checkpoint System                          │
+│  Snapshot + validate at every step, auto-fix broken  │
+├─────────────────────────────────────────────────────┤
 │  Layer 6: Agent Templates                            │
 │  Pre-flight gates in all 10 agent .md files          │
 ├─────────────────────────────────────────────────────┤
@@ -360,6 +363,11 @@ User sets goal in contract.json
          │
          ▼
 ┌─────────────────┐
+│  Checkpoint Save │ ← Layer 7: Snapshot + validate, auto-fix if needed
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
 │  Contract Lock   │ ← Layer 3: Prevent concurrent writes
 └────────┬────────┘
          │
@@ -367,6 +375,11 @@ User sets goal in contract.json
 ┌─────────────────┐
 │  Agent Work      │ ← Layer 6: Agent template enforces pre-flight
 └────────┬────────┘      (lean-ctx_* tools only — bash BLOCKED)
+         │
+         ▼
+┌─────────────────┐
+│  Checkpoint Save │ ← Layer 7: Post-step snapshot + validate
+└────────┬────────┘
          │
          ▼
 ┌─────────────────┐
@@ -382,7 +395,86 @@ User sets goal in contract.json
     Next Phase or BLOCKED
 ```
 
-### Operator vs Agent Boundaries
+### Layer 7: Checkpoint System
+
+**Script**: `src/checkpoint.sh`
+**When**: Every workflow step (start and end)
+**What**: Snapshots contract + git state, validates with lint + doctor, enables resume from last valid checkpoint
+
+### Purpose
+Checkpoints ensure:
+1. **Resume capability** — if session breaks, load last valid checkpoint and continue
+2. **Policy enforcement** — each checkpoint runs contract-lint + doctor checks automatically
+3. **Audit trail** — full history of every state change with validation status
+4. **Auto-fix** — if validation fails, contract syncs with template automatically
+
+### Commands
+| Command | What it does |
+|---------|-------------|
+| `save` | Snapshot contract + git, run lint + doctor, store checkpoint |
+| `fix` | Sync contract with template (remove extra fields, add missing, fix types) |
+| `validate` | Re-run lint + doctor, compare with stored checkpoint |
+| `list` | Show all checkpoints with state, agent, validation status |
+| `restore <id>` | Roll back contract to a specific checkpoint |
+| `latest` | Show latest checkpoint details |
+| `cleanup` | Remove old checkpoints, keep last 10 |
+
+### Usage (Operator — run via bash)
+```bash
+# Save checkpoint
+bash .opencode/src/checkpoint.sh save --agent orchestrator --step plan --summary "Plan phase"
+
+# Save with auto-fix (fixes contract if validation fails)
+bash .opencode/src/checkpoint.sh save --agent orchestrator --step build --fix
+
+# Fix contract without saving checkpoint
+bash .opencode/src/checkpoint.sh fix
+
+# View checkpoint history
+bash .opencode/src/checkpoint.sh list
+
+# Restore from checkpoint
+bash .opencode/src/checkpoint.sh restore checkpoint-20260613-143022
+```
+
+### Usage (Agent — via lean-ctx)
+```
+lean-ctx ctx_shell(command="bash .opencode/src/checkpoint.sh save --agent orchestrator --step plan --summary 'Plan complete'")
+lean-ctx ctx_shell(command="bash .opencode/src/checkpoint.sh fix")
+lean-ctx ctx_shell(command="bash .opencode/src/checkpoint.sh restore <id>")
+```
+
+### Checkpoint JSON Schema
+```json
+{
+  "id": "checkpoint-20260613-143022",
+  "timestamp": "2026-06-13T14:30:22Z",
+  "state": "EXECUTE",
+  "agent": "task-manager",
+  "step": "build",
+  "contract_snapshot": { "...full contract.json..." },
+  "git": { "branch": "feature/x", "commit": "abc123", "dirty": true },
+  "validation": { "lint_passed": true, "doctor_passed": true, "issues": [] },
+  "context_summary": "Built 3 files, 2 tests passing"
+}
+```
+
+### Auto-Fix Behavior
+When `--fix` is used or `fix` command runs:
+1. Load template contract from `.opencode/templates/contract.json`
+2. Compare with current contract
+3. **Remove** extra fields not in template
+4. **Add** missing fields from template (preserving current values)
+5. **Fix** type mismatches (e.g., string→list, dict→wrong-type)
+6. Re-validate with lint + doctor
+7. Report changes: `+N added, -N removed, ~N type-fixed`
+
+### Failure Behavior
+- Checkpoint save with lint FAIL → exit code 2, checkpoint saved with `validation.lint_passed=false`
+- Checkpoint save with `--fix` and lint FAIL → auto-fix, re-validate, re-save
+- Restore to invalid checkpoint → warns but still restores (user may need manual fix)
+
+## Operator vs Agent Boundaries
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -390,6 +482,7 @@ User sets goal in contract.json
 │  init.sh  doctor.sh  status.sh  diff.sh  adoption-check.sh     │
 │  scoring-pipeline.sh  contract-lock.sh  audit-trail.sh          │
 │  preflight.sh  verify.sh  postflight.sh  update.sh              │
+│  checkpoint.sh                                                   │
 ├─────────────────────────────────────────────────────────────────┤
 │                     AGENTS (lean-ctx_*)                          │
 │  ctx_read → ctx_write → ctx_shell → ctx_knowledge               │
