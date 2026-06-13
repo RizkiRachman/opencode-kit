@@ -28,7 +28,26 @@
       "properties": {
         "task_id": { "type": "string" },
         "branch": { "type": "string" },
-        "created_at": { "type": "string" }
+        "created_at": { "type": "string", "format": "date-time" },
+        "model": {
+          "type": "string",
+          "description": "Current model ID (e.g. 'mimo-v2.5', 'deepseek-v4-flash'). Seeded from opencode.json on init."
+        },
+        "previous_model": {
+          "type": "string",
+          "description": "Previous model ID before last model change. Empty if no change has occurred."
+        },
+        "model_changed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last model change. Empty if no change has occurred."
+        },
+        "model_change_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Number of model changes during this contract's lifecycle."
+        }
       },
       "additionalProperties": true,
       "description": "Session metadata for traceability and resumption"
@@ -39,12 +58,34 @@
       "properties": {
         "included": { "type": "array", "items": { "type": "string" } },
         "excluded": { "type": "array", "items": { "type": "string" } },
-        "boundary": { "type": "string" },
+        "boundary": { "type": "string", "enum": ["project-root", "subdirectory", "single-file", "cross-project", "custom"] },
         "parallel_eligible": { "type": "boolean" },
         "max_parallel_agents": { "type": "integer", "minimum": 1 }
       },
       "additionalProperties": true,
       "description": "Work boundaries and parallelism controls"
+    },
+
+    "required_tools": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "enforced": { "type": "boolean" },
+        "tools": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "blocked": { "type": "boolean" },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": ["enforced", "tools"],
+      "description": "Tool enforcement policy — lean-ctx_* required, bash blocked"
     },
 
     "requirements": {
@@ -135,7 +176,7 @@
       "type": "object",
       "properties": {
         "active_agent": { "type": "string" },
-        "mode": { "type": "string" },
+        "mode": { "type": "string", "enum": ["autonomous", "supervised", "interactive"] },
         "applicable_skills": { "type": "array", "items": { "type": "string" } },
         "current_guidance": {
           "type": "string",
@@ -165,7 +206,14 @@
           "type": "object",
           "properties": {
             "do": { "type": "array", "items": { "type": "string" } },
-            "dont": { "type": "array", "items": { "type": "string" } }
+            "dont": { "type": "array", "items": { "type": "string" } },
+            "allowed_execution": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["read", "write", "execute", "deploy"]
+              }
+            }
           },
           "additionalProperties": true
         },
@@ -185,6 +233,29 @@
             "additionalProperties": true
           },
           "description": "Historical log of decisions made during execution"
+        },
+        "timeout": {
+          "type": "object",
+          "description": "Timeout and resource exhaustion handling",
+          "properties": {
+            "max_session_minutes": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 60
+            },
+            "max_retries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5,
+              "default": 2
+            },
+            "escalation_on_timeout": {
+              "type": "string",
+              "enum": ["retry", "handoff", "block"],
+              "default": "handoff"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": true,
@@ -294,6 +365,22 @@
       },
       "additionalProperties": true,
       "description": "Retry policy and issue tracking"
+    },
+
+    "blocked_recovery": {
+      "type": "object",
+      "description": "How to recover from BLOCKED state",
+      "properties": {
+        "max_retries": {
+          "type": "integer",
+          "default": 2
+        },
+        "escalation_path": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["retry", "escalate_to_orchestrator", "human_intervention"]
+        }
+      }
     },
 
     "outputs": {

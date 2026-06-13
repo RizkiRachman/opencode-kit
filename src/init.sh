@@ -96,7 +96,35 @@ echo ""
 echo "[opencode-kit] Scaffolding files..."
 
 cp "$KIT_DIR/templates/contract.json" .opencode/orchestration/contract.json
-echo "  ✅ contract.json"
+
+# --- Seed session.model from opencode.json (if present) ---
+python3 -c "
+import json, os
+contract_path = '.opencode/orchestration/contract.json'
+config_path = 'opencode.json'
+try:
+    with open(contract_path) as f:
+        contract = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f'  ⚠️  Cannot read contract.json: {e}')
+    exit(0)
+
+model = ''
+try:
+    with open(config_path) as f:
+        cfg = json.load(f)
+    model = cfg.get('model', '')
+except (FileNotFoundError, json.JSONDecodeError):
+    model = ''
+
+contract['session']['model'] = model
+contract['session']['previous_model'] = ''
+contract['session']['model_changed_at'] = ''
+contract['session']['model_change_count'] = 0
+
+with open(contract_path, 'w') as f:
+    json.dump(contract, f, indent=2)
+" && echo "  ✅ contract.json (session.model seeded)" || echo "  ⚠️  contract.json copied, model seed skipped"
 
 cp "$KIT_DIR/templates/superpowers-contract.json" .opencode/templates/superpowers-contract.json
 echo "  ✅ superpowers-contract.json"
@@ -112,65 +140,36 @@ cp "$KIT_DIR/src/platform.sh" .opencode/src/platform.sh
 chmod +x .opencode/src/platform.sh
 echo "  ✅ platform.sh (executable)"
 
-# Plugin-specific: scripts that exist locally for CLI access
+# --- Always copy enforcement scripts (agents need these in plugin mode too) ---
+for script in \
+  preflight.sh postflight.sh postflight.py telemetry.sh \
+  doctor.sh status.sh scoring-pipeline.sh contract-lock.sh \
+  adoption-check.sh audit-trail.sh contract-lint.sh checkpoint.sh \
+  new-skill.sh global-config.sh init.sh diff.sh analytics.sh \
+  adr.sh update.sh; do
+  if [ -f "$KIT_DIR/src/$script" ]; then
+    cp "$KIT_DIR/src/$script" ".opencode/src/$script"
+    chmod +x ".opencode/src/$script"
+    echo "  ✅ src/$script (executable)"
+  fi
+done
+
+# --- Rules validation script (non-plugin only) ---
 if [ "$PLUGIN_MODE" = false ]; then
-  # Non-plugin mode: copy all shell scripts
-  cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
-  chmod +x .opencode/rules/validation.sh
-  echo "  ✅ rules/validation.sh"
-
-  cp "$KIT_DIR/src/preflight.sh" .opencode/src/preflight.sh
-  chmod +x .opencode/src/preflight.sh
-  echo "  ✅ preflight.sh (executable)"
-
-  cp "$KIT_DIR/src/postflight.sh" .opencode/src/postflight.sh
-  chmod +x .opencode/src/postflight.sh
-  echo "  ✅ postflight.sh (executable)"
-
-  cp "$KIT_DIR/src/postflight.py" .opencode/src/postflight.py
-  chmod +x .opencode/src/postflight.py
-  echo "  ✅ postflight.py (executable)"
-
-  cp "$KIT_DIR/src/update.sh" .opencode/src/update.sh
-  chmod +x .opencode/src/update.sh
-  echo "  ✅ update.sh (executable)"
-
-  cp "$KIT_DIR/src/adr.sh" .opencode/src/adr.sh
-  chmod +x .opencode/src/adr.sh
-  echo "  ✅ adr.sh (executable)"
-
-  cp "$KIT_DIR/src/telemetry.sh" .opencode/src/telemetry.sh
-  chmod +x .opencode/src/telemetry.sh
-  echo "  ✅ telemetry.sh (executable)"
-
-  cp "$KIT_DIR/src/doctor.sh" .opencode/src/doctor.sh
-  chmod +x .opencode/src/doctor.sh
-  echo "  ✅ doctor.sh (executable)"
-
-  cp "$KIT_DIR/src/status.sh" .opencode/src/status.sh
-  chmod +x .opencode/src/status.sh
-  echo "  ✅ status.sh (executable)"
-
-  cp "$KIT_DIR/src/new-skill.sh" .opencode/src/new-skill.sh
-  chmod +x .opencode/src/new-skill.sh
-  echo "  ✅ new-skill.sh (executable)"
-
-  cp "$KIT_DIR/src/analytics.sh" .opencode/src/analytics.sh
-  chmod +x .opencode/src/analytics.sh
-  echo "  ✅ analytics.sh (executable)"
-
-  cp "$KIT_DIR/src/diff.sh" .opencode/src/diff.sh
-  chmod +x .opencode/src/diff.sh
-  echo "  ✅ diff.sh (executable)"
-
-  # --- Copy agent templates (pre-flight gates) ---
-  for agent in orchestrator planner task-manager code-reviewer learner fixer; do
-    if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
-      cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
-      echo "  ✅ agents/$agent.md"
-    fi
-  done
+  if [ -f "$KIT_DIR/rules/validation.sh" ]; then
+    cp "$KIT_DIR/rules/validation.sh" .opencode/rules/validation.sh
+    chmod +x .opencode/rules/validation.sh
+    echo "  ✅ rules/validation.sh"
+  fi
 fi
+
+# --- Always copy agent templates (agents need pre-flight gates) ---
+for agent in orchestrator planner task-manager code-reviewer learner fixer explorer librarian architect observer; do
+  if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
+    cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
+    echo "  ✅ agents/$agent.md"
+  fi
+done
 
 # --- Copy git hooks ---
 if [ -d "$KIT_DIR/.githooks" ]; then
@@ -226,23 +225,97 @@ if [ "$SAMPLE" = true ]; then
   "agent": {
     "orchestrator": {
       "model": "your-model",
-      "skills": ["orchestration-template", "scoring-pipeline", "verification-before-completion"],
-      "steps": 50
+      "skills": ["orchestration-template", "dispatching-parallel-agents", "verification-before-completion", "using-superpowers"],
+      "steps": 50,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "planner": {
       "model": "your-model",
       "skills": ["brainstorming", "writing-plans", "system-analyst"],
-      "steps": 80
+      "steps": 80,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "task-manager": {
       "model": "your-model",
       "skills": ["subagent-driven-development", "executing-plans", "test-driven-development"],
-      "steps": 100
+      "steps": 100,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "code-reviewer": {
       "model": "your-model",
-      "skills": ["qa-expert", "security-expert"],
-      "steps": 80
+      "skills": ["requesting-code-review", "receiving-code-review", "qa-expert", "security-expert"],
+      "steps": 80,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "learner": {
+      "model": "your-model",
+      "skills": ["verification-before-completion", "qa-expert"],
+      "steps": 40,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "fixer": {
+      "model": "your-model",
+      "skills": ["subagent-driven-development", "executing-plans", "using-git-worktrees"],
+      "steps": 40,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "explorer": {
+      "model": "your-model",
+      "skills": ["humanizer", "firecrawl-search", "firecrawl-map"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "librarian": {
+      "model": "your-model",
+      "skills": ["humanizer", "firecrawl-search"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "architect": {
+      "model": "your-model",
+      "skills": ["simplify", "systematic-debugging", "system-analyst"],
+      "steps": 60,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "observer": {
+      "model": "your-model",
+      "skills": ["humanizer", "verification-before-completion", "systematic-debugging"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    }
+  },
+  "command": {
+    "opencode-kit:doctor": {
+      "description": "Run opencode-kit project health checks",
+      "prompt": "Run the opencode-kit doctor check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/doctor.sh\") — then summarize the results for the user."
+    },
+    "opencode-kit:status": {
+      "description": "Show opencode-kit project status",
+      "prompt": "Show the opencode-kit project status. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/status.sh\") — then summarize the results for the user."
+    },
+    "opencode-kit:preflight": {
+      "description": "Run opencode-kit pre-flight gate checks",
+      "prompt": "Run the opencode-kit pre-flight gate. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/preflight.sh\") — report pass/fail for each check and any issues found."
+    },
+    "opencode-kit:score": {
+      "description": "Run opencode-kit scoring pipeline on current contract",
+      "prompt": "Run the opencode-kit scoring pipeline. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/scoring-pipeline.sh\") — report the score, verdict (PASS/RETRY/BLOCKED), and any deductions."
+    },
+    "opencode-kit:contract-lint": {
+      "description": "Validate opencode-kit contract.json structure",
+      "prompt": "Validate the opencode-kit contract. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/contract-lint.sh\") — report any validation errors or warnings."
+    },
+    "opencode-kit:checkpoint": {
+      "description": "List opencode-kit checkpoints",
+      "prompt": "List the current opencode-kit checkpoints. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/checkpoint.sh list\") — show the user all saved checkpoints."
+    },
+    "opencode-kit:audit": {
+      "description": "Query the opencode-kit audit trail",
+      "prompt": "Query the recent opencode-kit audit trail. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/audit-trail.sh query --limit 20\") — show the user recent audit events."
+    },
+    "opencode-kit:verify": {
+      "description": "Verify opencode-kit project setup",
+      "prompt": "Run the opencode-kit verification check. Execute: lean-ctx ctx_shell(command=\"bash .opencode/src/verify.sh\") — report which checks pass and which fail."
     }
   }
 }

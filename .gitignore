@@ -4,6 +4,10 @@ node_modules/
 .idea/
 *.iml
 .opencode/state/
+# opencode user-specific configuration (keep project skills/agents)
+.opencode/opencode.json
+.opencode/agents/
+.opencode/skills/
 .claude/
 /AGENTS.md
 /CLAUDE.md
@@ -28,3 +32,12 @@ package-lock.json
 tmp/
 .tmp/
 scratch*
+
+# lean-ctx local data
+.lean-ctx/
+
+# Local opencode config (project-specific, not for distribution)
+opencode.json
+
+# Planning documents (development artifacts)
+planning/

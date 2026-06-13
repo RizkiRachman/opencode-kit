@@ -9,12 +9,7 @@ permission:
   glob: allow
   grep: allow
   list: allow
-  bash:
-    "*": ask
-    "npm run format": allow
-    "npm test": allow
-    "npm run build": allow
-    "git diff*": allow
+  lean-ctx_*: allow
   task:
     "*": deny
 ---
