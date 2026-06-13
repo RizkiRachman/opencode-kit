@@ -17,6 +17,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo "[opencode-kit] ⛔ Pre-flight check..."
+ISSUES=0
 
 # --- Check 1: contract.json exists on disk ---
 if [ ! -f "$CONTRACT_FILE" ]; then
@@ -127,6 +128,63 @@ except: print('PARSE_ERROR')
     echo -e "${YELLOW}  ⚠️  Contract state: unknown — contract.json may be malformed${NC}"
   else
     echo "  ✅ Contract state: $STATE"
+  fi
+fi
+
+# --- Check 6: Validate state machine transition ---
+if [ -n "$PYTHON_CMD" ] && [ -f "$CONTRACT_FILE" ] && [ -f "$RULES_FILE" ]; then
+  TRANSITION_OK=$($PYTHON_CMD -c "
+import json, sys
+
+try:
+    with open('$CONTRACT_FILE') as f:
+        contract = json.load(f)
+    with open('$RULES_FILE') as f:
+        rules = json.load(f)
+    
+    state = contract.get('state', 'UNKNOWN')
+    transitions = rules.get('state_machine', {}).get('transitions', [])
+    
+    # Get valid target states (excluding wildcard transitions)
+    valid_targets = set()
+    for t in transitions:
+        if t.get('from') == state or t.get('from') == '*':
+            valid_targets.add(t.get('to'))
+    
+    # Also check if current state is a valid state at all
+    all_states = set()
+    for t in transitions:
+        all_states.add(t.get('from'))
+        all_states.add(t.get('to'))
+    all_states.discard('*')
+    
+    if state not in all_states:
+        print(f'INVALID_STATE:{state}')
+        sys.exit(1)
+    
+    # For non-terminal states, check that a transition exists
+    if state != 'COMPLETE' and state != 'BLOCKED' and state not in valid_targets:
+        print(f'NO_TRANSITION:{state}')
+        sys.exit(1)
+    
+    print(f'VALID:{state}')
+    sys.exit(0)
+except Exception as e:
+    print(f'ERROR:{e}')
+    sys.exit(1)
+" 2>/dev/null || echo "SKIP")
+  
+  if [[ "$TRANSITION_OK" == INVALID_STATE:* ]]; then
+    BAD_STATE="${TRANSITION_OK#INVALID_STATE:}"
+    echo -e "${RED}  ⛔ STATE MACHINE: '$BAD_STATE' is not a valid contract state${NC}"
+    echo -e "${RED}  → Valid states: INIT, PLAN, PLAN_SCORED, EXECUTE, EXECUTE_SCORED, REVIEW, REVIEW_SCORED, COMPLETE, BLOCKED${NC}"
+    ISSUES=$((ISSUES + 1))
+  elif [[ "$TRANSITION_OK" == NO_TRANSITION:* ]]; then
+    CUR_STATE="${TRANSITION_OK#NO_TRANSITION:}"
+    echo -e "${YELLOW}  ⚠️  STATE MACHINE: No valid transition from '$CUR_STATE'${NC}"
+    echo -e "${YELLOW}  → Contract may need state update or BLOCKED recovery${NC}"
+  elif [[ "$TRANSITION_OK" == VALID:* ]]; then
+    echo "  ✅ State machine: transition valid from ${TRANSITION_OK#VALID:}"
   fi
 fi
 

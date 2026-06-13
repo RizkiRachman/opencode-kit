@@ -87,14 +87,16 @@ The result: **zero-touch agent workflow**. Set a goal, and the system self-execu
 
 ### How It Works
 
-As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session globally:
+As an OpenCode **plugin**, `opencode-kit` injects enforcement into every session globally via a **6-layer enforcement system**:
 
 1. **Plugin bootstrap** — every session auto-loads the orchestration contract before any work
-2. **Pre-flight gate** — validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations
-3. **Contract protocol** — shared state machine (`contract.json`) tracks phase, decisions, scores, telemetry
-4. **Scoring pipeline** — every subagent output scored. ≥70 PASS, 50-69 RETRY, <50 BLOCKED
-5. **ADR logging** — every architectural decision recorded in `decisions.adr_log[]`
-6. **Extension model** — project-specific skills in `.opencode/skills/` override plugin defaults
+2. **Pre-flight gate** — validates branch, contract state, and rule compliance. BLOCKs on CRITICAL violations. Includes **state machine validation** (transition legality, required fields)
+3. **Contract locking** — prevents concurrent contract modifications via file-based locks (`contract-lock.sh acquire/release`)
+4. **Contract protocol** — shared state machine (`contract.json`) tracks phase, decisions, scores, telemetry
+5. **Scoring pipeline** — every subagent output scored via `src/scoring-pipeline.sh`. ≥70 PASS, 50-69 RETRY, <50 BLOCKED
+6. **Audit trail** — JSONL compliance logging (`audit-trail.sh`) records every enforcement action, score, and phase transition for later analysis
+7. **ADR logging** — every architectural decision recorded in `decisions.adr_log[]`
+8. **Extension model** — project-specific skills in `.opencode/skills/` override plugin defaults
 
 ### The 8 Built-in Skills
 
@@ -173,6 +175,7 @@ git --version     # any recent version
 | [Quickstart](docs/examples/QUICKSTART.md) | 6-step setup from scratch |
 | [Extension Skills](docs/examples/extension-skill-template.md) | Create project-specific skills |
 | [Model Configs](docs/examples/model-configs.md) | Provider configuration examples |
+| [Enforcement Architecture](docs/guides/enforcement-architecture.md) | 6-layer enforcement system |
 
 ### Installation
 
@@ -318,6 +321,10 @@ Once installed, run these from the project root:
 | `bash .opencode/src/telemetry.sh` | View telemetry details |
 | `bash .opencode/src/new-skill.sh` <name> | Scaffold a new skill SKILL.md |
 | `bash .opencode/rules/validation.sh` | Validate rules compliance |
+| `bash .opencode/src/adoption-check.sh` | Verify project is initialized |
+| `bash .opencode/src/contract-lock.sh acquire/release` | Contract file locking |
+| `bash .opencode/src/audit-trail.sh` | Audit trail management |
+| `bash .opencode/src/scoring-pipeline.sh` | Run scoring pipeline |
 | `npx opencode-kit --version` | Print version |
 | `npx opencode-kit --help` | Print help |
 
@@ -362,13 +369,21 @@ opencode-kit/
  │   ├── verify.sh               ← Installation health check
  │   ├── platform.sh             ← Cross-platform detection
  │   ├── global-config.sh        ← Config resolution chain
- │   └── cli.js                  ← --version / --help
- ├── skills/                     ← 9 auto-registered skills
- ├── templates/
- │   ├── contract.json           ← Shared state contract
- │   ├── opencode-kit.schema.json ← Agent config schema
- │   ├── judge-prompt.md          ← LLM judge prompt template
- │   └── agents/                  ← 6 agent .md templates
+  │   ├── scoring-pipeline.sh    ← Tier 1 rule-based scoring engine
+  │   ├── contract-lock.sh       ← File locking for concurrent access
+  │   ├── adoption-check.sh      ← Verify project is initialized
+  │   ├── audit-trail.sh         ← JSONL compliance audit log
+  │   └── cli.js                  ← --version / --help
+  ├── skills/                     ← 9 auto-registered skills
+  ├── templates/
+  │   ├── contract.json           ← Shared state contract
+  │   ├── contract.schema.json    ← JSON Schema for contract
+  │   ├── opencode-kit.schema.json ← Agent config schema
+  │   ├── judge-prompt.md         ← LLM judge prompt template
+  │   ├── escalation.md           ← BLOCKED recovery protocol
+  │   ├── handoff.md              ← Agent handoff protocol
+  │   ├── rollback.md             ← Rollback strategy
+  │   └── agents/                 ← 10 agent .md templates
  ├── docs/
  │   ├── guides/                  ← Usage guides (contract, scoring, troubleshooting)
  │   ├── examples/                ← Quickstart, model configs, extension skills

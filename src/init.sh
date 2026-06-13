@@ -164,7 +164,7 @@ if [ "$PLUGIN_MODE" = false ]; then
   echo "  ✅ diff.sh (executable)"
 
   # --- Copy agent templates (pre-flight gates) ---
-  for agent in orchestrator planner task-manager code-reviewer learner fixer; do
+  for agent in orchestrator planner task-manager code-reviewer learner fixer explorer librarian architect observer; do
     if [ -f "$KIT_DIR/templates/agents/$agent.md" ]; then
       cp "$KIT_DIR/templates/agents/$agent.md" ".opencode/agents/$agent.md"
       echo "  ✅ agents/$agent.md"
@@ -226,23 +226,63 @@ if [ "$SAMPLE" = true ]; then
   "agent": {
     "orchestrator": {
       "model": "your-model",
-      "skills": ["orchestration-template", "scoring-pipeline", "verification-before-completion"],
-      "steps": 50
+      "skills": ["orchestration-template", "dispatching-parallel-agents", "verification-before-completion", "using-superpowers"],
+      "steps": 50,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "planner": {
       "model": "your-model",
       "skills": ["brainstorming", "writing-plans", "system-analyst"],
-      "steps": 80
+      "steps": 80,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "task-manager": {
       "model": "your-model",
       "skills": ["subagent-driven-development", "executing-plans", "test-driven-development"],
-      "steps": 100
+      "steps": 100,
+      "tools": { "bash": false, "lean-ctx_*": true }
     },
     "code-reviewer": {
       "model": "your-model",
-      "skills": ["qa-expert", "security-expert"],
-      "steps": 80
+      "skills": ["requesting-code-review", "receiving-code-review", "qa-expert", "security-expert"],
+      "steps": 80,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "learner": {
+      "model": "your-model",
+      "skills": ["verification-before-completion", "qa-expert"],
+      "steps": 40,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "fixer": {
+      "model": "your-model",
+      "skills": ["subagent-driven-development", "executing-plans", "using-git-worktrees"],
+      "steps": 40,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "explorer": {
+      "model": "your-model",
+      "skills": ["humanizer", "firecrawl-search", "firecrawl-map"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "librarian": {
+      "model": "your-model",
+      "skills": ["humanizer", "firecrawl-search"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "architect": {
+      "model": "your-model",
+      "skills": ["simplify", "systematic-debugging", "system-analyst"],
+      "steps": 60,
+      "tools": { "bash": false, "lean-ctx_*": true }
+    },
+    "observer": {
+      "model": "your-model",
+      "skills": ["humanizer", "verification-before-completion", "systematic-debugging"],
+      "steps": 30,
+      "tools": { "bash": false, "lean-ctx_*": true }
     }
   }
 }
