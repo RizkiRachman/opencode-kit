@@ -1,9 +1,0 @@
-{
-  "version": "0.1.0",
-  "template_version": "0.6.2",
-  "description": "Superpowers & MCP registry for opencode-kit",
-  "plugins": ["superpowers"],
-  "mcps": ["gitnexus", "graphify", "lean-ctx", "context7"],
-  "skills": ["brainstorming", "writing-plans", "verification-before-completion", "systematic-debugging", "simplify"],
-  "startup_protocol": ["create_branch", "load_contract", "sync_state", "refresh_intelligence"]
-}

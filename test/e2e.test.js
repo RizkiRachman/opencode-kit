@@ -147,8 +147,8 @@ test('CLI --version returns version', () => {
 // === 6. All JSON files are valid ===
 test('All JSON files parse correctly', () => {
   const jsonFiles = [
-    'templates/contract.json',
-    'templates/opencode-kit.schema.json',
+    'contract.json',
+    'contract.schema.json',
     'rules/rules.json',
     'package.json',
     '.claude-plugin/plugin.json'

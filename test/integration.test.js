@@ -97,7 +97,7 @@ test('Plugin metadata (plugin.json) is valid', () => {
 
 // 6. Contract template is valid JSON
 test('Contract template is valid JSON', () => {
-  const template = path.join(ROOT, 'templates', 'contract.json');
+  const template = path.join(ROOT, 'contract.json');
   assert.ok(fs.existsSync(template), 'contract template should exist');
   const data = JSON.parse(fs.readFileSync(template, 'utf8'));
   assert.ok(data.state, 'Should have state field');

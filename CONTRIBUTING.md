@@ -33,7 +33,7 @@ Open an issue with the `enhancement` label. Include:
 3. Make your changes
 4. Test on macOS M-series:
    ```sh
-   # For scripts: manually run against a test project
+   # Init runs 5 phases: requirements → credentials → copy skills/agents → opencode.json → verify
    /path/to/opencode-kit/src/init.sh --force
    /path/to/opencode-kit/src/verify.sh
    ```
@@ -100,6 +100,9 @@ git clone https://github.com/RizkiRachman/opencode-kit.git
 cd opencode-kit
 npm install    # installs dependencies if any
 
+# opencode.json is built from opencode.json.template during `npm run build`
+npm run build  # generates opencode.json from template
+
 # Create a test project
 mkdir -p /tmp/test-project && cd /tmp/test-project
 git init
@@ -107,10 +110,10 @@ git init
 /path/to/opencode-kit/src/verify.sh
 
 # Verify new enforcement scripts
-bash .opencode/src/adoption-check.sh
-bash .opencode/src/scoring-pipeline.sh
-bash .opencode/src/audit-trail.sh log test "setup" '{"test": true}'
-bash .opencode/src/contract-lint.sh
+lean-ctx ctx_shell(command="bash .opencode/src/adoption-check.sh")
+lean-ctx ctx_shell(command="bash .opencode/src/scoring-pipeline.sh")
+lean-ctx ctx_shell(command="bash .opencode/src/audit-trail.sh log test 'setup' '{\"test\": true}'")
+lean-ctx ctx_shell(command="bash .opencode/src/contract-lint.sh")
 ```
 
 ## Enforcement Architecture
@@ -122,7 +125,7 @@ The project uses a 6-layer enforcement system to maintain consistency and compli
 - **Layer 3: Contract locking** — prevents concurrent access conflicts via `contract-lock.sh`
 - **Layer 4: Scoring pipeline** — evaluates agent behavior after each agent returns via `scoring-pipeline.sh`
 - **Layer 5: Audit trail** — logs all compliance-relevant actions via `audit-trail.sh`
-- **Layer 6: Agent templates** — pre-flight gates embedded in all 10 agent `.md` files
+- **Layer 6: Agent templates** — pre-flight gates embedded in all 15 agent `.md` files
 
 See [Enforcement Architecture](docs/guides/enforcement-architecture.md) for details.
 

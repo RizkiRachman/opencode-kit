@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Rules Schema",
+  "description": "Schema for opencode-kit agent behavior rules",
+  "type": "object",
+  "required": ["_meta", "enforcement", "permissions"],
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "properties": {
+        "extends": { "type": ["string", "null"] },
+        "version": { "type": "string" },
+        "overrides": { "type": "array", "items": { "type": "string" } },
+        "appends": { "type": "array", "items": { "type": "string" } },
+        "excludes": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["extends"]
+    },
+    "description": { "type": "string" },
+    "version": { "type": "string" },
+    "enforcement": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+          "check": { "type": "string" },
+          "violation_action": { "type": "string", "enum": ["BLOCKED", "WARN", "RETRY"] }
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "can": { "type": "array", "items": { "type": "string" } },
+          "cannot": { "type": "array", "items": { "type": "string" } },
+          "requires": { "type": "array", "items": { "type": "string" } },
+          "readonly": { "type": "boolean" }
+        }
+      }
+    },
+    "scoring": { "type": "object" },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition": { "type": "string" },
+              "severity": { "type": "string" },
+              "action": { "type": "string" }
+            },
+            "required": ["condition", "severity", "action"]
+          }
+        }
+      }
+    }
+  }
+}

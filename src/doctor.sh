@@ -80,6 +80,30 @@ else
   fi
 fi
 
+# === 2b. Workflow rules, agent rules, learner rules ===
+echo -e "${CYAN}[RULES]${NC} Checking workflow/agent/learner rules..."
+for RULE_FILE in workflow-rules.json agent-rules.json learner-rules.json; do
+  FULL_PATH=".opencode/rules/$RULE_FILE"
+  if [ -f "$FULL_PATH" ]; then
+    if [ -n "$PYTHON_CMD" ]; then
+      EXTENDS=$($PYTHON_CMD -c "import json; d=json.load(open('$FULL_PATH')); print(d.get('_meta',{}).get('extends',''))" 2>/dev/null || echo "parse_err")
+      if [ "$EXTENDS" = "opencode-kit" ]; then
+        echo -e "  ✅ $RULE_FILE (extends: opencode-kit)"
+      elif [ "$EXTENDS" = "parse_err" ]; then
+        echo -e "  ${RED}❌ $RULE_FILE — malformed JSON${NC}"
+        ISSUES=$((ISSUES + 1))
+      else
+        echo -e "  ⚠️  $RULE_FILE (extends: $EXTENDS — expected opencode-kit)"
+      fi
+    else
+      echo -e "  ✅ $RULE_FILE exists"
+    fi
+  else
+    echo -e "  ${RED}❌ $RULE_FILE not found — run 'opencode-kit init'${NC}"
+    ISSUES=$((ISSUES + 1))
+  fi
+done
+
 # === 3a. MCP CLI checks ===
 echo -e "${CYAN}[MCP]${NC} Checking required MCPs..."
 if [ -f "$RULES_FILE" ] && [ -n "$PYTHON_CMD" ]; then
@@ -150,6 +174,81 @@ if [ -f "$OPENCODE_JSON" ]; then
   fi
 else
   echo -e "  ${YELLOW}⚠️  No opencode.json found${NC}"
+fi
+
+# === 7. opencode.json agent/skill validation ===
+echo -e "${CYAN}[AGENTS]${NC} Checking required agents and skills..."
+if [ -f "$OPENCODE_JSON" ] && [ -n "$PYTHON_CMD" ]; then
+  "$PYTHON_CMD" << 'AGENTCHECK'
+import json, sys
+
+REQUIRED_AGENTS = [
+    "orchestrator", "planner", "task-manager", "code-reviewer", "explorer",
+    "librarian", "architect", "fixer", "learner", "observer",
+    "database-specialist", "devops-agent", "documentation-agent",
+    "security-reviewer", "testing-specialist"
+]
+
+REQUIRED_SKILLS = {
+    "orchestrator": ["orchestration-template", "orchestration-workflow"],
+    "planner": ["writing-plans", "system-analyst"],
+    "task-manager": ["executing-plans", "subagent-driven-development"],
+    "code-reviewer": ["requesting-code-review", "quality-checks"],
+    "explorer": ["codemap"],
+    "architect": ["simplify", "system-analyst"],
+    "database-specialist": ["database-design"],
+    "devops-agent": ["ci-cd"],
+    "security-reviewer": ["security-audit"],
+    "testing-specialist": ["testing-strategies"],
+}
+
+REQUIRED_MCP = ["context7", "gitnexus", "lean-ctx", "madar"]
+
+try:
+    with open("opencode.json") as f:
+        config = json.load(f)
+except Exception as e:
+    print(f"  ❌ Cannot parse opencode.json: {e}")
+    sys.exit(1)
+
+agents = config.get("agent", {})
+mcps = config.get("mcp", {})
+errors = []
+warnings = []
+
+for agent in REQUIRED_AGENTS:
+    if agent not in agents:
+        errors.append(f"Missing agent: {agent}")
+    elif agent in REQUIRED_SKILLS:
+        skills = agents[agent].get("skills", [])
+        for s in REQUIRED_SKILLS[agent]:
+            if s not in skills:
+                warnings.append(f"Agent \'{agent}\' missing skill: {s}")
+
+for agent in agents:
+    if agent not in REQUIRED_AGENTS:
+        warnings.append(f"Extra agent (project): {agent}")
+
+for mcp in REQUIRED_MCP:
+    if mcp not in mcps:
+        errors.append(f"Missing MCP: {mcp}")
+
+if errors:
+    for e in errors:
+        print(f"  ❌ {e}")
+if warnings:
+    for w in warnings:
+        print(f"  ⚠️  {w}")
+if not errors and not warnings:
+    print(f"  ✅ {len(agents)} agents, {len(mcps)} MCPs — all required items present")
+elif not errors:
+    print(f"  ✅ {len(agents)} agents, {len(mcps)} MCPs — no critical issues")
+sys.exit(1 if errors else 0)
+AGENTCHECK
+  AGENT_CHECK_EXIT=$?
+  ISSUES=$((ISSUES + AGENT_CHECK_EXIT))
+else
+  echo -e "  ${YELLOW}⚠️  Cannot validate (opencode.json or python missing)${NC}"
 fi
 
 # === Summary ===

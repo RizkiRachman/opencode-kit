@@ -10,8 +10,7 @@ FAIL=0
 # --- Check 1: required files exist ---
 for f in \
   ".opencode/orchestration/contract.json" \
-  ".opencode/rules/rules.json" \
-  ".opencode/templates/superpowers-contract.json"; do
+  ".opencode/rules/rules.json"; do
   if [ -f "$f" ]; then
     echo "  ✅ $f"
   else

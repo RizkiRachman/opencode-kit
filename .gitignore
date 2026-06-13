@@ -3,16 +3,15 @@ node_modules/
 *.log
 .idea/
 *.iml
-.opencode/state/
-# opencode user-specific configuration (keep project skills/agents)
-.opencode/opencode.json
-.opencode/agents/
-.opencode/skills/
+
+# opencode-kit dev artifacts (not shipped in npm)
+.opencode/
+!.opencode/plugins/
 .claude/
 /AGENTS.md
 /CLAUDE.md
 
-# Audit documents (development artifacts — keep local)
+# Audit documents (development artifacts)
 docs/audit/
 __pycache__/
 
@@ -28,7 +27,7 @@ package-lock.json
 # IDE
 .vscode/
 
-# Scratch / temp files (development exploration)
+# Scratch / temp files
 tmp/
 .tmp/
 scratch*
@@ -36,8 +35,18 @@ scratch*
 # lean-ctx local data
 .lean-ctx/
 
-# Local opencode config (project-specific, not for distribution)
+# Merge backups
+opencode.json.backup*
+opencode.json.built
+opencode-bak.json
+
+# Generated from template during npm run build
 opencode.json
 
-# Planning documents (development artifacts)
+# Dev artifacts (never ship)
+out/
+.playwright-mcp/
+test/final-test.py
+
+# Planning documents
 planning/

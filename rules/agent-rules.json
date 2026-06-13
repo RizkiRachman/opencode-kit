@@ -1,0 +1,364 @@
+{
+  "_meta": {
+    "extends": null,
+    "version": "0.1.0",
+    "overrides": [],
+    "appends": [
+      "rules"
+    ],
+    "excludes": []
+  },
+  "description": "Agent behavior rules \u2014 governs how agents operate across all phases",
+  "version": "0.1.0",
+  "enforcement": {
+    "lean_ctx": {
+      "description": "All agents MUST use lean-ctx tools exclusively",
+      "severity": "CRITICAL",
+      "blocked_tools": [
+        "bash",
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep"
+      ],
+      "allowed_patterns": [
+        "lean-ctx_*"
+      ],
+      "violation_action": "BLOCKED"
+    },
+    "contract_first": {
+      "description": "Agents MUST load contract before any work",
+      "severity": "CRITICAL",
+      "check": "contract_loaded == true",
+      "violation_action": "BLOCKED"
+    },
+    "state_machine": {
+      "description": "Agents MUST validate state before acting",
+      "severity": "HIGH",
+      "valid_transitions": {
+        "INIT": [
+          "PLAN"
+        ],
+        "PLAN": [
+          "EXECUTE",
+          "BLOCKED"
+        ],
+        "EXECUTE": [
+          "REVIEW",
+          "BLOCKED"
+        ],
+        "REVIEW": [
+          "COMPLETE",
+          "EXECUTE",
+          "BLOCKED"
+        ],
+        "COMPLETE": [],
+        "BLOCKED": [
+          "INIT"
+        ]
+      },
+      "violation_action": "BLOCKED"
+    }
+  },
+  "permissions": {
+    "orchestrator": {
+      "can": [
+        "delegate",
+        "score",
+        "transition_state",
+        "load_contract"
+      ],
+      "cannot": [
+        "edit_files",
+        "run_tests"
+      ],
+      "requires": [
+        "contract_loaded",
+        "rules_loaded"
+      ]
+    },
+    "planner": {
+      "can": [
+        "read_files",
+        "search_code",
+        "create_plan"
+      ],
+      "cannot": [
+        "edit_files",
+        "run_tests",
+        "delegate"
+      ],
+      "requires": [
+        "contract_loaded",
+        "codebase_explored"
+      ]
+    },
+    "explorer": {
+      "can": [
+        "read_files",
+        "search_code",
+        "query_madar"
+      ],
+      "cannot": [
+        "edit_files",
+        "write_files",
+        "delegate"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "task-manager": {
+      "can": [
+        "read_files",
+        "edit_files",
+        "run_tests",
+        "delegate_fixer"
+      ],
+      "cannot": [
+        "transition_state",
+        "score"
+      ],
+      "requires": [
+        "plan_approved"
+      ]
+    },
+    "fixer": {
+      "can": [
+        "read_files",
+        "edit_files"
+      ],
+      "cannot": [
+        "delegate",
+        "transition_state",
+        "run_tests"
+      ],
+      "requires": [
+        "task_assigned"
+      ]
+    },
+    "code-reviewer": {
+      "can": [
+        "read_files",
+        "search_code",
+        "score"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate"
+      ],
+      "requires": [
+        "execution_complete"
+      ]
+    },
+    "learner": {
+      "can": [
+        "read_files",
+        "search_code",
+        "persist_knowledge"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "execution_complete"
+      ],
+      "readonly": true
+    },
+    "database-specialist": {
+      "can": [
+        "read_files",
+        "edit_files",
+        "run_queries"
+      ],
+      "cannot": [
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "devops-agent": {
+      "can": [
+        "read_files",
+        "edit_files",
+        "run_commands"
+      ],
+      "cannot": [
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "security-reviewer": {
+      "can": [
+        "read_files",
+        "search_code",
+        "audit"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "testing-specialist": {
+      "can": [
+        "read_files",
+        "edit_files",
+        "run_tests"
+      ],
+      "cannot": [
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "observer": {
+      "can": [
+        "read_files",
+        "search_code",
+        "monitor"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ],
+      "readonly": true
+    },
+    "librarian": {
+      "can": [
+        "read_files",
+        "search_code",
+        "web_search",
+        "query_docs"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "documentation-agent": {
+      "can": [
+        "read_files",
+        "edit_files",
+        "generate_docs"
+      ],
+      "cannot": [
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    },
+    "architect": {
+      "can": [
+        "read_files",
+        "search_code",
+        "evaluate",
+        "recommend"
+      ],
+      "cannot": [
+        "edit_files",
+        "delegate",
+        "transition_state"
+      ],
+      "requires": [
+        "contract_loaded"
+      ]
+    }
+  },
+  "scoring": {
+    "agent_scores": {
+      "description": "Score each agent's output on completion",
+      "dimensions": {
+        "completeness": {
+          "weight": 0.3,
+          "checks": [
+            "all_tasks_done",
+            "outputs_produced"
+          ]
+        },
+        "quality": {
+          "weight": 0.3,
+          "checks": [
+            "no_errors",
+            "follows_conventions"
+          ]
+        },
+        "efficiency": {
+          "weight": 0.2,
+          "checks": [
+            "minimal_tokens",
+            "no_redundant_work"
+          ]
+        },
+        "compliance": {
+          "weight": 0.2,
+          "checks": [
+            "follows_rules",
+            "uses_lean_ctx"
+          ]
+        }
+      },
+      "thresholds": {
+        "pass": 70,
+        "retry": 50,
+        "block": 0
+      }
+    }
+  },
+  "escalation": {
+    "rules": [
+      {
+        "condition": "agent_uses_blocked_tool",
+        "severity": "CRITICAL",
+        "action": "BLOCK immediately"
+      },
+      {
+        "condition": "agent_ignores_contract",
+        "severity": "CRITICAL",
+        "action": "BLOCK and report"
+      },
+      {
+        "condition": "agent_edits_out_of_scope",
+        "severity": "HIGH",
+        "action": "REVERT changes, FLAG to user"
+      },
+      {
+        "condition": "agent_score < 50",
+        "severity": "HIGH",
+        "action": "BLOCK, require manual intervention"
+      },
+      {
+        "condition": "agent_score 50-69",
+        "severity": "MEDIUM",
+        "action": "RETRY with feedback"
+      },
+      {
+        "condition": "agent_timeout",
+        "severity": "MEDIUM",
+        "action": "CANCEL and FLAG"
+      }
+    ]
+  }
+}

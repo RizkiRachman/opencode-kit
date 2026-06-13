@@ -59,14 +59,14 @@ jobs:
             "
           fi
 
-      - name: Sync templates/contract.json contract_version
+      - name: Sync contract.json contract_version
         run: |
-          if [ -f templates/contract.json ]; then
+          if [ -f contract.json ]; then
             node -e "
               const fs = require('fs');
-              const c = JSON.parse(fs.readFileSync('templates/contract.json', 'utf8'));
+              const c = JSON.parse(fs.readFileSync('contract.json', 'utf8'));
               c.contract_version = '${{ steps.bump.outputs.version }}';
-              fs.writeFileSync('templates/contract.json', JSON.stringify(c, null, 2) + '\n');
+              fs.writeFileSync('contract.json', JSON.stringify(c, null, 2) + '\n');
             "
           fi
 
@@ -74,12 +74,15 @@ jobs:
         run: |
           git config user.name "opencode-kit CI"
           git config user.email "ci@opencode-kit"
-          git add package.json .claude-plugin/plugin.json templates/contract.json
+          git add package.json .claude-plugin/plugin.json contract.json
           git commit -m "chore: bump to v${{ steps.bump.outputs.version }} [skip ci]"
           git push
 
       - name: Install dependencies
         run: npm install
+
+      - name: Build (generate clean opencode.json from template)
+        run: npm run build
 
       - name: Run tests
         run: |
