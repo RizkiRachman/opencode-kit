@@ -238,11 +238,28 @@ print(f'MATCH|{config_model}')
   esac
 fi
 
+# --- Check 8: Contract schema validation (hard block) ---
+CONTRACT_LINT="$SCRIPT_DIR/contract-lint.sh"
+if [ -f "$CONTRACT_LINT" ] && [ -f "$CONTRACT_FILE" ]; then
+  LINT_EXIT=0
+  "$CONTRACT_LINT" --contract "$CONTRACT_FILE" --strict 2>&1 || LINT_EXIT=$?
+  if [ "$LINT_EXIT" -eq 1 ]; then
+    echo -e "${RED}⛔ BLOCKED: Contract validation failed — fix errors before proceeding${NC}"
+    ISSUES=$((ISSUES + 10))
+  elif [ "$LINT_EXIT" -eq 3 ]; then
+    echo -e "${RED}⛔ BLOCKED: contract.json not found — run: opencode-kit init${NC}"
+    ISSUES=$((ISSUES + 10))
+  fi
+fi
+
 # --- Final verdict ---
 if [ "$MCP_FAIL" -eq 1 ]; then
   echo -e "${RED}⛔ PREFLIGHT FAILED: Required MCPs not available.${NC}"
   echo -e "${RED}  → Ensure lean-ctx, gitnexus are configured in opencode.json MCP servers${NC}"
   exit 1
+elif [ "$ISSUES" -gt 0 ]; then
+  echo -e "${RED}⛔ PREFLIGHT FAILED: $ISSUES issue(s) found. Fix before proceeding.${NC}"
+  exit 1
 else
-  echo "[opencode-kit] ✅ Pre-flight passed. All MCPs available. Proceed."
+  echo "[opencode-kit] ✅ Pre-flight passed. All checks passed. Proceed."
 fi
